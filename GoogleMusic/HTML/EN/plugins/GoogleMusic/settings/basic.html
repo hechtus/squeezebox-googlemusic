@@ -1,0 +1,18 @@
+[% PROCESS settings/header.html %]
+
+	[% WRAPPER setting title="PLUGIN_GOOGLEMUSIC" desc="" %]
+		<div class="prefDesc">[% "PLUGIN_GOOGLEMUSIC_DESC" | string %]</div>
+	[% END %]
+
+	[% WRAPPER settingSection %]
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_USERNAME" desc="" %]
+			<input type="text" class="stdedit" name="username" id="username" value="[% prefs.username %]" size="20" />
+		[% END %]
+
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_PASSWORD" desc="" %]
+			<input type="text" class="stdedit" name="password" id="password" value="[% prefs.password %]" size="20" />
+		[% END %]
+
+	[% END %]
+
+[% PROCESS settings/footer.html %]

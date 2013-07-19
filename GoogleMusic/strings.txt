@@ -1,0 +1,13 @@
+# String file for Google Music plugin
+
+PLUGIN_GOOGLEMUSIC
+	EN	Google Music
+
+PLUGIN_GOOGLEMUSIC_DESC
+	EN	Google Music plugin. Listen to your Google Music library.
+
+PLUGIN_GOOGLEMUSIC_USERNAME
+	EN Username or email address
+
+PLUGIN_GOOGLEMUSIC_PASSWORD
+	EN Password
