@@ -32,11 +32,11 @@ sub myDebug {
 my $prefs = preferences('plugin.googlemusic');
 
 sub name {
-	return Slim::Web::HTTP::protectName('PLUGIN_GOOGLEMUSIC');
+	return Slim::Web::HTTP::CSRF->protectName('PLUGIN_GOOGLEMUSIC');
 }
 
 sub page {
-	return Slim::Web::HTTP::protectURI('plugins/GoogleMusic/settings/basic.html');
+	return Slim::Web::HTTP::CSRF->protectURI('plugins/GoogleMusic/settings/basic.html');
 }
 
 sub handler {
@@ -44,11 +44,16 @@ sub handler {
 	
 	myDebug("in handler");
 
-	$ret = $class->SUPER::handler($client, $params);
+	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'}) {
+		$prefs->set('username', $params->{'username'});
+		$prefs->set('password', $params->{'password'});
+	}
 
-	$prefs->savenow();
+	$params->{'prefs'}->{'username'} = $prefs->get('username');
+	# To avoid showing the password remove this
+	$params->{'prefs'}->{'password'} = $prefs->get('password');
 
-	return $ret;
+	return $class->SUPER::handler($client, $params);
 }
 
 1;
