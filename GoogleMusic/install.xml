@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <extension>
-	<id>665291B7-02A3-4623-9152-FD30B6217C8B</id>
 	<name>PLUGIN_GOOGLEMUSIC</name>
 	<module>Plugins::GoogleMusic::Plugin</module>
 	<version>0.1</version>

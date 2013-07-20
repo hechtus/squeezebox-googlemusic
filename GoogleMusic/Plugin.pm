@@ -26,8 +26,6 @@ my $prefs = preferences('plugin.googlemusic');
 # Any global variables? Go ahead and declare and/or set them here
 our @browseMenuChoices;
 
-# This is an old friend from pre-SC7 days
-# It returns the name to display on the squeezebox
 sub getDisplayName {
 	return 'PLUGIN_GOOGLEMUSIC';
 }
@@ -47,19 +45,12 @@ sub myDebug {
 
 sub initPlugin {
 	my $class = shift;
-	
-	myDebug("Initializing");
-		
-	# These next two appear to be things that have to be done when initializing the plugin in SC7.
-	# Not sure what they do.
-	$class->SUPER::initPlugin();
-	# Note the plugin-specific field here. This may instantiate the web interface for the plugin.
-	Plugins::GoogleMusic::Settings->new;
-	
-	my $username = $prefs->get('username');
-	my $password = $prefs->get('password');
-	myDebug("$username and $password");
 
+	$class->SUPER::initPlugin();
+
+	if (main::WEBUI) {
+		Plugins::GoogleMusic::Settings->new;
+	}
 }
 
 # Another old friend from pre-SC7.
