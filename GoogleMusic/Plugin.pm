@@ -6,12 +6,14 @@ package Plugins::GoogleMusic::Plugin;
 # version 2.
 
 use strict;
-use base qw(Slim::Plugin::Base);
+use base qw(Slim::Plugin::OPMLBased);
+
 use Plugins::GoogleMusic::Settings;
 use Scalar::Util qw(blessed);
 use Slim::Control::Request;
-use Slim::Utils::Log;
 use Slim::Utils::Prefs;
+use Slim::Utils::Log;
+use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(string);
 
 my $log = Slim::Utils::Log->addLogCategory({
@@ -46,11 +48,39 @@ sub myDebug {
 sub initPlugin {
 	my $class = shift;
 
-	$class->SUPER::initPlugin();
+	$class->SUPER::initPlugin(
+		tag    => 'googlemusic',
+		feed   => \&toplevel,
+		is_app => 1,
+		menu   => 'radios',
+		weight => 1,
+	);
 
 	if (main::WEBUI) {
 		Plugins::GoogleMusic::Settings->new;
 	}
+
+	# TBD: Login to Google
+}
+
+sub shutdownPlugin {
+	# TBD: Logout from Google
+}
+
+sub toplevel {
+	my ($client, $callback, $args) = @_;
+
+	my @menu = (
+		{ name => string('PLUGIN_GOOGLEMUSIC_PLAYLISTS'), type => 'link', url => \&sublevel, passthrough => [ 'Playlists' ] },
+		{ name => string('PLUGIN_GOOGLEMUSIC_RECENT_SEARCHES'), type => 'link', url => \&sublevel, passthrough => [ 'searches' ] },
+		{ name => string('PLUGIN_GOOGLEMUSIC_SEARCH'), type => 'search', url => \&sublevel },
+	);
+
+	$callback->(\@menu);
+}
+
+sub sublevel {
+
 }
 
 # Another old friend from pre-SC7.
