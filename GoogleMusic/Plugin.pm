@@ -16,6 +16,8 @@ use Slim::Utils::Log;
 use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(string);
 
+use Plugins::GoogleMusic::GoogleAPI;
+
 my $log = Slim::Utils::Log->addLogCategory({
 	'category'     => 'plugin.googlemusic',
 	'defaultLevel' => 'INFO',
@@ -39,7 +41,7 @@ sub myDebug {
 	
 	if ($lvl eq "")
 	{
-		$lvl = "debug";
+		$lvl = "info";
 	}
 
 	$log->$lvl("*** GoogleMusic *** $msg");
@@ -60,11 +62,19 @@ sub initPlugin {
 		Plugins::GoogleMusic::Settings->new;
 	}
 
-	# TBD: Login to Google
+	my $api = Plugins::GoogleMusic::GoogleAPI::get();
+	$api->login($prefs->get('username'),
+				$prefs->get('password'));
+	my @songs = $api->get_all_songs();
+	$api->logout();
+
+	my $artist = $songs[0]->{'artist'};
+
+	myDebug("Song 0 is from $artist", "error");
 }
 
 sub shutdownPlugin {
-	# TBD: Logout from Google
+	# googleapi->logout();
 }
 
 sub toplevel {
@@ -73,7 +83,7 @@ sub toplevel {
 	my @menu = (
 		{ name => string('PLUGIN_GOOGLEMUSIC_PLAYLISTS'), type => 'link', url => \&sublevel, passthrough => [ 'Playlists' ] },
 		{ name => string('PLUGIN_GOOGLEMUSIC_RECENT_SEARCHES'), type => 'link', url => \&sublevel, passthrough => [ 'searches' ] },
-		{ name => string('PLUGIN_GOOGLEMUSIC_SEARCH'), type => 'search', url => \&sublevel },
+		{ name => string('PLUGIN_GOOGLEMUSIC_SEARCH'), type => 'search', url => \&search },
 	);
 
 	$callback->(\@menu);
@@ -81,6 +91,18 @@ sub toplevel {
 
 sub sublevel {
 
+}
+
+sub search {
+	my ($client, $callback, $args) = @_;
+
+	my $search = $args->{'search'};
+
+	my @menu = (
+		{ name => "Search results for $search", type => 'link', url => \&sublevel, passthrough => [ 'Playlists' ] },
+	);
+
+	$callback->(\@menu);
 }
 
 # Another old friend from pre-SC7.
