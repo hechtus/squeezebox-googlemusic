@@ -26,25 +26,10 @@ my $log = Slim::Utils::Log->addLogCategory({
 });
 
 my $prefs = preferences('plugin.googlemusic');
-
-# Any global variables? Go ahead and declare and/or set them here
-our @browseMenuChoices;
+my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 sub getDisplayName {
 	return 'PLUGIN_GOOGLEMUSIC';
-}
-
-# I have my own debug routine so that I can add the *** stuff easily.
-sub myDebug {
-	my $msg = shift;
-	my $lvl = shift;
-	
-	if ($lvl eq "")
-	{
-		$lvl = "info";
-	}
-
-	$log->$lvl("*** GoogleMusic *** $msg");
 }
 
 sub initPlugin {
@@ -62,19 +47,12 @@ sub initPlugin {
 		Plugins::GoogleMusic::Settings->new;
 	}
 
-	my $api = Plugins::GoogleMusic::GoogleAPI::get();
-	$api->login($prefs->get('username'),
-				$prefs->get('password'));
-	my @songs = $api->get_all_songs();
-	$api->logout();
-
-	my $artist = $songs[0]->{'artist'};
-
-	myDebug("Song 0 is from $artist", "error");
+	$googleapi->login($prefs->get('username'),
+					  $prefs->get('password'));
 }
 
 sub shutdownPlugin {
-	# googleapi->logout();
+	$googleapi->logout();
 }
 
 sub toplevel {
@@ -98,43 +76,50 @@ sub search {
 
 	my $search = $args->{'search'};
 
+	my $result = $googleapi->search({'any' => $search});
+
 	my @menu = (
-		{ name => "Search results for $search", type => 'link', url => \&sublevel, passthrough => [ 'Playlists' ] },
+		{ name => "Tracks (" . scalar @$result . ")",
+		  type => 'link',
+		  url => \&trackbrowse,
+		  passthrough => [ $result ] },
 	);
 
 	$callback->(\@menu);
 }
 
-# Another old friend from pre-SC7.
-# This is called when the plugin is selected by the user.
-# So, initPlugin is called when the server starts up and is loading the plugins.
-# setMode is called when the user navigates to the plugin on the squeezebox and navigates in or out of it.
-sub setMode {
-	my $class  = shift;
-	my $client = shift;
-	my $method = shift;
-	
-	myDebug("In setmode");
-	
-	# Handle requests to exit this mode/plugin by going back to where the user was before they came
-	# here.  If you don't this, pressing LEFT will just put you straight back to where you already
-	# are! (try commenting out the following if statement) 
-	if ($method eq 'pop') {
-		# Pop the current mode off the mode stack and restore the previous one
-		Slim::Buttons::Common::popMode($client);
-		return;
+
+sub trackbrowse {
+
+	my ($client, $callback, $args, $tracks) = @_;
+
+	my @tracksmenu;
+
+	for my $track (@{$tracks}) {
+		push @tracksmenu, {
+			'name'     => $track->{'name'}. " " . string('BY') . " " . $track->{'artist'},
+			'line1'    => $track->{'name'},
+			'line2'    => $track->{'artist'},
+			'url'      => \&trackbrowse,
+			'uri'      => "googlemusic:" . $track->{'id'},
+			'image'    => $track->{'albumArt'},
+			'type'     => 'playlist',
+			'passthrough' => [ $tracks ],
+			'play'     => "googlemusic:" . $track->{'id'},
+			#'hasMetadata' => 'track',
+			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $track->{'uri'} }),			
+		}
+	}
+
+	if (!scalar @tracksmenu) {
+		push @tracksmenu, {
+			'name'     => string('PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS'),
+			'type'     => 'text',
+		}
+
 	}
 	
-	
-}
-	
-# Everything is handled by the input modes stuff
-# So, just return and empty hash - NOTE THE CURLY BRACES with the return call! 
-# I spent a while debugging a "bogus function" error because I had return() and not return{}.
-# Normally this would return a reference to a functions hash that hashes button presses with actions.
-sub getFunctions {
-
-	return{};
+	$callback->(\@tracksmenu);
 }
 
 1;
