@@ -17,6 +17,7 @@ use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(string);
 
 use Plugins::GoogleMusic::GoogleAPI;
+use Plugins::GoogleMusic::ProtocolHandler;
 
 my $log = Slim::Utils::Log->addLogCategory({
 	'category'     => 'plugin.googlemusic',
@@ -100,10 +101,9 @@ sub trackbrowse {
 			'name'     => $track->{'name'}. " " . string('BY') . " " . $track->{'artist'},
 			'line1'    => $track->{'name'},
 			'line2'    => $track->{'artist'},
-			'url'      => \&trackbrowse,
-			'uri'      => "googlemusic:" . $track->{'id'},
-			'image'    => $track->{'albumArt'},
-			'type'     => 'playlist',
+			'url'      => "googlemusic:" . $track->{'id'},
+			'icon'     => $track->{'albumArt'},
+			'type'     => 'audio',
 			'passthrough' => [ $tracks ],
 			'play'     => "googlemusic:" . $track->{'id'},
 			#'hasMetadata' => 'track',
@@ -120,6 +120,12 @@ sub trackbrowse {
 	}
 	
 	$callback->(\@tracksmenu);
+}
+
+sub get_stream_url {
+	my ($client, $id) = @_;
+
+	return $googleapi->get_stream_url($id);
 }
 
 1;

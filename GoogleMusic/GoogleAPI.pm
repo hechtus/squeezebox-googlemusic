@@ -23,6 +23,9 @@ class GoogleAPI(object):
     def logout(self):
         self.api.logout()
 
+    def get_stream_url(self, song_id):
+        return self.api.get_stream_urls(song_id)[0]
+
     def search(self, query):
         if query is None:
             query = {}
