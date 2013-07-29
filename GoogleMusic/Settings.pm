@@ -13,22 +13,7 @@ use Slim::Utils::Misc;
 use Slim::Utils::Strings qw(string);
 use Slim::Utils::Prefs;
 
-my $log = Slim::Utils::Log->addLogCategory({
-	'category'     => 'plugin.googlemusic',
-	'defaultLevel' => 'INFO',
-#	'defaultLevel' => 'DEBUG',
-	'description'  => 'GoogleMusic Settings',
-});
-
-
-
-# my own debug outputer
-sub myDebug {
-	my $msg = shift;
-	
-	$log->info("*** GoogleMusic - Settings *** $msg");
-}
-
+my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 
 sub name {
@@ -41,8 +26,6 @@ sub page {
 
 sub handler {
 	my ($class, $client, $params) = @_;
-	
-	myDebug("in handler");
 
 	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'}) {
 		$prefs->set('username', $params->{'username'});

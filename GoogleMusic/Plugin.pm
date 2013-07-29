@@ -19,18 +19,18 @@ use Slim::Utils::Strings qw(string);
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
 
-my $log = Slim::Utils::Log->addLogCategory({
-	'category'     => 'plugin.googlemusic',
-	'defaultLevel' => 'INFO',
-#	'defaultLevel' => 'DEBUG',
-	'description'  => getDisplayName(),
-});
-
+my $log;
 my $prefs = preferences('plugin.googlemusic');
 
-sub getDisplayName {
-	return 'PLUGIN_GOOGLEMUSIC';
+BEGIN {
+	$log = Slim::Utils::Log->addLogCategory({
+		'category'     => 'plugin.googlemusic',
+		'defaultLevel' => 'INFO',
+		'description'  => string('PLUGIN_GOOGLEMUSIC'),
+	});
 }
+
+sub getDisplayName { 'PLUGIN_GOOGLEMUSIC' }
 
 sub initPlugin {
 	my $class = shift;
