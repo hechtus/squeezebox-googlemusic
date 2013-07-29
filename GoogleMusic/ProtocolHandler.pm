@@ -5,7 +5,6 @@ use base qw(Slim::Player::Protocols::HTTP);
 
 use Scalar::Util qw(blessed);
 use URI::Escape qw(uri_escape_utf8);
-use JSON::XS::VersionOneAndTwo;
 
 use Slim::Player::Playlist;
 use Slim::Utils::Log;
@@ -30,7 +29,6 @@ sub scanUrl {
 sub getNextTrack {
 	my ($class, $song, $successCb, $errorCb) = @_;
 	  
-	my $client = $song->master();
 	my $url    = $song->currentTrack()->url;
 	  
 	my ($id) = $url =~ m{^googlemusic:(.*)$};
