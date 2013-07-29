@@ -74,7 +74,8 @@ sub sublevel {
 sub search {
 	my ($client, $callback, $args) = @_;
 
-	my $search = $args->{'search'};
+	# The search string may be empty. We could forbid this.
+	my $search = $args->{'search'} || '';
 
 	my ($tracks, $albums, $artists) = $googleapi->search({'any' => $search});
 
