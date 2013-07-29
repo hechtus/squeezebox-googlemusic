@@ -27,7 +27,6 @@ my $log = Slim::Utils::Log->addLogCategory({
 });
 
 my $prefs = preferences('plugin.googlemusic');
-my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 sub getDisplayName {
 	return 'PLUGIN_GOOGLEMUSIC';
@@ -120,12 +119,6 @@ sub trackbrowse {
 	}
 	
 	$callback->(\@tracksmenu);
-}
-
-sub get_stream_url {
-	my ($client, $id) = @_;
-
-	return $googleapi->get_stream_url($id);
 }
 
 1;

@@ -12,6 +12,7 @@ use Slim::Utils::Log;
 use Slim::Utils::Misc;
 
 use Plugins::GoogleMusic::Plugin;
+use Plugins::GoogleMusic::GoogleAPI;
 
 my $log = logger('plugin.googlemusic');
 
@@ -34,7 +35,7 @@ sub getNextTrack {
 	  
 	my ($id) = $url =~ m{^googlemusic:(.*)$};
 
-	my $trackURL = Plugins::GoogleMusic::Plugin->get_stream_url($id);
+	my $trackURL = $googleapi->get_stream_url($id);
 
 	$song->streamUrl($trackURL);
 
