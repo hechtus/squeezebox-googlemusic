@@ -76,13 +76,21 @@ sub search {
 
 	my $search = $args->{'search'};
 
-	my $result = $googleapi->search({'any' => $search});
+	my ($tracks, $albums, $artists) = $googleapi->search({'any' => $search});
 
 	my @menu = (
-		{ name => "Tracks (" . scalar @$result . ")",
+		{ name => "Artists (" . scalar @$artists . ")",
+		  type => 'link',
+		  url => \&artistbrowse,
+		  passthrough => [ $artists ] },
+		{ name => "Albums (" . scalar @$albums . ")",
+		  type => 'link',
+		  url => \&albumbrowse,
+		  passthrough => [ $albums ] },
+		{ name => "Tracks (" . scalar @$tracks . ")",
 		  type => 'link',
 		  url => \&trackbrowse,
-		  passthrough => [ $result ] },
+		  passthrough => [ $tracks ] },
 	);
 
 	$callback->(\@menu);
@@ -119,6 +127,67 @@ sub trackbrowse {
 	}
 	
 	$callback->(\@tracksmenu);
+}
+
+sub albumbrowse {
+
+	my ($client, $callback, $args, $albums) = @_;
+
+	my @menu;
+
+	for my $album (@{$albums}) {
+		push @menu, {
+			'name'     => $album->{'name'} . " (" . $album->{'year'} . ")",
+			'line1'    => $album->{'name'} . " (" . $album->{'year'} . ")",,
+			'line2'    => $album->{'artist'},
+			'url'      => $album->{'uri'},
+			'type'     => 'audio',
+			'passthrough' => [ $album ],
+			'play'     => $album->{'uri'},
+			#'hasMetadata' => 'track',
+			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $album->{'uri'} }),
+		}
+	}
+
+	if (!scalar @menu) {
+		push @menu, {
+			'name'     => string('PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS'),
+			'type'     => 'text',
+		}
+
+	}
+	
+	$callback->(\@menu);
+}
+
+sub artistbrowse {
+
+	my ($client, $callback, $args, $artists) = @_;
+
+	my @menu;
+
+	for my $artist (@{$artists}) {
+		push @menu, {
+			'name'     => $artist->{'name'},
+			'line1'    => $artist->{'name'},
+			'url'      => $artist->{'uri'},
+			'type'     => 'playlist',
+			'passthrough' => [ $artists ],
+			'play'     => $artist->{'uri'},
+			#'hasMetadata' => 'track',
+			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $track->{'uri'} }),			
+		}
+	}
+
+	if (!scalar @menu) {
+		push @menu, {
+			'name'     => string('PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS'),
+			'type'     => 'text',
+		}
+
+	}
+	
+	$callback->(\@menu);
 }
 
 1;
