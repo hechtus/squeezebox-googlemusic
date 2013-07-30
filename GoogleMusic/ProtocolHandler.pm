@@ -31,7 +31,7 @@ sub getNextTrack {
 	  
 	my $url    = $song->currentTrack()->url;
 	  
-	my ($id) = $url =~ m{^googlemusic:(.*)$};
+	my ($id) = $url =~ m{^googlemusic:track:(.*)$};
 
 	my $trackURL = $googleapi->get_stream_url($id);
 

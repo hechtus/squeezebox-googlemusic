@@ -109,11 +109,11 @@ sub trackbrowse {
 			'name'     => $track->{'name'}. " " . string('BY') . " " . $track->{'artist'},
 			'line1'    => $track->{'name'},
 			'line2'    => $track->{'artist'},
-			'url'      => "googlemusic:" . $track->{'id'},
+			'url'      => "googlemusic:track:" . $track->{'id'},
 			'image'    => 'https:' . $track->{'albumArtUrl'},
 			'type'     => 'audio',
 			'passthrough' => [ $tracks ],
-			'play'     => "googlemusic:" . $track->{'id'},
+			'play'     => "googlemusic:track:" . $track->{'id'},
 			#'hasMetadata' => 'track',
 			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $track->{'uri'} }),			
 		}

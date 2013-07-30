@@ -84,7 +84,7 @@ def get():
                 return track['myArtist']
             artist = {}
             artist['name'] = track['artist']
-            uri = 'googlemusic://artist/' + self.create_id(artist)
+            uri = 'googlemusic:artist:' + self.create_id(artist)
             artist['uri'] = uri
             if 'artistImageBaseUrl' in track:
                 artist['artistImageBaseUrl'] = track['artistImageBaseUrl']
@@ -104,7 +104,7 @@ def get():
             album['artist'] = artist
             album['name'] = track['album']
             album['year'] = track['year']
-            uri = 'googlemusic://album/' + self.create_id(album)
+            uri = 'googlemusic:album:' + self.create_id(album)
             album['uri'] = uri
             album['albumArtUrl'] = track['albumArtUrl']
             self.albums[uri] = album
