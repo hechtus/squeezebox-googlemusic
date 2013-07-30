@@ -105,15 +105,18 @@ sub trackbrowse {
 	my @tracksmenu;
 
 	for my $track (@{$tracks}) {
+		my $secs = $track->{'durationMillis'} / 1000;
 		push @tracksmenu, {
+			'artist'   => $track->{'artist'},
 			'name'     => $track->{'name'}. " " . string('BY') . " " . $track->{'artist'},
 			'line1'    => $track->{'name'},
-			'line2'    => $track->{'artist'},
-			'url'      => "googlemusic:track:" . $track->{'id'},
+			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
+			'url'      => $track->{'uri'},
 			'image'    => 'https:' . $track->{'albumArtUrl'},
+			'secs'     => $secs,
+			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
 			'type'     => 'audio',
-			'passthrough' => [ $tracks ],
-			'play'     => "googlemusic:track:" . $track->{'id'},
+			#'play'     => $track->{'uri'},
 			#'hasMetadata' => 'track',
 			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $track->{'uri'} }),			
 		}
@@ -141,12 +144,13 @@ sub albumbrowse {
 			'name'     => $album->{'name'} . " (" . $album->{'year'} . ")",
 			'line1'    => $album->{'name'} . " (" . $album->{'year'} . ")",,
 			'line2'    => $album->{'artist'},
-			'url'      => $album->{'uri'},
+			'url'      => \&album,
+			'uri'      => $album->{'uri'},
 			'image'    => 'https:' . $album->{'albumArtUrl'},
 			'type'     => 'playlist',
 			'passthrough' => [ $album ],
 			'play'     => $album->{'uri'},
-			#'hasMetadata' => 'track',
+			#'hasMetadata' => 'album',
 			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $album->{'uri'} }),
 		}
 	}
@@ -159,6 +163,56 @@ sub albumbrowse {
 
 	}
 	
+	$callback->(\@menu);
+}
+
+sub album {
+
+	my ($client, $callback, $args, $album) = @_;
+
+	my @menu;
+	my @tracksmenu;
+
+	my ($tracks, $albums, $artists) = $googleapi->search({'artist' => $album->{'artist'},
+														  'album' => $album->{'name'},
+														  'year' => $album->{'year'}});
+
+	for my $track (@{$tracks}) {
+		my $secs = $track->{'durationMillis'} / 1000;
+		push @tracksmenu, {
+			'name'     => $track->{'name'},
+			'line1'    => $track->{'name'},
+			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
+			'url'      => $track->{'uri'},
+			'image'    => 'https:' . $track->{'albumArtUrl'},
+			'secs'     => $secs,
+			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
+			'type'     => 'audio',
+			'_disc'    => $track->{'disc'},
+			'_track'   => $track->{'track'},
+			'passthrough' => [ $track ],
+			'play'     => $track->{'uri'},
+			#'hasMetadata' => 'album',
+			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $track->{'uri'} }),			
+		}
+	}
+
+	@tracksmenu = sort { $a->{_disc} != $b->{_disc} ? $a->{_disc} <=> $b->{_disc} : $a->{_track} <=> $b->{_track} } @tracksmenu;
+
+	push @menu, {
+		'name'  => $album->{'name'},
+		'cover' => 'https:' . $album->{'albumArtUrl'},
+		'type'     => 'playlist',
+		'items' => \@tracksmenu,
+		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
+		'albumData' => [
+			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}, url => 'anyurl',
+		  },
+			{ type => 'link', label => 'ALBUM', name => $album->{'name'} },
+			{ type => 'link', label => 'YEAR', name => $album->{'year'} },
+		],
+	};
+
 	$callback->(\@menu);
 }
 

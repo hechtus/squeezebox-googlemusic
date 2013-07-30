@@ -21,13 +21,17 @@ def get():
     class API(object):
         def __init__(self):
             self.api = Webclient()
-            self.tracks = []
+            self.tracks = {}
             self.albums = {}
             self.artists = {}
 
         def login(self, username, password):
             self.api.login(username, password)
-            self.tracks = self.api.get_all_songs()
+            songs = self.api.get_all_songs()
+            for track in songs:
+                uri = 'googlemusic:track:' + track['id']
+                track['uri'] = uri
+                self.tracks[uri] = track
 
         def logout(self):
             self.api.logout()
@@ -35,17 +39,20 @@ def get():
         def get_stream_url(self, song_id):
             return self.api.get_stream_urls(song_id)[0]
 
+        def get_track(self, uri):
+            return self.tracks[uri]
+
         def search(self, query):
             if query is None:
                 query = {}
         
-            result = self.tracks
+            result = self.tracks.values()
         
             for (field, values) in query.iteritems():
                 if not hasattr(values, '__iter__'):
                     values = [values]
                 for value in values:
-                    q = value.strip().lower()
+                    q = str(value).strip().lower()
 
                     track_filter = lambda t: q in t['titleNorm']
                     album_filter = lambda t: q in t['albumNorm']

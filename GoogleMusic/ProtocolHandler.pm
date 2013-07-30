@@ -47,3 +47,29 @@ sub canDirectStreamSong {
 	# are synced or if the user has set mp3StreamingMethod
 	return $class->SUPER::canDirectStream( $client, $song->streamUrl(), $class->getFormatForURL() );
 }
+
+sub getMetadataFor {
+	# don't use $_[3] as it is forceCurrent used by AudioScrobbler
+	my ($class, $client, $url, undef, $fetch) = @_; 
+
+	my $track = $googleapi->get_track($url);
+	my $secs = $track->{'durationMillis'} / 1000;
+
+	$log->error("ART:" . $track->{'albumArtUrl'});
+
+	return {
+		title    => $track->{'name'},
+		artist   => $track->{'artist'},
+		album    => $track->{'album'},
+		secs     => $secs,
+		duration => sprintf('%d:%02d', int($secs / 60), $secs % 60),
+		cover    => $track->{'albumArtUrl'},
+		# Icon does not work as Squeezebox appends some size request to the URL
+		# We will need an image resizer ... :-(
+		# icon    => $track->{'albumArtUrl'},
+		bitrate  => '320k',
+		type     => 'MP3 (Google Music)',
+		albumuri => $track->{'myAlbum'}->{'uri'},
+		artistA  => $track->{'myAlbum'}->{'artist'},
+	};
+}
