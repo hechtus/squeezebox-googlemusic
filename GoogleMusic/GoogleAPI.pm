@@ -52,12 +52,17 @@ def get():
                 if not hasattr(values, '__iter__'):
                     values = [values]
                 for value in values:
-                    q = str(value).strip().lower()
+                    if type(value) is unicode:
+                        q = value.strip().lower()
+                    elif type(value) is str:
+                        q = value.decode('utf-8').strip().lower()
+                    elif type(value) is int:
+                        q = value
 
                     track_filter = lambda t: q in t['titleNorm']
                     album_filter = lambda t: q in t['albumNorm']
                     artist_filter = lambda t: q in t['artistNorm'] or q in t['albumArtistNorm']
-                    date_filter = lambda t: q in str(t['year'])
+                    date_filter = lambda t: q in t['year']
                     any_filter = lambda t: track_filter(t) or album_filter(t) or \
                         artist_filter(t)
         

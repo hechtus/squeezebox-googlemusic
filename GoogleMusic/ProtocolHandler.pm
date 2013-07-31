@@ -55,8 +55,6 @@ sub getMetadataFor {
 	my $track = $googleapi->get_track($url);
 	my $secs = $track->{'durationMillis'} / 1000;
 
-	$log->error("ART:" . $track->{'albumArtUrl'});
-
 	return {
 		title    => $track->{'name'},
 		artist   => $track->{'artist'},

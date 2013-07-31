@@ -76,8 +76,9 @@ sub search {
 
 	# The search string may be empty. We could forbid this.
 	my $search = $args->{'search'} || '';
+	my @query = split(' ', $search);
 
-	my ($tracks, $albums, $artists) = $googleapi->search({'any' => $search});
+	my ($tracks, $albums, $artists) = $googleapi->search({'any' => \@query});
 
 	my @menu = (
 		{ name => "Artists (" . scalar @$artists . ")",
@@ -108,17 +109,17 @@ sub trackbrowse {
 		my $secs = $track->{'durationMillis'} / 1000;
 		push @tracksmenu, {
 			'artist'   => $track->{'artist'},
+			'year'     => $track->{'year'},
 			'name'     => $track->{'name'}. " " . string('BY') . " " . $track->{'artist'},
 			'line1'    => $track->{'name'},
 			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
 			'url'      => $track->{'uri'},
+			'uri'      => $track->{'uri'},
 			'image'    => 'https:' . $track->{'albumArtUrl'},
 			'secs'     => $secs,
 			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
 			'type'     => 'audio',
-			#'play'     => $track->{'uri'},
-			#'hasMetadata' => 'track',
-			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $track->{'uri'} }),			
+			'play'     => $track->{'uri'},
 		}
 	}
 
@@ -140,19 +141,7 @@ sub albumbrowse {
 	my @menu;
 
 	for my $album (@{$albums}) {
-		push @menu, {
-			'name'     => $album->{'name'} . " (" . $album->{'year'} . ")",
-			'line1'    => $album->{'name'} . " (" . $album->{'year'} . ")",,
-			'line2'    => $album->{'artist'},
-			'url'      => \&album,
-			'uri'      => $album->{'uri'},
-			'image'    => 'https:' . $album->{'albumArtUrl'},
-			'type'     => 'playlist',
-			'passthrough' => [ $album ],
-			'play'     => $album->{'uri'},
-			#'hasMetadata' => 'album',
-			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $album->{'uri'} }),
-		}
+		push @menu, album($client, $album);
 	}
 
 	if (!scalar @menu) {
@@ -168,9 +157,9 @@ sub albumbrowse {
 
 sub album {
 
-	my ($client, $callback, $args, $album) = @_;
+	my ($client, $album) = @_;
 
-	my @menu;
+	my %menu;
 	my @tracksmenu;
 
 	my ($tracks, $albums, $artists) = $googleapi->search({'artist' => $album->{'artist'},
@@ -199,9 +188,10 @@ sub album {
 
 	@tracksmenu = sort { $a->{_disc} != $b->{_disc} ? $a->{_disc} <=> $b->{_disc} : $a->{_track} <=> $b->{_track} } @tracksmenu;
 
-	push @menu, {
+	%menu = (
 		'name'  => $album->{'name'},
 		'cover' => 'https:' . $album->{'albumArtUrl'},
+		'image' => 'https:' . $album->{'albumArtUrl'},
 		'type'     => 'playlist',
 		'items' => \@tracksmenu,
 		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
@@ -211,9 +201,9 @@ sub album {
 			{ type => 'link', label => 'ALBUM', name => $album->{'name'} },
 			{ type => 'link', label => 'YEAR', name => $album->{'year'} },
 		],
-	};
+	);
 
-	$callback->(\@menu);
+	return \%menu;
 }
 
 sub artistbrowse {
