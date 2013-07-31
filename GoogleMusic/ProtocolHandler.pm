@@ -24,6 +24,14 @@ sub getFormatForURL { 'mp3' }
 # Avoid scanning
 sub scanUrl {
 	my ($class, $url, $args) = @_;
+
+	my $song = $args->{song};
+
+	# To support seeking set duration and bitrate
+	$song->duration($song->currentTrack()->secs);
+	# Always 320k at Google Music
+	$song->bitrate(320000);
+
 	$args->{cb}->( $args->{song}->currentTrack() );
 }
 
