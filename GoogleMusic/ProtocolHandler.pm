@@ -12,6 +12,7 @@ use Slim::Utils::Misc;
 
 use Plugins::GoogleMusic::Plugin;
 use Plugins::GoogleMusic::GoogleAPI;
+use Plugins::GoogleMusic::Image;
 
 my $log = logger('plugin.googlemusic');
 
@@ -61,10 +62,8 @@ sub getMetadataFor {
 		album    => $track->{'album'},
 		secs     => $secs,
 		duration => sprintf('%d:%02d', int($secs / 60), $secs % 60),
-		cover    => $track->{'albumArtUrl'},
-		# Icon does not work as Squeezebox appends some size request to the URL
-		# We will need an image resizer ... :-(
-		# icon    => $track->{'albumArtUrl'},
+		cover    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
+		icon     => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
 		bitrate  => '320k',
 		type     => 'MP3 (Google Music)',
 		albumuri => $track->{'myAlbum'}->{'uri'},

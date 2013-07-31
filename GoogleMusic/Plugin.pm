@@ -18,6 +18,7 @@ use Slim::Utils::Strings qw(string);
 
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
+use Plugins::GoogleMusic::Image;
 
 my $log;
 my $prefs = preferences('plugin.googlemusic');
@@ -46,6 +47,8 @@ sub initPlugin {
 	if (main::WEBUI) {
 		Plugins::GoogleMusic::Settings->new;
 	}
+
+	Slim::Web::Pages->addRawFunction('/googlemusicimage', \&Plugins::GoogleMusic::Image::handler);
 
 	$googleapi->login($prefs->get('username'),
 					  $prefs->get('password'));
@@ -115,7 +118,7 @@ sub trackbrowse {
 			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
 			'url'      => $track->{'uri'},
 			'uri'      => $track->{'uri'},
-			'image'    => 'https:' . $track->{'albumArtUrl'},
+			'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
 			'secs'     => $secs,
 			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
 			'type'     => 'audio',
@@ -173,7 +176,7 @@ sub album {
 			'line1'    => $track->{'name'},
 			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
 			'url'      => $track->{'uri'},
-			'image'    => 'https:' . $track->{'albumArtUrl'},
+			'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
 			'secs'     => $secs,
 			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
 			'type'     => 'audio',
@@ -190,8 +193,8 @@ sub album {
 
 	%menu = (
 		'name'  => $album->{'name'},
-		'cover' => 'https:' . $album->{'albumArtUrl'},
-		'image' => 'https:' . $album->{'albumArtUrl'},
+		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
+		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'type'     => 'playlist',
 		'items' => \@tracksmenu,
 		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
@@ -217,7 +220,7 @@ sub artistbrowse {
 			'name'     => $artist->{'name'},
 			'line1'    => $artist->{'name'},
 			'url'      => $artist->{'uri'},
-			'image'    => 'https:' . $artist->{'artistImageBaseUrl'},
+			'image'    => Plugins::GoogleMusic::Image->uri($artist->{'artistImageBaseUrl'}),
 			'type'     => 'playlist',
 			'passthrough' => [ $artists ],
 			'play'     => $artist->{'uri'},
