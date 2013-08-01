@@ -40,7 +40,6 @@ sub initPlugin {
 		tag    => 'googlemusic',
 		feed   => \&toplevel,
 		is_app => 1,
-		menu   => 'radios',
 		weight => 1,
 	);
 
