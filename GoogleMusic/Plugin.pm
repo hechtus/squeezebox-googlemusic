@@ -61,16 +61,36 @@ sub toplevel {
 	my ($client, $callback, $args) = @_;
 
 	my @menu = (
-		{ name => string('PLUGIN_GOOGLEMUSIC_PLAYLISTS'), type => 'link', url => \&sublevel, passthrough => [ 'Playlists' ] },
-		{ name => string('PLUGIN_GOOGLEMUSIC_RECENT_SEARCHES'), type => 'link', url => \&sublevel, passthrough => [ 'searches' ] },
+		{ name => string('PLUGIN_GOOGLEMUSIC_PLAYLISTS'), type => 'link', url => \&playlists },
+		{ name => string('PLUGIN_GOOGLEMUSIC_RECENT_SEARCHES'), type => 'link', url => \&recent_searches },
 		{ name => string('PLUGIN_GOOGLEMUSIC_SEARCH'), type => 'search', url => \&search },
 	);
 
 	$callback->(\@menu);
 }
 
-sub sublevel {
+sub playlists {
+	my ($client, $callback, $args) = @_;
 
+	my @menu = (
+		{ name => "To be implemented.",
+		  type => 'text',
+		}
+	);
+
+	$callback->(\@menu);
+}
+
+sub recent_searches {
+	my ($client, $callback, $args) = @_;
+
+	my @menu = (
+		{ name => "To be implemented.",
+		  type => 'text',
+		}
+	);
+
+	$callback->(\@menu);
 }
 
 sub search {
@@ -218,7 +238,7 @@ sub artistbrowse {
 		push @menu, {
 			'name'     => $artist->{'name'},
 			'line1'    => $artist->{'name'},
-			'url'      => $artist->{'uri'},
+			'url'      => \&artist,
 			'image'    => Plugins::GoogleMusic::Image->uri($artist->{'artistImageBaseUrl'}),
 			'type'     => 'playlist',
 			'passthrough' => [ $artists ],
@@ -236,6 +256,18 @@ sub artistbrowse {
 
 	}
 	
+	$callback->(\@menu);
+}
+
+sub artist {
+	my ($client, $callback, $args) = @_;
+
+	my @menu = (
+		{ name => "To be implemented.",
+		  type => 'text',
+		}
+	);
+
 	$callback->(\@menu);
 }
 
