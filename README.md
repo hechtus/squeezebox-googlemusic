@@ -49,14 +49,16 @@ Project resources
 ToDo
 ----
 
-* There are still lots of things to do. This project just
-  started. Feel free to
-  [contribute](https://help.github.com/articles/fork-a-repo) or to
-  [report
-  bugs](https://github.com/hechtus/squeezebox-googlemusic/issues) to
-  help for the first release.
+There are still lots of things to do. This project just
+started. Feel free to
+[contribute](https://help.github.com/articles/fork-a-repo) or to
+[report
+bugs](https://github.com/hechtus/squeezebox-googlemusic/issues) to
+help for the first release. Here are some open issues you may help on:
+
 * Playlist support
 * Recent searches
 * Artist menu
 * Login after setting username/password without restarting the squeezebox
-* Catch all Google API exceptions and errors.
+* Catch all Google API exceptions and errors
+* Improve Track and Album Info
