@@ -14,13 +14,13 @@ our $googleapi = get();
 use Inline (Config => DIRECTORY => '/var/lib/squeezeboxserver/_Inline/',);
 use Inline Python => <<'END_OF_PYTHON_CODE';
 
-from gmusicapi import Webclient
+from gmusicapi import Mobileclient
 import hashlib
 
 def get():
     class API(object):
         def __init__(self):
-            self.api = Webclient()
+            self.api = Mobileclient()
             self.tracks = {}
             self.albums = {}
             self.artists = {}
@@ -29,6 +29,7 @@ def get():
             self.api.login(username, password)
             songs = self.api.get_all_songs()
             for track in songs:
+                track['albumArtUrl'] = track['albumArtRef'][0]['url']
                 uri = 'googlemusic:track:' + track['id']
                 track['uri'] = uri
                 self.tracks[uri] = track
@@ -36,8 +37,8 @@ def get():
         def logout(self):
             self.api.logout()
 
-        def get_stream_url(self, song_id):
-            return self.api.get_stream_urls(song_id)[0]
+        def get_stream_url(self, song_id, device_id):
+            return self.api.get_stream_url(song_id, device_id)
 
         def get_track(self, uri):
             return self.tracks[uri]
@@ -59,9 +60,9 @@ def get():
                     elif type(value) is int:
                         q = value
 
-                    track_filter = lambda t: q in t['titleNorm']
-                    album_filter = lambda t: q in t['albumNorm']
-                    artist_filter = lambda t: q in t['artistNorm'] or q in t['albumArtistNorm']
+                    track_filter = lambda t: q in t['title'].lower()
+                    album_filter = lambda t: q in t['album'].lower()
+                    artist_filter = lambda t: q in t['artist'].lower() or q in t['albumArtist'].lower()
                     date_filter = lambda t: q in t['year']
                     any_filter = lambda t: track_filter(t) or album_filter(t) or \
                         artist_filter(t)
@@ -98,8 +99,8 @@ def get():
             artist['name'] = track['artist']
             uri = 'googlemusic:artist:' + self.create_id(artist)
             artist['uri'] = uri
-            if 'artistImageBaseUrl' in track:
-                artist['artistImageBaseUrl'] = track['artistImageBaseUrl']
+            if 'artistArtRef' in track:
+                artist['artistImageBaseUrl'] = track['artistArtRef'][0]['url']
             else:
                 artist['artistImageBaseUrl'] = ''
             self.artists[uri] = artist
@@ -118,7 +119,7 @@ def get():
             album['year'] = track['year']
             uri = 'googlemusic:album:' + self.create_id(album)
             album['uri'] = uri
-            album['albumArtUrl'] = track['albumArtUrl']
+            album['albumArtUrl'] = track['albumArtRef'][0]['url']
             self.albums[uri] = album
             track['myAlbum'] = album
             return album

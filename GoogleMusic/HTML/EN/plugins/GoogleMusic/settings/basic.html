@@ -13,6 +13,10 @@
 			<input type="text" class="stdedit" name="password" id="password" value="[% prefs.password %]" size="20" />
 		[% END %]
 
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_DEVICE_ID" desc="" %]
+			<input type="text" class="stdedit" name="device_id" id="device_id" value="[% prefs.device_id %]" size="20" />
+		[% END %]
+
 	[% END %]
 
 [% PROCESS settings/footer.html %]

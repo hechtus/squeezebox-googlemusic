@@ -132,8 +132,8 @@ sub trackbrowse {
 		push @tracksmenu, {
 			'artist'   => $track->{'artist'},
 			'year'     => $track->{'year'},
-			'name'     => $track->{'name'}. " " . string('BY') . " " . $track->{'artist'},
-			'line1'    => $track->{'name'},
+			'name'     => $track->{'title'}. " " . string('BY') . " " . $track->{'artist'},
+			'line1'    => $track->{'title'},
 			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
 			'url'      => $track->{'uri'},
 			'uri'      => $track->{'uri'},
@@ -142,6 +142,7 @@ sub trackbrowse {
 			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
 			'type'     => 'audio',
 			'play'     => $track->{'uri'},
+			'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'} } }},			
 		}
 	}
 
@@ -191,20 +192,19 @@ sub album {
 	for my $track (@{$tracks}) {
 		my $secs = $track->{'durationMillis'} / 1000;
 		push @tracksmenu, {
-			'name'     => $track->{'name'},
-			'line1'    => $track->{'name'},
+			'name'     => $track->{'title'},
+			'line1'    => $track->{'title'},
 			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
 			'url'      => $track->{'uri'},
 			'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
 			'secs'     => $secs,
 			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
 			'type'     => 'audio',
-			'_disc'    => $track->{'disc'},
-			'_track'   => $track->{'track'},
+			'_disc'    => $track->{'discNumber'},
+			'_track'   => $track->{'trackNumber'},
 			'passthrough' => [ $track ],
 			'play'     => $track->{'uri'},
-			#'hasMetadata' => 'album',
-			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $track->{'uri'} }),			
+			'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'} } }},
 		}
 	}
 
@@ -243,8 +243,6 @@ sub artistbrowse {
 			'type'     => 'playlist',
 			'passthrough' => [ $artists ],
 			'play'     => $artist->{'uri'},
-			#'hasMetadata' => 'track',
-			#'itemActions' => $class->actions({ info => 1, play => 1, uri => $track->{'uri'} }),			
 		}
 	}
 

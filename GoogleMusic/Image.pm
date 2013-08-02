@@ -21,7 +21,7 @@ sub handler {
 
 sub uri {
 	# Sometimes there is an https: prefix. Remove it.
-	$_[1] =~ s/^https\://;
+	$_[1] =~ s/^https?\://;
 	# Very often there is already a size spec from Google. Remove it also.
 	$_[1] =~ s/\=(.*)$//;
 

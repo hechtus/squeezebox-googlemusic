@@ -27,14 +27,16 @@ sub page {
 sub handler {
 	my ($class, $client, $params) = @_;
 
-	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'}) {
+	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'} && $params->{'device_id'}) {
 		$prefs->set('username', $params->{'username'});
 		$prefs->set('password', $params->{'password'});
+		$prefs->set('device_id', $params->{'device_id'});
 	}
 
 	$params->{'prefs'}->{'username'} = $prefs->get('username');
 	# To avoid showing the password remove this
 	$params->{'prefs'}->{'password'} = $prefs->get('password');
+	$params->{'prefs'}->{'device_id'} = $prefs->get('device_id');
 
 	return $class->SUPER::handler($client, $params);
 }
