@@ -87,6 +87,11 @@ sub trackInfoURL {
 	#}
 
 	my $items = [
+		{
+			type =>  'text',
+			name =>  $track->{'artist'},
+			label => 'ARTIST',
+		},
 		{ type  => 'text',
 		  label => 'TITLE',
 		  name  => $track->{'title'},
