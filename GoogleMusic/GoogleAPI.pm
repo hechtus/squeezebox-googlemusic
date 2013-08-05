@@ -26,16 +26,21 @@ def get():
             self.artists = {}
 
         def login(self, username, password):
-            self.api.login(username, password)
+            if not self.api.login(username, password):
+                return False
             songs = self.api.get_all_songs()
             for track in songs:
                 track['albumArtUrl'] = track['albumArtRef'][0]['url']
                 uri = 'googlemusic:track:' + track['id']
                 track['uri'] = uri
                 self.tracks[uri] = track
+            return True
 
         def logout(self):
-            self.api.logout()
+            return self.api.logout()
+
+        def is_authenticated(self):
+            return self.api.is_authenticated()
 
         def get_stream_url(self, song_id, device_id):
             return self.api.get_stream_url(song_id, device_id)

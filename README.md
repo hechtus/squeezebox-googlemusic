@@ -34,9 +34,7 @@ Usage
 
 1. Go to the plug-in settings page and set your Google username and
    password for the Google Music plug-in.
-2. Restart the squeezebox. Someday, this will be handled automatically
-   by the plug-in.
-3. You will find the plug-in in the 'My Apps' section of the
+2. You will find the plug-in in the 'My Apps' section of the
    squeezebox menu.
  
 Project resources
@@ -59,6 +57,5 @@ help for the first release. Here are some open issues you may help on:
 * Playlist support
 * Recent searches
 * Artist menu
-* Login after setting username/password without restarting the squeezebox
 * Catch all Google API exceptions and errors
 * Improve Track and Album Info

@@ -15,6 +15,15 @@ PLUGIN_GOOGLEMUSIC_PASSWORD
 PLUGIN_GOOGLEMUSIC_DEVICE_ID
 	EN	Mobile Device ID
 
+PLUGIN_GOOGLEMUSIC_LOGIN_FAILED
+	EN	Login to Google Play Music failed. Bad username or password.
+
+PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS
+	EN	Successfully logged in to Google Play Music.
+
+PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN
+	EN	Not logged in to Google Play Music. Set your username and password.
+
 PLUGIN_GOOGLEMUSIC_PLAYLISTS
 	EN	Playlists
 

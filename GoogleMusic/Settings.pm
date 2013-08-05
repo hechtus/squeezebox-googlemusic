@@ -13,6 +13,8 @@ use Slim::Utils::Misc;
 use Slim::Utils::Strings qw(string);
 use Slim::Utils::Prefs;
 
+use Plugins::GoogleMusic::GoogleAPI;
+
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 
@@ -27,10 +29,23 @@ sub page {
 sub handler {
 	my ($class, $client, $params) = @_;
 
+	if (!$googleapi->is_authenticated()) {
+		$params->{'warning'} = string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN');
+	}
+
 	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'} && $params->{'device_id'}) {
 		$prefs->set('username', $params->{'username'});
 		$prefs->set('password', $params->{'password'});
 		$prefs->set('device_id', $params->{'device_id'});
+
+		# Logout from Google
+		$googleapi->logout();
+		# Now try to login with new username/password
+		if(!$googleapi->login($params->{'username'}, $params->{'password'})) {
+			$params->{'warning'} = string('PLUGIN_GOOGLEMUSIC_LOGIN_FAILED');
+		} else {
+			$params->{'warning'} = string('PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS');
+		}
 	}
 
 	$params->{'prefs'}->{'username'} = $prefs->get('username');

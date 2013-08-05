@@ -49,8 +49,10 @@ sub initPlugin {
 
 	Slim::Web::Pages->addRawFunction('/googlemusicimage', \&Plugins::GoogleMusic::Image::handler);
 
-	$googleapi->login($prefs->get('username'),
-					  $prefs->get('password'));
+	if (!$googleapi->login($prefs->get('username'),
+						   $prefs->get('password'))) {
+		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
+	}
 }
 
 sub shutdownPlugin {
