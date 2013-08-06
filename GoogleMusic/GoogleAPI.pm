@@ -14,7 +14,7 @@ our $googleapi = get();
 use Inline (Config => DIRECTORY => '/var/lib/squeezeboxserver/_Inline/',);
 use Inline Python => <<'END_OF_PYTHON_CODE';
 
-from gmusicapi import Mobileclient
+from gmusicapi import Mobileclient, CallFailure
 import hashlib
 
 def get():
@@ -43,7 +43,11 @@ def get():
             return self.api.is_authenticated()
 
         def get_stream_url(self, song_id, device_id):
-            return self.api.get_stream_url(song_id, device_id)
+            if self.api.is_authenticated():
+                try:
+                    return self.api.get_stream_url(song_id, device_id)
+                except CallFailure as error:
+                    pass
 
         def get_track(self, uri):
             return self.tracks[uri]

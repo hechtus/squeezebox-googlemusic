@@ -3,6 +3,7 @@ package Plugins::GoogleMusic::ProtocolHandler;
 use strict;
 use base qw(Slim::Player::Protocols::HTTP);
 
+use Scalar::Util qw(blessed);
 use Slim::Player::Playlist;
 use Slim::Utils::Log;
 use Slim::Utils::Misc;
@@ -30,12 +31,16 @@ sub scanUrl {
 sub getNextTrack {
 	my ($class, $song, $successCb, $errorCb) = @_;
 	  
-	my $url    = $song->currentTrack()->url;
+	my $url = $song->currentTrack()->url;
 	  
 	my ($id) = $url =~ m{^googlemusic:track:(.*)$};
 
-	# TBD: Error handling. Call errorCb or errors.
 	my $trackURL = $googleapi->get_stream_url($id, $prefs->get('device_id'));
+
+	if (!$trackURL) {
+		$log->error("Looking up stream url for ID $id failed.");
+		$errorCb->();
+	}
 
 	$song->streamUrl($trackURL);
 	# To support seeking set duration and bitrate
