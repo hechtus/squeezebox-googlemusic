@@ -54,7 +54,6 @@ started. Feel free to
 bugs](https://github.com/hechtus/squeezebox-googlemusic/issues) to
 help for the first release. Here are some open issues you may help on:
 
-* Playlist support
 * Recent searches
 * Artist menu
 * Catch all Google API exceptions and errors

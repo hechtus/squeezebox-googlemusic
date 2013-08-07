@@ -74,14 +74,58 @@ sub toplevel {
 sub playlists {
 	my ($client, $callback, $args) = @_;
 
-	my @menu = (
-		{ name => "To be implemented.",
-		  type => 'text',
+	my @menu;
+
+	my $playlists = $googleapi->get_all_playlist_contents();
+
+	for my $playlist (@{$playlists}) {
+		push @menu, playlist($client, $playlist);
+	}
+
+	if (!scalar @menu) {
+		push @menu, {
+			'name'     => string('PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS'),
+			'type'     => 'text',
 		}
-	);
+
+	}
 
 	$callback->(\@menu);
 }
+
+sub playlist {
+
+	my ($client, $playlist) = @_;
+
+	my %menu;
+	my @tracksmenu;
+
+	for my $playlist_track (@{$playlist->{'tracks'}}) {
+		my $track = $googleapi->get_track_by_id($playlist_track->{'trackId'});
+		my $secs = $track->{'durationMillis'} / 1000;
+		push @tracksmenu, {
+			'name'     => $track->{'title'}. " " . string('BY') . " " . $track->{'artist'} . " \x{2022} " . $track->{'album'},
+			'line1'    => $track->{'title'},
+			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
+			'url'      => $track->{'uri'},
+			'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
+			'secs'     => $secs,
+			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
+			'type'     => 'audio',
+			'play'     => $track->{'uri'},
+			'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'} } }},
+		}
+	}
+
+	%menu = (
+		'name'  => $playlist->{'name'},
+		'type'     => 'playlist',
+		'items' => \@tracksmenu,
+	);
+
+	return \%menu;
+}
+
 
 sub recent_searches {
 	my ($client, $callback, $args) = @_;
@@ -210,7 +254,7 @@ sub album {
 		}
 	}
 
-	@tracksmenu = sort { $a->{_disc} != $b->{_disc} ? $a->{_disc} <=> $b->{_disc} : $a->{_track} <=> $b->{_track} } @tracksmenu;
+	@tracksmenu = sort { $a->{_disc} <=> $b->{_disc} || $a->{_track} <=> $b->{_track} } @tracksmenu;
 
 	%menu = (
 		'name'  => $album->{'name'},

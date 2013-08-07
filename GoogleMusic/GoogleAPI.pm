@@ -52,6 +52,9 @@ def get():
         def get_track(self, uri):
             return self.tracks[uri]
 
+        def get_track_by_id(self, song_id):
+            return self.tracks['googlemusic:track:' + song_id]
+
         def search(self, query):
             if query is None:
                 query = {}
@@ -100,6 +103,8 @@ def get():
 
             return [result, albums, artists]
 
+        def get_all_playlist_contents(self):
+            return self.api.get_all_playlist_contents()
 
         def track_to_artist(self, track):
             if 'myArtist' in track:
