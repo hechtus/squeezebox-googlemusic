@@ -24,6 +24,9 @@ PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS
 PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN
 	EN	Not logged in to Google Play Music. Set your username and password.
 
+PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID
+	EN	No mobile device (phone or tablet) registered for Google Play Music. Not able to obtain the mobile device ID automatically.
+
 PLUGIN_GOOGLEMUSIC_PLAYLISTS
 	EN	Playlists
 

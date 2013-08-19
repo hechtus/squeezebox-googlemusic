@@ -14,7 +14,7 @@ our $googleapi = get();
 use Inline (Config => DIRECTORY => '/var/lib/squeezeboxserver/_Inline/',);
 use Inline Python => <<'END_OF_PYTHON_CODE';
 
-from gmusicapi import Mobileclient, CallFailure
+from gmusicapi import Mobileclient, Webclient, CallFailure
 import hashlib
 
 def get():
@@ -146,6 +146,17 @@ def get():
 
         def create_id(self, d):
             return hashlib.md5(str(frozenset(d.items()))).hexdigest()
+
+        def get_device_id(self, username, password):
+            webapi = Webclient()
+            webapi.login(username, password)
+            devices = webapi.get_registered_devices()
+            for device in devices:
+                if device['type'] == 'PHONE':
+                    webapi.logout()
+                    # Omit the '0x' prefix
+                    return device['id'][2:]
+            webapi.logout()
 
     return API()
 

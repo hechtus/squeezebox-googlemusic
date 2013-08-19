@@ -33,10 +33,9 @@ sub handler {
 		$params->{'warning'} = string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN');
 	}
 
-	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'} && $params->{'device_id'}) {
+	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'}) {
 		$prefs->set('username', $params->{'username'});
 		$prefs->set('password', $params->{'password'});
-		$prefs->set('device_id', $params->{'device_id'});
 
 		# Logout from Google
 		$googleapi->logout();
@@ -45,6 +44,17 @@ sub handler {
 			$params->{'warning'} = string('PLUGIN_GOOGLEMUSIC_LOGIN_FAILED');
 		} else {
 			$params->{'warning'} = string('PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS');
+			if ($params->{'device_id'}) {
+				$prefs->set('device_id', $params->{'device_id'});
+			} else {
+				# If no mobile device ID provided try to set it automatically
+				my $device_id = $googleapi->get_device_id($params->{'username'}, $params->{'password'});
+				if ($device_id) {
+					$prefs->set('device_id', $device_id);
+				} else {
+					$params->{'warning'} .= " " . string('PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID');
+				}
+			}
 		}
 	}
 
