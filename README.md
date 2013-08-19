@@ -34,7 +34,9 @@ Usage
 
 1. Go to the plug-in settings page and set your Google username and
    password for the Google Music plug-in.
-2. You will find the plug-in in the 'My Apps' section of the
+2. You must already have an Android device registered for Google Play
+   Music. If so, the mobile device ID will be filled in automatically.
+3. You will find the plug-in in the 'My Apps' section of the
    squeezebox menu.
  
 Project resources
