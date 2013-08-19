@@ -53,10 +53,11 @@ def get():
                     pass
 
         def get_track(self, uri):
-            return self.tracks[uri]
+            if uri in self.tracks:
+                return self.tracks[uri]
 
         def get_track_by_id(self, song_id):
-            return self.tracks['googlemusic:track:' + song_id]
+            return self.get_track('googlemusic:track:' + song_id)
 
         def search(self, query):
             if query is None:

@@ -102,18 +102,20 @@ sub playlist {
 
 	for my $playlist_track (@{$playlist->{'tracks'}}) {
 		my $track = $googleapi->get_track_by_id($playlist_track->{'trackId'});
-		my $secs = $track->{'durationMillis'} / 1000;
-		push @tracksmenu, {
-			'name'     => $track->{'title'}. " " . string('BY') . " " . $track->{'artist'} . " \x{2022} " . $track->{'album'},
-			'line1'    => $track->{'title'},
-			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
-			'url'      => $track->{'uri'},
-			'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
-			'secs'     => $secs,
-			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
-			'type'     => 'audio',
-			'play'     => $track->{'uri'},
-			'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'} } }},
+		if ($track) {
+			my $secs = $track->{'durationMillis'} / 1000;
+			push @tracksmenu, {
+				'name'     => $track->{'title'}. " " . string('BY') . " " . $track->{'artist'} . " \x{2022} " . $track->{'album'},
+				'line1'    => $track->{'title'},
+				'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
+				'url'      => $track->{'uri'},
+				'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
+				'secs'     => $secs,
+				'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
+				'type'     => 'audio',
+				'play'     => $track->{'uri'},
+				'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'} } }},
+			}
 		}
 	}
 
