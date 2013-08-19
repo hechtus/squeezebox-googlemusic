@@ -30,7 +30,10 @@ def get():
                 return False
             songs = self.api.get_all_songs()
             for track in songs:
-                track['albumArtUrl'] = track['albumArtRef'][0]['url']
+                if 'albumArtRef' in track:
+                    track['albumArtUrl'] = track['albumArtRef'][0]['url']
+                else:
+                    track['albumArtUrl'] = '/html/images/cover.png'
                 uri = 'googlemusic:track:' + track['id']
                 track['uri'] = uri
                 self.tracks[uri] = track
@@ -116,7 +119,7 @@ def get():
             if 'artistArtRef' in track:
                 artist['artistImageBaseUrl'] = track['artistArtRef'][0]['url']
             else:
-                artist['artistImageBaseUrl'] = ''
+                artist['artistImageBaseUrl'] = '/html/images/artists.png'
             self.artists[uri] = artist
             track['myArtist'] = artist
             return artist
@@ -133,7 +136,10 @@ def get():
             album['year'] = track['year']
             uri = 'googlemusic:album:' + self.create_id(album)
             album['uri'] = uri
-            album['albumArtUrl'] = track['albumArtRef'][0]['url']
+            if 'albumArtRef' in track:
+                album['albumArtUrl'] = track['albumArtRef'][0]['url']
+            else:
+                album['albumArtUrl'] = '/html/images/cover.png'
             self.albums[uri] = album
             track['myAlbum'] = album
             return album

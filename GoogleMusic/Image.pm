@@ -183,6 +183,11 @@ sub _sendUnavailable {
 }
 
 sub uri {
+	# Check if it's an squeezebox provided image
+	if ($_[1] =~ /^\/html\/images\//) {
+        return $_[1];
+    }
+
 	# Sometimes there is an https:// prefix. Remove it.
 	$_[1] =~ s/^https?\:\/\///;
 	# Very often there is already a size spec from Google. Remove it also.
