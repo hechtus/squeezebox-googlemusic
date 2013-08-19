@@ -26,7 +26,7 @@ my $prefs = preferences('plugin.googlemusic');
 BEGIN {
 	$log = Slim::Utils::Log->addLogCategory({
 		'category'     => 'plugin.googlemusic',
-		'defaultLevel' => 'INFO',
+		'defaultLevel' => 'WARN',
 		'description'  => string('PLUGIN_GOOGLEMUSIC'),
 	});
 }
