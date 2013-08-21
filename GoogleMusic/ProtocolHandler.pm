@@ -18,6 +18,30 @@ my $prefs = preferences('plugin.googlemusic');
 
 Slim::Player::ProtocolHandlers->registerHandler('googlemusic', __PACKAGE__);
 
+# To support remote streaming (synced players), we need to subclass Protocols::HTTP
+sub new {
+	my $class  = shift;
+	my $args   = shift;
+
+	my $client = $args->{client};
+	
+	my $song      = $args->{song};
+	my $streamUrl = $song->streamUrl() || return;
+	my $track     = $song->pluginData('info') || {};
+	
+	main::DEBUGLOG && $log->debug( 'Remote streaming Google Music track: ' . $streamUrl );
+
+	my $sock = $class->SUPER::new( {
+		url     => $streamUrl,
+		song    => $song,
+		client  => $client,
+	} ) || return;
+	
+	${*$sock}{contentType} = 'audio/mpeg';
+
+	return $sock;
+}
+
 # Always MP3
 sub getFormatForURL { 'mp3' }
 
