@@ -32,6 +32,7 @@ sub handler {
 			(?:_(X|\d+)x(X|\d+))? # width and height are given here, e.g. 300x300
 			(?:_([sSfFpcom]))?    # resizeMode, given by a single character
 			(?:_([\da-fA-F]+))?   # background color, optional
+			\.jpg$
 			/ix;
 
 	my $image = $1;
@@ -193,7 +194,7 @@ sub uri {
 	# Very often there is already a size spec from Google. Remove it also.
 	$_[1] =~ s/\=(.*)$//;
 
-	return "googlemusicimage/$_[1]/image";
+	return "googlemusicimage/$_[1]/image.jpg";
 }
 
 1;
