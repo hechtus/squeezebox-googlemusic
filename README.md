@@ -34,14 +34,18 @@ Usage
 
 1. Go to the plug-in settings page and set your Google username and
    password for the Google Music plug-in.
+
 2. The mobile device ID is a 16-digit hexadecimal string (without the
    '0x' prefix) identifying the Android device you must already have
    registered for Google Play Music. You can obtain this ID by dialing
-   ```*#*#8255#*#*``` on your phone (see the aid) or using this
+   `*#*#8255#*#*` on your phone (see the aid) or using this
    [App](https://play.google.com/store/apps/details?id=com.evozi.deviceid)
-   (see the Google Service Framework ID Key). If your Android device
-   is already registered, you should leave this field empty. It will
-   be filled in automatically after setting the username and password.
+   (see the Google Service Framework ID Key). You may also use the
+   script `mobile_devices.py` to list all registered devices. If your
+   Android device is already registered, you should leave the field
+   `Mobile Device ID` empty. It will be filled in automatically after
+   setting the username and password.
+
 3. You will find the plug-in in the 'My Apps' section of the
    squeezebox menu.
  
