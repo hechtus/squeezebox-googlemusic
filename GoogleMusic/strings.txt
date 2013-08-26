@@ -9,11 +9,20 @@ PLUGIN_GOOGLEMUSIC_DESC
 PLUGIN_GOOGLEMUSIC_USERNAME
 	EN	Username or email address
 
+PLUGIN_GOOGLEMUSIC_USERNAME_DESC
+	EN	Enter your Google Play Music username or email address.
+
 PLUGIN_GOOGLEMUSIC_PASSWORD
 	EN	Password
 
+PLUGIN_GOOGLEMUSIC_PASSWORD_DESC
+	EN	Enter your Google Play Music username or email address.
+
 PLUGIN_GOOGLEMUSIC_DEVICE_ID
 	EN	Mobile Device ID
+
+PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC
+	EN	Enter the Google Service Framework (GSF) ID of your Android device. This ID is a 16-digit hexadecimal string (without the '0x' prefix) identifying the Android device you must already have registered for Google Play Music. You can obtain this ID by dialing *#*#8255#*#* on your phone (look for the aid) or using a device ID App (look for the Google Service Framework ID Key). If your Android device is already registered, you should leave this field empty. It will be filled in automatically after setting the username and password.
 
 PLUGIN_GOOGLEMUSIC_LOGIN_FAILED
 	EN	Login to Google Play Music failed. Bad username or password.
