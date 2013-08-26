@@ -16,7 +16,7 @@ PLUGIN_GOOGLEMUSIC_PASSWORD
 	EN	Password
 
 PLUGIN_GOOGLEMUSIC_PASSWORD_DESC
-	EN	Enter your Google Play Music username or email address.
+	EN	Enter your Google Play Music password.
 
 PLUGIN_GOOGLEMUSIC_DEVICE_ID
 	EN	Mobile Device ID
