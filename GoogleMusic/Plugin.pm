@@ -260,6 +260,8 @@ sub album {
 
 	%menu = (
 		'name'  => $album->{'name'},
+		'line1' => $album->{'name'},
+		'line2' => $album->{'artist'},
 		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'type'     => 'playlist',
