@@ -8,7 +8,7 @@
 	<email>ronald.hecht@gmx.de</email>
 	<defaultState>enabled</defaultState>
 	<homepageURL>https://github.com/hechtus/squeezebox-googlemusic</homepageURL>
-	<icon>plugins/GoogleMusic/html/images/icon.jpg</icon>
+	<icon>plugins/GoogleMusic/html/images/icon.png</icon>
 	<optionsURL>plugins/GoogleMusic/settings/basic.html</optionsURL>
 	<type>2</type>
 	<targetApplication>
