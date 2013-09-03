@@ -126,8 +126,11 @@ sub trackInfoURL {
 		  name  => $track->{'title'},
 		},
 		{
-			type    => 'playlist',
-			url     => $track->{'myAlbum'}->{'uri'},
+			type    => 'link',
+			url => \&Plugins::GoogleMusic::Plugin::_tracks, 
+			passthrough => [ { searchTags => {'artist' => $track->{'artist'}},
+							   sort => 'ups',
+							 } ],
 			name    => $track->{'album'},
 			label   => 'ALBUM',
 		},

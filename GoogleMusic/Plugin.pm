@@ -160,9 +160,9 @@ sub search {
 		  url => \&albumbrowse,
 		  passthrough => [ $albums ] },
 		{ name => "Tracks (" . scalar @$tracks . ")",
-		  type => 'link',
-		  url => \&trackbrowse,
-		  passthrough => [ $tracks ] },
+		  type => 'playlist',
+		  url => \&_tracks,
+		  passthrough => [ { } ] },
 	);
 
 	$callback->(\@menu);
@@ -265,10 +265,18 @@ sub album {
 		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'type'     => 'playlist',
-		'items' => \@tracksmenu,
+		'url' => \&_tracks,
+		'passthrough' => [ { searchTags => {'artist' => $album->{'artist'},
+											'album' => $album->{'name'},
+											'year' => $album->{'year'}},
+							 sort => 'ups',
+						   } ],
 		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
 		'albumData' => [
-			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}, url => 'anyurl',
+			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}, 
+			  url => \&_tracks, 'passthrough' => [ { searchTags => {'artist' => $album->{'artist'}},
+													 sort => 'ups',
+												   } ],,
 		  },
 			{ type => 'link', label => 'ALBUM', name => $album->{'name'} },
 			{ type => 'link', label => 'YEAR', name => $album->{'year'} },
@@ -316,6 +324,45 @@ sub artist {
 		}
 	);
 
+	$callback->(\@menu);
+}
+
+sub _tracks {
+	my ($client, $callback, $args, $pt) = @_;
+
+	my $searchTags = $pt->{'searchTags'} || {'any' => ''};
+
+	my ($tracks, $albums, $artists) = $googleapi->search($searchTags);
+
+	my @menu;
+
+	for my $track (@{$tracks}) {
+		my $secs = $track->{'durationMillis'} / 1000;
+		push @menu, {
+			'artist'   => $track->{'artist'},
+			'year'     => $track->{'year'},
+			'name'     => $track->{'title'}. " " . string('BY') . " " . $track->{'artist'},
+			'line1'    => $track->{'title'},
+			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
+			'url'      => $track->{'uri'},
+			'uri'      => $track->{'uri'},
+			'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
+			'secs'     => $secs,
+			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
+			'type'     => 'audio',
+			'play'     => $track->{'uri'},
+			'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'} } }},			
+		}
+	}
+
+	if (!scalar @menu) {
+		push @menu, {
+			'name'     => string('PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS'),
+			'type'     => 'text',
+		}
+
+	}
+	
 	$callback->(\@menu);
 }
 

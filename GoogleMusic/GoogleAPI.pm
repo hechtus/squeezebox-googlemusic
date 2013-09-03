@@ -59,6 +59,10 @@ def get():
         def get_track_by_id(self, song_id):
             return self.get_track('googlemusic:track:' + song_id)
 
+        def get_album(self, uri):
+            if uri in self.albums:
+                return self.albums[uri]
+
         def search(self, query):
             if query is None:
                 query = {}

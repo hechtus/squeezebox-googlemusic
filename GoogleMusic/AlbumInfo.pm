@@ -31,9 +31,8 @@ sub init {
 	);
 }
 
-# TBD
 sub name {
-	return 'ALBUM_INFO';
+	return 'PLUGIN_GOOGLEMUSIC';
 }
 
 
@@ -46,16 +45,28 @@ sub registerDefaultInfoProviders {
 	
 	$class->SUPER::registerDefaultInfoProviders();
 
-	$class->registerInfoProvider( addalbum => (
+	$class->registerInfoProvider( googleaddalbum => (
 		after    => 'top',
 		func      => \&addAlbumEnd,
 	) );
 
-	$class->registerInfoProvider( addalbumnext => (
-		after    => 'addalbum',
+	$class->registerInfoProvider( googleaddalbumnext => (
+		after    => 'googleaddealbum',
 		func      => \&addAlbumNext,
 	) );
-	
+
+	$class->registerInfoProvider( googleplayealbum => (
+		after    => 'googleaddalbumnext',
+		func      => \&playAlbum,
+	) );
+
+	if ( !main::SLIM_SERVICE ) {
+		$class->registerInfoProvider( googleyear => (
+			after => 'top',
+			func  => \&infoYear,
+		) );
+	}
+
 }
 
 sub menu {
@@ -235,8 +246,8 @@ sub infoYear {
 	my ( $client, $url, $album ) = @_;
 	
 	my $item;
-	
-	if ( my $year = $album->year ) {
+
+	if ( my $year = $album->{'year'} ) {
 		
 		my %actions = (
 			allAvailableActionsDefined => 1,
@@ -355,7 +366,7 @@ sub playAlbum {
 	my $actions = {
 		items => {
 			command     => [ 'playlistcontrol' ],
-			fixedParams => {cmd => 'load', album_id => $album->id, %{ $filter || {} }},
+			# fixedParams => {cmd => 'load', album_id => $album->id, %{ $filter || {} }},
 		},
 	};
 	$actions->{'play'} = $actions->{'items'};
@@ -388,7 +399,7 @@ sub addAlbum {
 	my $actions = {
 		items => {
 			command     => [ 'playlistcontrol' ],
-			#fixedParams => {cmd => $cmd, album_id => $album->id, %{ $filter || {} }},
+			# fixedParams => {cmd => $cmd, url => $album->{'uri'}, %{ $filter || {} }},
 		},
 	};
 	$actions->{'play'} = $actions->{'items'};
