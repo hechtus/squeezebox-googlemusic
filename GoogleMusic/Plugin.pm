@@ -268,7 +268,8 @@ sub _show_track {
 		'url'      => $track->{'uri'},
 		'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
 		'secs'     => $secs,
-		'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
+		'duration' => $secs,
+		'bitrate'  => 320,
 		'_disc'    => $track->{'discNumber'},
 		'_track'   => $track->{'trackNumber'},
 		'fs'       => $track->{'estimatedSize'},
@@ -276,7 +277,6 @@ sub _show_track {
 		'type'     => 'audio',
 		'play'     => $track->{'uri'},
 		'playall'  => $playall,
-		'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'}} } },
 	};
 
 	if ($showArtist) {
