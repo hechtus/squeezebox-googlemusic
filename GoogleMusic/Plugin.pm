@@ -97,35 +97,23 @@ sub playlist {
 
 	my ($client, $playlist) = @_;
 
-	my %menu;
-	my @tracksmenu;
+	my @tracks;
 
 	for my $playlist_track (@{$playlist->{'tracks'}}) {
 		my $track = $googleapi->get_track_by_id($playlist_track->{'trackId'});
 		if ($track) {
-			my $secs = $track->{'durationMillis'} / 1000;
-			push @tracksmenu, {
-				'name'     => $track->{'title'}. " " . string('BY') . " " . $track->{'artist'} . " \x{2022} " . $track->{'album'},
-				'line1'    => $track->{'title'},
-				'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
-				'url'      => $track->{'uri'},
-				'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
-				'secs'     => $secs,
-				'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
-				'type'     => 'audio',
-				'play'     => $track->{'uri'},
-				'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'} } }},
-			}
+			push @tracks, $track;
 		}
 	}
 
-	%menu = (
-		'name'  => $playlist->{'name'},
-		'type'     => 'playlist',
-		'items' => \@tracksmenu,
-	);
+	my $menu = {
+		'name'        => $playlist->{'name'},
+		'type'        => 'playlist',
+		'url'         => \&_tracks,
+		'passthrough' => [\@tracks, { showArtist => 1, showAlbum => 1, playall => 1 }],
+	};
 
-	return \%menu;
+	return $menu;
 }
 
 
@@ -160,49 +148,12 @@ sub search {
 		  url => \&albumbrowse,
 		  passthrough => [ $albums ] },
 		{ name => "Tracks (" . scalar @$tracks . ")",
-		  type => 'link',
-		  url => \&trackbrowse,
-		  passthrough => [ $tracks ] },
+		  type => 'playlist',
+		  url => \&_tracks,
+		  passthrough => [ $tracks , { showArtist => 1, showAlbum => 1 } ], },
 	);
 
 	$callback->(\@menu);
-}
-
-
-sub trackbrowse {
-
-	my ($client, $callback, $args, $tracks) = @_;
-
-	my @tracksmenu;
-
-	for my $track (@{$tracks}) {
-		my $secs = $track->{'durationMillis'} / 1000;
-		push @tracksmenu, {
-			'artist'   => $track->{'artist'},
-			'year'     => $track->{'year'},
-			'name'     => $track->{'title'}. " " . string('BY') . " " . $track->{'artist'},
-			'line1'    => $track->{'title'},
-			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
-			'url'      => $track->{'uri'},
-			'uri'      => $track->{'uri'},
-			'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
-			'secs'     => $secs,
-			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
-			'type'     => 'audio',
-			'play'     => $track->{'uri'},
-			'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'} } }},			
-		}
-	}
-
-	if (!scalar @tracksmenu) {
-		push @tracksmenu, {
-			'name'     => string('PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS'),
-			'type'     => 'text',
-		}
-
-	}
-	
-	$callback->(\@tracksmenu);
 }
 
 sub albumbrowse {
@@ -237,35 +188,15 @@ sub album {
 														  'album' => $album->{'name'},
 														  'year' => $album->{'year'}});
 
-	for my $track (@{$tracks}) {
-		my $secs = $track->{'durationMillis'} / 1000;
-		push @tracksmenu, {
-			'name'     => $track->{'title'},
-			'line1'    => $track->{'title'},
-			'line2'    => $track->{'artist'} . " \x{2022} " . $track->{'album'},
-			'url'      => $track->{'uri'},
-			'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
-			'secs'     => $secs,
-			'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
-			'type'     => 'audio',
-			'_disc'    => $track->{'discNumber'},
-			'_track'   => $track->{'trackNumber'},
-			'passthrough' => [ $track ],
-			'play'     => $track->{'uri'},
-			'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'} } }},
-		}
-	}
-
-	@tracksmenu = sort { $a->{_disc} <=> $b->{_disc} || $a->{_track} <=> $b->{_track} } @tracksmenu;
-
 	%menu = (
 		'name'  => $album->{'name'},
 		'line1' => $album->{'name'},
 		'line2' => $album->{'artist'},
 		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
-		'type'     => 'playlist',
-		'items' => \@tracksmenu,
+		'type'  => 'playlist',
+		'url'   => \&_tracks,
+		'passthrough' => [ $tracks , { playall => 1, sortByTrack => 1 } ],
 		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
 		'albumData' => [
 			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}, url => 'anyurl',
@@ -317,6 +248,84 @@ sub artist {
 	);
 
 	$callback->(\@menu);
+}
+
+sub _show_track {
+
+	my ($client, $track, $opts) = @_;
+
+	# Show artist and/or album in name and line2
+	my $showArtist = $opts->{'showArtist'};
+	my $showAlbum = $opts->{'showAlbum'};
+	# Play all tracks in a list or not when selecting. Useful for albums and playlists.
+	my $playall = $opts->{'playall'};
+
+	my $secs = $track->{'durationMillis'} / 1000;
+
+	my $menu = {
+		'name'     => $track->{'title'},
+		'line1'    => $track->{'title'},
+		'url'      => $track->{'uri'},
+		'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
+		'secs'     => $secs,
+		'duration' => sprintf('%d:%02d', int($secs / 60), $secs % 60),
+		'_disc'    => $track->{'discNumber'},
+		'_track'   => $track->{'trackNumber'},
+		'fs'       => $track->{'estimatedSize'},
+		'filesize' => $track->{'estimatedSize'},
+		'type'     => 'audio',
+		'play'     => $track->{'uri'},
+		'playall'  => $playall,
+		'itemActions' => { info => { command => [ "trackinfo", 'items' ], fixedParams => {url => $track->{'uri'}} } },
+	};
+
+	if ($showArtist) {
+		$menu->{'name'} .= " " . string('BY') . " " . $track->{'artist'};
+		$menu->{'line2'} = $track->{'artist'};
+	}
+
+	if ($showAlbum) {
+		$menu->{'name'} .= " \x{2022} " . $track->{'album'};
+		if ($menu->{'line2'}) {
+			$menu->{'line2'} .= " \x{2022} " . $track->{'album'};
+		} else {
+			$menu->{'line2'} = $track->{'album'};
+		}
+	}
+
+	return $menu;
+
+}
+
+sub _show_tracks {
+	my ($client, $tracks, $opts) = @_;
+	my $sortByTrack = $opts->{'sortByTrack'};
+
+	my @menu;
+
+	for my $track (@{$tracks}) {
+		push @menu, _show_track($client, $track, $opts);
+	}
+
+	if ($sortByTrack) {
+		@menu = sort { $a->{_disc} <=> $b->{_disc} || $a->{_track} <=> $b->{_track} } @menu;
+	}
+
+	if (!scalar @menu) {
+		push @menu, {
+			'name' => string('EMPTY'),
+			'type' => 'text',
+		}
+	}
+	
+	return \@menu;
+}
+
+sub _tracks {
+
+	my ($client, $callback, $args, $tracks, $opts) = @_;
+
+	$callback->(_show_tracks($client, $tracks, $opts));
 }
 
 1;
