@@ -56,6 +56,17 @@ sub scanStream {
 	# Always 320k at Google Music
 	$track->bitrate(320000);
 
+	$track->content_type('mp3');
+	$track->artistname($googleTrack->{'artist'});
+	$track->albumname($googleTrack->{'album'});
+	$track->coverurl(Plugins::GoogleMusic::Image->uri($googleTrack->{'albumArtUrl'}));
+	$track->title($googleTrack->{'title'});
+	$track->tracknum($googleTrack->{'trackNumber'});
+	$track->filesize($googleTrack->{'estimatedSize'});
+	$track->audio(1);
+	$track->year($googleTrack->{'year'});
+	$track->cover(Plugins::GoogleMusic::Image->uri($googleTrack->{'albumArtUrl'}));
+
 	$cb->( $track );
 }
 
