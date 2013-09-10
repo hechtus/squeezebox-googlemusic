@@ -45,11 +45,18 @@ sub new {
 # Always MP3
 sub getFormatForURL { 'mp3' }
 
-# Avoid scanning
-sub scanUrl {
-	my ($class, $url, $args) = @_;
+sub scanStream {
+	my ($class, $url, $track, $args) = @_;
+	my $cb = $args->{cb} || sub {};
+ 
+	my $googleTrack = $googleapi->get_track($url);
 
-	$args->{cb}->( $args->{song}->currentTrack() );
+	# To support seeking set duration and bitrate
+	$track->secs($googleTrack->{'durationMillis'} / 1000);
+	# Always 320k at Google Music
+	$track->bitrate(320000);
+
+	$cb->( $track );
 }
 
 sub getNextTrack {
@@ -67,10 +74,6 @@ sub getNextTrack {
 	}
 
 	$song->streamUrl($trackURL);
-	# To support seeking set duration and bitrate
-	$song->duration($song->currentTrack()->secs);
-	# Always 320k at Google Music
-	$song->bitrate(320000);
 
 	$successCb->();
 }
