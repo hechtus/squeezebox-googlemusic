@@ -149,11 +149,11 @@ sub search {
 	my @menu = (
 		{ name => "Artists (" . scalar @$artists . ")",
 		  type => 'link',
-		  url => \&artistbrowse,
+		  url => \&_artists,
 		  passthrough => [ $artists ] },
 		{ name => "Albums (" . scalar @$albums . ")",
 		  type => 'link',
-		  url => \&albumbrowse,
+		  url => \&_albums,
 		  passthrough => [ $albums ] },
 		{ name => "Tracks (" . scalar @$tracks . ")",
 		  type => 'playlist',
@@ -207,102 +207,6 @@ sub recent_searches {
 	$callback->({
 		items => $items
 	});
-}
-
-sub albumbrowse {
-
-	my ($client, $callback, $args, $albums) = @_;
-
-	my @menu;
-
-	for my $album (@{$albums}) {
-		push @menu, album($client, $album);
-	}
-
-	if (!scalar @menu) {
-		push @menu, {
-			'name'     => string('PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS'),
-			'type'     => 'text',
-		}
-
-	}
-	
-	$callback->(\@menu);
-}
-
-sub album {
-
-	my ($client, $album) = @_;
-
-	my %menu;
-	my @tracksmenu;
-
-	my ($tracks, $albums, $artists) = $googleapi->search({'artist' => $album->{'artist'},
-														  'album' => $album->{'name'},
-														  'year' => $album->{'year'}});
-
-	%menu = (
-		'name'  => $album->{'name'},
-		'name2'  => $album->{'artist'},
-		'line1' => $album->{'name'},
-		'line2' => $album->{'artist'},
-		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
-		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
-		'type'  => 'playlist',
-		'url'   => \&_tracks,
-		'hasMetadata'   => 'album',
-		'passthrough' => [ $tracks , { playall => 1, sortByTrack => 1 } ],
-		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
-		'albumData' => [
-			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}, url => 'anyurl',
-		  },
-			{ type => 'link', label => 'ALBUM', name => $album->{'name'} },
-			{ type => 'link', label => 'YEAR', name => $album->{'year'} },
-		],
-	);
-
-	return \%menu;
-}
-
-sub artistbrowse {
-
-	my ($client, $callback, $args, $artists) = @_;
-
-	my @menu;
-
-	for my $artist (@{$artists}) {
-		push @menu, {
-			'name'     => $artist->{'name'},
-			'line1'    => $artist->{'name'},
-			'url'      => \&artist,
-			'image'    => Plugins::GoogleMusic::Image->uri($artist->{'artistImageBaseUrl'}),
-			'type'     => 'playlist',
-			'passthrough' => [ $artists ],
-			'play'     => $artist->{'uri'},
-		}
-	}
-
-	if (!scalar @menu) {
-		push @menu, {
-			'name'     => string('PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS'),
-			'type'     => 'text',
-		}
-
-	}
-	
-	$callback->(\@menu);
-}
-
-sub artist {
-	my ($client, $callback, $args) = @_;
-
-	my @menu = (
-		{ name => "To be implemented.",
-		  type => 'text',
-		}
-	);
-
-	$callback->(\@menu);
 }
 
 sub _show_track {
@@ -381,6 +285,101 @@ sub _tracks {
 
 	$callback->(_show_tracks($client, $tracks, $opts));
 }
+
+sub _show_album {
+	my ($client, $album, $opts) = @_;
+
+	my ($tracks, $albums, $artists) = $googleapi->search({'artist' => $album->{'artist'},
+														  'album' => $album->{'name'},
+														  'year' => $album->{'year'}});
+
+	my $menu = {
+		'name'  => $album->{'name'},
+		'name2'  => $album->{'artist'},
+		'line1' => $album->{'name'},
+		'line2' => $album->{'artist'},
+		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
+		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
+		'type'  => 'playlist',
+		'url'   => \&_tracks,
+		'hasMetadata'   => 'album',
+		'passthrough' => [ $tracks , { playall => 1, sortByTrack => 1 } ],
+		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
+		'albumData' => [
+			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}, url => 'anyurl',
+		  },
+			{ type => 'link', label => 'ALBUM', name => $album->{'name'} },
+			{ type => 'link', label => 'YEAR', name => $album->{'year'} },
+		],
+	};
+
+	return $menu;
+}
+
+sub _show_albums {
+	my ($client, $albums, $opts) = @_;
+
+	my @menu;
+
+	for my $album (@{$albums}) {
+		push @menu, _show_album($client, $album, $opts);
+	}
+
+	if (!scalar @menu) {
+		push @menu, {
+			'name' => string('EMPTY'),
+			'type' => 'text',
+		}
+	}
+	
+	return \@menu;
+}
+
+sub _albums {
+	my ($client, $callback, $args, $albums, $opts) = @_;
+
+	$callback->(_show_albums($client, $albums, $opts));
+}
+
+sub _show_artist {
+	my ($client, $artist, $opts) = @_;
+
+	my ($tracks, $albums, $artists) = $googleapi->search({'artist' => $artist->{'name'}});
+
+	my $menu = {
+		name  => $artist->{'name'},
+		image => Plugins::GoogleMusic::Image->uri($artist->{'artistImageBaseUrl'}),
+		items => _show_albums($client, $albums),
+	};
+	
+	return $menu;
+}
+
+sub _show_artists {
+	my ($client, $artists, $opts) = @_;
+
+	my @menu;
+
+	for my $artist (@{$artists}) {
+		push @menu, _show_artist($client, $artist, $opts);
+	}
+
+	if (!scalar @menu) {
+		push @menu, {
+			'name' => string('EMPTY'),
+			'type' => 'text',
+		}
+	}
+	
+	return \@menu;
+}
+
+sub _artists {
+	my ($client, $callback, $args, $artists, $opts) = @_;
+
+	$callback->(_show_artists($client, $artists, $opts));
+}
+
 
 1;
 
