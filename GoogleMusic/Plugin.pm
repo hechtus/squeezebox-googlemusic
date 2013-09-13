@@ -255,12 +255,14 @@ sub album {
 
 	%menu = (
 		'name'  => $album->{'name'},
+		'name2'  => $album->{'artist'},
 		'line1' => $album->{'name'},
 		'line2' => $album->{'artist'},
 		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'type'  => 'playlist',
 		'url'   => \&_tracks,
+		'hasMetadata'   => 'album',
 		'passthrough' => [ $tracks , { playall => 1, sortByTrack => 1 } ],
 		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
 		'albumData' => [
@@ -335,10 +337,9 @@ sub _show_track {
 		'secs'     => $secs,
 		'duration' => $secs,
 		'bitrate'  => 320,
+		'genre'    => $track->{'genre'},
 		'_disc'    => $track->{'discNumber'},
 		'_track'   => $track->{'trackNumber'},
-		'fs'       => $track->{'estimatedSize'},
-		'filesize' => $track->{'estimatedSize'},
 		'type'     => 'audio',
 		'play'     => $track->{'uri'},
 		'playall'  => $playall,
