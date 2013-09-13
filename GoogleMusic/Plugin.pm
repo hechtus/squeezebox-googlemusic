@@ -79,9 +79,10 @@ sub toplevel {
 	my ($client, $callback, $args) = @_;
 
 	my @menu = (
+		{ name => string('PLUGIN_GOOGLEMUSIC_MY_LIBRARY'), type => 'link', url => \&search },
 		{ name => string('PLUGIN_GOOGLEMUSIC_PLAYLISTS'), type => 'link', url => \&playlists },
-		{ name => string('PLUGIN_GOOGLEMUSIC_RECENT_SEARCHES'), type => 'link', url => \&recent_searches },
 		{ name => string('PLUGIN_GOOGLEMUSIC_SEARCH'), type => 'search', url => \&search },
+		{ name => string('PLUGIN_GOOGLEMUSIC_RECENT_SEARCHES'), type => 'link', url => \&recent_searches },
 	);
 
 	$callback->(\@menu);
@@ -139,9 +140,9 @@ sub search {
 
 	# The search string may be empty. We could forbid this.
 	my $search = $args->{'search'} || '';
-	add_recent_search($search) if $search;
-
 	my @query = split(' ', $search);
+
+	add_recent_search($search) if scalar @query;
 
 	my ($tracks, $albums, $artists) = $googleapi->search({'any' => \@query});
 

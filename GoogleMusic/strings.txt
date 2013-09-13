@@ -36,6 +36,9 @@ PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN
 PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID
 	EN	No mobile device (phone or tablet) registered for Google Play Music. Not able to obtain the mobile device ID automatically.
 
+PLUGIN_GOOGLEMUSIC_MY_LIBRARY
+	EN	My Library
+
 PLUGIN_GOOGLEMUSIC_PLAYLISTS
 	EN	Playlists
 
@@ -43,7 +46,7 @@ PLUGIN_GOOGLEMUSIC_SEARCH
 	EN	Search
 
 PLUGIN_GOOGLEMUSIC_RECENT_SEARCHES
-	EN	Recent searches
+	EN	Recent Searches
 
 PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS
 	EN	No Search Results Found
