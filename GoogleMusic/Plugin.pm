@@ -132,19 +132,6 @@ sub playlist {
 	return $menu;
 }
 
-
-sub recent_searches {
-	my ($client, $callback, $args) = @_;
-
-	my @menu = (
-		{ name => "To be implemented.",
-		  type => 'text',
-		}
-	);
-
-	$callback->(\@menu);
-}
-
 sub search {
 	my ($client, $callback, $args, $passthrough) = @_;
 
