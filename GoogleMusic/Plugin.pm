@@ -20,6 +20,14 @@ use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
 
+use constant MAX_RECENT_ITEMS => 50;
+use constant RECENT_CACHE_TTL => 'never';
+
+my %recent_searches;
+tie %recent_searches, 'Tie::Cache::LRU', MAX_RECENT_ITEMS;
+
+my $cache = Slim::Utils::Cache->new('googlemusic', 3);
+
 my $log;
 my $prefs = preferences('plugin.googlemusic');
 
@@ -48,6 +56,14 @@ sub initPlugin {
 	}
 
 	Slim::Web::Pages->addRawFunction('/googlemusicimage', \&Plugins::GoogleMusic::Image::handler);
+
+	# initialize recent searches: need to add them to the LRU cache ordered by timestamp
+	my $recent_searches = $cache->get('recent_searches');
+	map {
+		$recent_searches{$_} = $recent_searches->{$_};
+	} sort { 
+		$recent_searches->{$a}->{ts} <=> $recent_searches->{$a}->{ts} 
+	} keys %$recent_searches;
 
 	if (!$googleapi->login($prefs->get('username'),
 						   $prefs->get('password'))) {
@@ -130,10 +146,14 @@ sub recent_searches {
 }
 
 sub search {
-	my ($client, $callback, $args) = @_;
+	my ($client, $callback, $args, $passthrough) = @_;
+
+	$args->{search} ||= $passthrough->{search};
 
 	# The search string may be empty. We could forbid this.
 	my $search = $args->{'search'} || '';
+	add_recent_search($search) if $search;
+
 	my @query = split(' ', $search);
 
 	my ($tracks, $albums, $artists) = $googleapi->search({'any' => \@query});
@@ -154,6 +174,51 @@ sub search {
 	);
 
 	$callback->(\@menu);
+}
+
+
+sub add_recent_search {
+	my $search = shift;
+	
+	return unless $search;
+	
+	$recent_searches{$search} = {
+		ts => time(),
+	};
+	
+	$cache->set('recent_searches', \%recent_searches, RECENT_CACHE_TTL);
+}
+
+sub recent_searches {
+	my ($client, $callback, $args) = @_;
+
+	my $recent = [ 
+		sort { lc($a) cmp lc($b) } 
+		grep { $recent_searches{$_} }
+		keys %recent_searches 
+	];
+	
+	my $items = [];
+	
+	foreach (@$recent) {
+		push @$items, {
+			type => 'link',
+			name => $_,
+			url  => \&search,
+			passthrough => [{
+				search => $_
+			}],
+		}
+	}
+
+	$items = [ {
+		name => string('EMPTY'),
+		type => 'text',
+	} ] if !scalar @$items;
+	
+	$callback->({
+		items => $items
+	});
 }
 
 sub albumbrowse {
