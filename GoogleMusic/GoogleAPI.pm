@@ -79,7 +79,7 @@ def get():
                     track_filter = lambda t: q in t['title'].lower()
                     album_filter = lambda t: q in t['album'].lower()
                     artist_filter = lambda t: q in t['artist'].lower() or q in t['albumArtist'].lower()
-                    date_filter = lambda t: q in t['year']
+                    year_filter = lambda t: q == t['year']
                     any_filter = lambda t: track_filter(t) or album_filter(t) or \
                         artist_filter(t)
         
@@ -89,8 +89,8 @@ def get():
                         result = filter(album_filter, result)
                     elif field == 'artist':
                         result = filter(artist_filter, result)
-                    elif field == 'date':
-                        result = filter(date_filter, result)
+                    elif field == 'year':
+                        result = filter(year_filter, result)
                     elif field == 'any':
                         result = filter(any_filter, result)
                 
