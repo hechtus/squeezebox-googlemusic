@@ -38,37 +38,76 @@
           <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
         </div>
 
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+        <h1>
+<a name="squeezebox-googlemusic" class="anchor" href="#squeezebox-googlemusic"><span class="octicon octicon-link"></span></a>squeezebox-googlemusic</h1>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>This is a <a href="http://www.mysqueezebox.com/">Squeezebox</a> (Logitech Media
+Server) Plug-in for playing music from your <a href="https://play.google.com/music/">Google Play
+Music</a> library. It is based on the
+Python <a href="http://unofficial-google-music-api.readthedocs.org/">Unofficial Google Play Music
+API</a> and the
+ability of inlining Python in Perl programs.</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<ol>
+<li>You will need a Google account and some music and/or playlists in
+your library.</li>
+<li>Install Python and the <a href="https://github.com/simon-weber/Unofficial-Google-Music-API">Unofficial Google Play Music
+API</a>. You
+will have to use the <strong>current development branch</strong>.</li>
+<li>Install the Perl <a href="http://search.cpan.org/%7Eingy/Inline/">Inline</a>
+package and
+<a href="http://search.cpan.org/%7Enine/Inline-Python/">Inline::Python</a>.</li>
+<li>Create the directory <code>/var/lib/squeezeboxserver/_Inline/</code> with the
+same credentials as the other directories in
+<code>/var/lib/squeezeboxserver/</code>. This directory is used by Inline to
+build the Python code.</li>
+<li>To install the plugin, add this repository URL
+<a href="http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml">http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml</a>
+to your squeezebox plugin settings page.</li>
+</ol><h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<ol>
+<li><p>Go to the plug-in settings page and set your Google username and
+password for the Google Music plug-in.</p></li>
+<li><p>The mobile device ID is a 16-digit hexadecimal string (without the
+'0x' prefix) identifying the Android device you must already have
+registered for Google Play Music. You can obtain this ID by dialing
+<code>*#*#8255#*#*</code> on your phone (see the aid) or using this
+<a href="https://play.google.com/store/apps/details?id=com.evozi.deviceid">App</a>
+(see the Google Service Framework ID Key). You may also use the
+script <code>mobile_devices.py</code> to list all registered devices. If your
+Android device is already registered, you should leave the field
+<code>Mobile Device ID</code> empty. It will be filled in automatically after
+setting the username and password.</p></li>
+<li><p>You will find the plug-in in the 'My Apps' section of the
+squeezebox menu.</p></li>
+</ol><h2>
+<a name="project-resources" class="anchor" href="#project-resources"><span class="octicon octicon-link"></span></a>Project resources</h2>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<ul>
+<li><a href="https://github.com/hechtus/squeezebox-googlemusic">Source code</a></li>
+<li><a href="https://github.com/hechtus/squeezebox-googlemusic/issues">Issue tracker</a></li>
+<li><a href="https://github.com/hechtus/squeezebox-googlemusic/archive/master.zip">Current development snapshot</a></li>
+</ul><h2>
+<a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>ToDo</h2>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<p>There are still lots of things to do. This project just
+started. Feel free to
+<a href="https://help.github.com/articles/fork-a-repo">contribute</a> or to
+<a href="https://github.com/hechtus/squeezebox-googlemusic/issues">report
+bugs</a> to
+help for the first release. Here are some open issues you may help on:</p>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<ul>
+<li>Recent searches</li>
+<li>Artist menu</li>
+<li>Catch all Google API exceptions and errors</li>
+<li>Improve Track and Album Info</li>
+</ul>
       </section>
 
     </div>
