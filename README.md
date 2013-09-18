@@ -14,11 +14,20 @@ Installation
 1. You will need a Google account and some music and/or playlists in
    your library.
 2. Install Python and the [Unofficial Google Play Music
-   API](https://github.com/simon-weber/Unofficial-Google-Music-API>). You
-   will have to use the **current development branch**.
-3. Install the Perl [Inline](http://search.cpan.org/~ingy/Inline/)
+   API](https://github.com/simon-weber/Unofficial-Google-Music-API>) by
+   running:
+
+         sudo pip install gmusicapi
+
+3. Install the Perl CPAN [Inline](http://search.cpan.org/~ingy/Inline/)
    package and
-   [Inline::Python](http://search.cpan.org/~nine/Inline-Python/).
+   [Inline::Python](http://search.cpan.org/~nine/Inline-Python/) by
+   running:
+
+         sudo cpan App::cpanminus
+         sudo cpanm Inline
+         sudo cpanm Inline::Python
+
 4. Create the directory `/var/lib/squeezeboxserver/_Inline/` with the
    same credentials as the other directories in
    `/var/lib/squeezeboxserver/`. This directory is used by Inline to
