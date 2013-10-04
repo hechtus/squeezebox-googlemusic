@@ -26,8 +26,14 @@ def get():
             self.artists = {}
 
         def login(self, username, password):
-            if not self.api.login(username, password):
-                return False
+            return self.api.login(username, password)
+
+        def logout(self):
+            return self.api.logout()
+
+        def get_all_songs(self):
+            """ read all songs in user's library and store in local map """
+
             songs = self.api.get_all_songs()
             for track in songs:
                 if 'albumArtRef' in track:
@@ -37,10 +43,6 @@ def get():
                 uri = 'googlemusic:track:' + track['id']
                 track['uri'] = uri
                 self.tracks[uri] = track
-            return True
-
-        def logout(self):
-            return self.api.logout()
 
         def is_authenticated(self):
             return self.api.is_authenticated()
@@ -53,6 +55,14 @@ def get():
                     pass
 
         def get_track(self, uri):
+            if uri.startswith('googlemusic:all_access_track:'):
+                store_track_id = uri[len('googlemusic:all_access_track:'):]
+                track = self.api.get_track_info(store_track_id)
+                if 'albumArtRef' in track:
+                    track['albumArtUrl'] = track['albumArtRef'][0]['url']
+                else:
+                    track['albumArtUrl'] = '/html/images/cover.png'
+                return track
             if uri in self.tracks:
                 return self.tracks[uri]
 
@@ -79,7 +89,7 @@ def get():
                     track_filter = lambda t: q in t['title'].lower()
                     album_filter = lambda t: q in t['album'].lower()
                     artist_filter = lambda t: q in t['artist'].lower() or q in t['albumArtist'].lower()
-                    year_filter = lambda t: q == t['year']
+                    year_filter = lambda t: q == t.get('year')
                     any_filter = lambda t: track_filter(t) or album_filter(t) or \
                         artist_filter(t)
         
@@ -106,6 +116,43 @@ def get():
             artists = [artist for (uri, artist) in artists.items()]
 
             return [result, albums, artists]
+
+        def search_all_access(self, query, max_results=50):
+            """ do a search in 'all access' and return found songs, albums and artists """
+
+            results = self.api.search_all_access(query, max_results)
+            albums = [album['album'] for album in results['album_hits']]
+            artists = [artist['artist'] for artist in results['artist_hits']]
+            songs = [track['track'] for track in results['song_hits']]
+
+            for track in songs:
+                track['uri'] = 'googlemusic:all_access_track:' + track['storeId']
+            for album in albums:
+                album['uri'] = 'googlemusic:album:' + album['albumId']
+            for artist in artists:
+                artist['uri'] = 'googlemusic:artist:' + artist['artistId']
+            return [songs, albums, artists]
+
+        def get_artist_info(self, artist_id, include_albums=True, max_top_tracks=5, max_rel_artist=5):
+            """ return toptracks, albums, related_artists from the get_artist_info from the API """
+
+            results = self.api.get_artist_info(artist_id, include_albums, max_top_tracks, max_rel_artist)
+            toptracks = results.get('topTracks', [])
+            albums = results.get('albums', [])
+            related_artists = results.get('related_artists', [])
+
+            # add URIs to albums:
+            for album in albums:
+                album['uri'] = 'googlemusic:album:' + album['albumId']
+            return toptracks, albums, related_artists
+
+        def get_album_info(self, albumid, include_tracks=True):
+            """ return API get_album_info """
+            result = self.api.get_album_info(albumid, include_tracks)
+            tracks = result.get('tracks', [])
+            for track in tracks:
+                track['uri'] = 'googlemusic:all_access_track:' + track['storeId']
+            return result
 
         def get_all_playlist_contents(self):
             return self.api.get_all_playlist_contents()
@@ -134,7 +181,7 @@ def get():
                 artist = track['artist']
             album['artist'] = artist
             album['name'] = track['album']
-            album['year'] = track['year']
+            album['year'] = track.get('year')  # year is not always present
             uri = 'googlemusic:album:' + self.create_id(album)
             album['uri'] = uri
             if 'albumArtRef' in track:

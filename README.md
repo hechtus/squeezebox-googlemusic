@@ -13,11 +13,18 @@ Installation
 
 1. You will need a Google account and some music and/or playlists in
    your library.
+   Note: you need a subsciption to All Access if you want to use those
+   features
 2. Install Python and the [Unofficial Google Play Music
    API](https://github.com/simon-weber/Unofficial-Google-Music-API>) by
    running:
 
          sudo pip install gmusicapi
+         
+         NOTE! For the 'All Access' functionality you need the latest version
+         of the gmusicapi (which supports get_album_info):
+
+         sudo easy_install https://github.com/simon-weber/Unofficial-Google-Music-API/archive/develop.zip
 
 3. Install the Perl CPAN [Inline](http://search.cpan.org/~ingy/Inline/)
    package and
