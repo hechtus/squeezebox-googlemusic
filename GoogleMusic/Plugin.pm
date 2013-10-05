@@ -196,7 +196,8 @@ sub search_all_access {
 
     add_recent_search($search) if scalar @query;
 
-    my ($tracks, $albums, $artists) = $googleapi->search_all_access(\@query);
+    #my ($tracks, $albums, $artists) = $googleapi->search_all_access(\@query);
+    my ($tracks, $albums, $artists) = $googleapi->search_all_access($search);
 
     my @menu = (
         { name => "Artists (" . scalar @$artists . ")",
