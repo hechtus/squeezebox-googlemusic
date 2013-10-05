@@ -72,10 +72,10 @@ sub scanStream {
 
 sub getNextTrack {
 	my ($class, $song, $successCb, $errorCb) = @_;
-	  
+
 	my $url = $song->currentTrack()->url;
 	  
-	my ($id) = $url =~ m{^googlemusic:track:(.*)$};
+	my ($id) = $url =~ m{^googlemusic.*track:(.*)$};
 
 	my $trackURL = $googleapi->get_stream_url($id, $prefs->get('device_id'));
 
