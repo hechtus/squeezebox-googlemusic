@@ -97,7 +97,7 @@ sub toplevel {
         $callback->(\@menu);
     } else {
         # go to my_music directly, making it the top level menu
-        $callback->(my_music($client, $callback, $args));
+        my_music($client, $callback, $args);
     }
 }
 
@@ -366,7 +366,7 @@ sub _tracks {
 
     my ($client, $callback, $args, $tracks, $opts) = @_;
 
-    $callback->(_show_tracks($client, $callback, $args, $tracks, $opts));
+    _show_tracks($client, $callback, $args, $tracks, $opts);
 }
 
 sub _tracks_for_album {
@@ -385,7 +385,7 @@ sub _tracks_for_album {
                                                            'year' => $album->{'year'}});
     }
 
-    $callback->(_show_tracks($client, $callback, $args, $tracks, $opts));
+    _show_tracks($client, $callback, $args, $tracks, $opts);
 }
 
 sub _show_album {
@@ -488,7 +488,7 @@ sub _show_menu_for_artist {
 sub _albums {
     my ($client, $callback, $args, $albums, $opts) = @_;
 
-    $callback->(_show_albums($client, $callback, $args, $albums, $opts));
+    _show_albums($client, $callback, $args, $albums, $opts);
 }
 
 sub _show_artist {
@@ -529,7 +529,7 @@ sub _show_artists {
 sub _artists {
     my ($client, $callback, $args, $artists, $opts) = @_;
 
-    $callback->(_show_artists($client, $callback, $args, $artists, $opts));
+    _show_artists($client, $callback, $args, $artists, $opts);
 }
 
 
