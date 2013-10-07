@@ -16,6 +16,10 @@
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_DEVICE_ID" desc="PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC" %]
 			<input type="text" class="stdedit" name="device_id" id="device_id" value="[% prefs.device_id %]" size="20" />
 		[% END %]
+	
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED" desc="PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED_DESC" %]
+			<input type="checkbox" name="all_access_enabled" [% IF prefs.all_access_enabled %] checked [% END %]>
+		[% END %]
 
 	[% END %]
 

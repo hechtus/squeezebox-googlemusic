@@ -72,9 +72,9 @@ def get():
         def search(self, query):
             if query is None:
                 query = {}
-        
+
             result = self.tracks.values()
-        
+
             for (field, values) in query.iteritems():
                 if not hasattr(values, '__iter__'):
                     values = [values]
@@ -92,7 +92,7 @@ def get():
                     year_filter = lambda t: q == t.get('year')
                     any_filter = lambda t: track_filter(t) or album_filter(t) or \
                         artist_filter(t)
-        
+
                     if field == 'track':
                         result = filter(track_filter, result)
                     elif field == 'album':
@@ -103,7 +103,7 @@ def get():
                         result = filter(year_filter, result)
                     elif field == 'any':
                         result = filter(any_filter, result)
-                
+
             albums = {}
             artists = {}
             for track in result:
@@ -111,7 +111,7 @@ def get():
                 artist = self.track_to_artist(track)
                 albums[album['uri']] = album
                 artists[artist['uri']] = artist
-        
+
             albums = [album for (uri, album) in albums.items()]
             artists = [artist for (uri, artist) in artists.items()]
 
@@ -127,23 +127,42 @@ def get():
 
             for track in songs:
                 track['uri'] = 'googlemusic:all_access_track:' + track['storeId']
+                albumArtRef = track.get('albumArtRef')
+                track['albumArtUrl'] = albumArtRef and albumArtRef[0]['url'] or '/html/images/cover.png'
             for album in albums:
                 album['uri'] = 'googlemusic:album:' + album['albumId']
+                album['albumArtUrl'] = album.get('albumArtRef', '/html/images/cover.png')
+
+            # not sure if we should sort the albums here.. perhaps better to use google music's ranking..
+            #albums = sorted(albums, key=lambda x: x.get('year'), reverse=True)
+
             for artist in artists:
                 artist['uri'] = 'googlemusic:artist:' + artist['artistId']
+                artist['artistImageBaseUrl'] = artist.get('artistArtRef', '/html/images/artists.png')
             return [songs, albums, artists]
 
-        def get_artist_info(self, artist_id, include_albums=True, max_top_tracks=5, max_rel_artist=5):
+        def get_artist_info(self, artist_id, max_top_tracks=5, max_rel_artist=5):
             """ return toptracks, albums, related_artists from the get_artist_info from the API """
 
-            results = self.api.get_artist_info(artist_id, include_albums, max_top_tracks, max_rel_artist)
+            INCLUDE_ALBUMS = True
+            results = self.api.get_artist_info(artist_id, INCLUDE_ALBUMS, max_top_tracks, max_rel_artist)
             toptracks = results.get('topTracks', [])
             albums = results.get('albums', [])
+            # sort the albums on year
+            albums = sorted(albums, key=lambda x: x.get('year'), reverse=True)
             related_artists = results.get('related_artists', [])
 
             # add URIs to albums:
             for album in albums:
                 album['uri'] = 'googlemusic:album:' + album['albumId']
+                album['albumArtUrl'] = album.get('albumArtRef', '/html/images/cover.png')
+            for track in toptracks:
+                track['uri'] = 'googlemusic:all_access_track:' + track['storeId']
+                albumArtRef = track.get('albumArtRef')
+                track['albumArtUrl'] = albumArtRef and albumArtRef[0]['url'] or '/html/images/cover.png'
+            for artist in related_artists:
+                artist['uri'] = 'googlemusic:artist:' + artist['artistId']
+                artist['artistImageBaseUrl'] = artist.get('artistArtRef', '/html/images/artists.png')
             return toptracks, albums, related_artists
 
         def get_album_info(self, albumid, include_tracks=True):
@@ -152,6 +171,8 @@ def get():
             tracks = result.get('tracks', [])
             for track in tracks:
                 track['uri'] = 'googlemusic:all_access_track:' + track['storeId']
+                albumArtRef = track.get('albumArtRef')
+                track['albumArtUrl'] = albumArtRef and albumArtRef[0]['url'] or '/html/images/cover.png'
             return result
 
         def get_all_playlist_contents(self):

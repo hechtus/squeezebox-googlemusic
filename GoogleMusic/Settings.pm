@@ -58,10 +58,15 @@ sub handler {
 		}
 	}
 
+    if ($params->{'saveSettings'}) {
+        $prefs->set('all_access_enabled',  $params->{'all_access_enabled'} ? 1 : 0);
+    }
+
 	$params->{'prefs'}->{'username'} = $prefs->get('username');
 	# To avoid showing the password remove this
 	$params->{'prefs'}->{'password'} = $prefs->get('password');
 	$params->{'prefs'}->{'device_id'} = $prefs->get('device_id');
+    $params->{'prefs'}->{'all_access_enabled'} = $prefs->get('all_access_enabled');
 
 	return $class->SUPER::handler($client, $params);
 }
