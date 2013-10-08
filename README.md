@@ -28,11 +28,7 @@ Installation
          sudo cpanm Inline
          sudo cpanm Inline::Python
 
-4. Create the directory `/var/lib/squeezeboxserver/_Inline/` with the
-   same credentials as the other directories in
-   `/var/lib/squeezeboxserver/`. This directory is used by Inline to
-   build the Python code.
-5. To install the plugin, add this repository URL
+4. To install the plugin, add this repository URL
    http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml
    to your squeezebox plugin settings page.
 

@@ -7,11 +7,19 @@ package Plugins::GoogleMusic::GoogleAPI;
 
 use strict;
 use base 'Exporter';
+use File::Spec::Functions;
 
 our @EXPORT = qw($googleapi);
 our $googleapi = get();
 
-use Inline (Config => DIRECTORY => '/var/lib/squeezeboxserver/_Inline/',);
+my $inlineDir;
+
+BEGIN {
+	$inlineDir = catdir(Slim::Utils::Prefs::preferences('server')->get('cachedir'), '_Inline');
+	mkdir $inlineDir unless -d $inlineDir;
+}
+
+use Inline (Config => DIRECTORY => $inlineDir);
 use Inline Python => <<'END_OF_PYTHON_CODE';
 
 from gmusicapi import Mobileclient, Webclient, CallFailure
