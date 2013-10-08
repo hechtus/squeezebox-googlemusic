@@ -338,7 +338,7 @@ sub _show_track {
 
 }
 
-sub _show_tracks {
+sub _tracks {
 	my ($client, $callback, $args, $tracks, $opts) = @_;
 	my $sortByTrack = $opts->{'sortByTrack'};
 
@@ -362,13 +362,6 @@ sub _show_tracks {
 	$callback->(\@menu);
 }
 
-sub _tracks {
-
-	my ($client, $callback, $args, $tracks, $opts) = @_;
-
-	_show_tracks($client, $callback, $args, $tracks, $opts);
-}
-
 sub _tracks_for_album {
 	my ($client, $callback, $args, $album, $opts) = @_;
 
@@ -385,7 +378,7 @@ sub _tracks_for_album {
 														   'year' => $album->{'year'}});
 	}
 
-	_show_tracks($client, $callback, $args, $tracks, $opts);
+	_tracks($client, $callback, $args, $tracks, $opts);
 }
 
 sub _show_album {
@@ -416,7 +409,7 @@ sub _show_album {
 	return $menu;
 }
 
-sub _show_albums {
+sub _albums {
 	my ($client, $callback, $args, $albums, $opts) = @_;
 
 	my @menu;
@@ -451,15 +444,15 @@ sub _show_menu_for_artist {
 		@menu = (
 			{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
 			  type => 'link',
-			  url => \&_show_albums,
+			  url => \&_albums,
 			  passthrough => [ $albums, $opts ], },
 			{ name => string("PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @$toptracks . ")",
 			  type => 'link',
-			  url => \&_show_tracks,
+			  url => \&_tracks,
 			  passthrough => [ $toptracks, $opts ], },
 			{ name => string("PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @$related_artists . ")",
 			  type => 'link',
-			  url => \&_show_artists,
+			  url => \&_artists,
 			  passthrough => [ $related_artists, $opts ], },
 		);
 
@@ -483,14 +476,6 @@ sub _show_menu_for_artist {
 	$callback->(\@menu);
 }
 
-
-
-sub _albums {
-	my ($client, $callback, $args, $albums, $opts) = @_;
-
-	_show_albums($client, $callback, $args, $albums, $opts);
-}
-
 sub _show_artist {
 	my ($client, $artist, $opts) = @_;
 
@@ -507,7 +492,7 @@ sub _show_artist {
 	return $menu;
 }
 
-sub _show_artists {
+sub _artists {
 	my ($client, $callback, $args, $artists, $opts) = @_;
 
 	my @menu;
@@ -524,12 +509,6 @@ sub _show_artists {
 	}
 
 	$callback->(\@menu);
-}
-
-sub _artists {
-	my ($client, $callback, $args, $artists, $opts) = @_;
-
-	_show_artists($client, $callback, $args, $artists, $opts);
 }
 
 
