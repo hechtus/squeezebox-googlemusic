@@ -52,21 +52,37 @@ ability of inlining Python in Perl programs.</p>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
 
 <ol>
-<li>You will need a Google account and some music and/or playlists in
-your library.</li>
-<li>Install Python and the <a href="https://github.com/simon-weber/Unofficial-Google-Music-API">Unofficial Google Play Music
-API</a>. You
-will have to use the <strong>current development branch</strong>.</li>
-<li>Install the Perl <a href="http://search.cpan.org/%7Eingy/Inline/">Inline</a>
+<li><p>You will need a Google account and some music and/or playlists in
+your library. If you want to use Google Music All Access features
+you will need a subscription to this service.</p></li>
+<li>
+<p>Install Python and the <a href="https://github.com/simon-weber/Unofficial-Google-Music-API">Unofficial Google Play Music
+API</a> by
+running:</p>
+
+<pre><code> sudo pip install gmusicapi
+</code></pre>
+
+<p><strong>Note</strong>: For the 'All Access' functionality you need the <strong>latest
+version of the gmusicapi</strong> (which supports get_album_info):</p>
+
+<pre><code> sudo easy_install https://github.com/simon-weber/Unofficial-Google-Music-API/archive/develop.zip
+</code></pre>
+</li>
+<li>
+<p>Install the Perl CPAN <a href="http://search.cpan.org/%7Eingy/Inline/">Inline</a>
 package and
-<a href="http://search.cpan.org/%7Enine/Inline-Python/">Inline::Python</a>.</li>
-<li>Create the directory <code>/var/lib/squeezeboxserver/_Inline/</code> with the
-same credentials as the other directories in
-<code>/var/lib/squeezeboxserver/</code>. This directory is used by Inline to
-build the Python code.</li>
-<li>To install the plugin, add this repository URL
+<a href="http://search.cpan.org/%7Enine/Inline-Python/">Inline::Python</a> by
+running:</p>
+
+<pre><code> sudo cpan App::cpanminus
+ sudo cpanm Inline
+ sudo cpanm Inline::Python
+</code></pre>
+</li>
+<li><p>To install the plugin, add this repository URL
 <a href="http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml">http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml</a>
-to your squeezebox plugin settings page.</li>
+to your squeezebox plugin settings page.</p></li>
 </ol><h2>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
 
@@ -83,6 +99,7 @@ script <code>mobile_devices.py</code> to list all registered devices. If your
 Android device is already registered, you should leave the field
 <code>Mobile Device ID</code> empty. It will be filled in automatically after
 setting the username and password.</p></li>
+<li><p>Enable All Access if you want.</p></li>
 <li><p>You will find the plug-in in the 'My Apps' section of the
 squeezebox menu.</p></li>
 </ol><h2>
@@ -103,10 +120,8 @@ bugs</a> to
 help for the first release. Here are some open issues you may help on:</p>
 
 <ul>
-<li>Recent searches</li>
-<li>Artist menu</li>
-<li>Catch all Google API exceptions and errors</li>
 <li>Improve Track and Album Info</li>
+<li>Public Playlist Support</li>
 </ul>
       </section>
 
