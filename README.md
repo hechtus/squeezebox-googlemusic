@@ -79,3 +79,4 @@ bugs](https://github.com/hechtus/squeezebox-googlemusic/issues) to
 help for the first release. Here are some open issues you may help on:
 
 * Improve Track and Album Info
+* Public Playlist Support
