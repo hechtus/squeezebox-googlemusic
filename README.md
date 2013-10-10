@@ -12,17 +12,17 @@ Installation
 ------------
 
 1. You will need a Google account and some music and/or playlists in
-   your library.
-   Note: you need a subsciption to All Access if you want to use those
-   features
+   your library. If you want to use Google Music All Access features
+   you will need a subscription to this service.
+
 2. Install Python and the [Unofficial Google Play Music
    API](https://github.com/simon-weber/Unofficial-Google-Music-API>) by
    running:
 
          sudo pip install gmusicapi
          
-         NOTE! For the 'All Access' functionality you need the latest version
-         of the gmusicapi (which supports get_album_info):
+   **Note**: For the 'All Access' functionality you need the **latest
+   version of the gmusicapi** (which supports get_album_info):
 
          sudo easy_install https://github.com/simon-weber/Unofficial-Google-Music-API/archive/develop.zip
 
@@ -56,7 +56,9 @@ Usage
    `Mobile Device ID` empty. It will be filled in automatically after
    setting the username and password.
 
-3. You will find the plug-in in the 'My Apps' section of the
+3. Enable All Access if you want.
+
+4. You will find the plug-in in the 'My Apps' section of the
    squeezebox menu.
  
 Project resources
@@ -76,7 +78,4 @@ started. Feel free to
 bugs](https://github.com/hechtus/squeezebox-googlemusic/issues) to
 help for the first release. Here are some open issues you may help on:
 
-* Recent searches
-* Artist menu
-* Catch all Google API exceptions and errors
 * Improve Track and Album Info
