@@ -2,7 +2,7 @@
 <extension>
 	<name>PLUGIN_GOOGLEMUSIC</name>
 	<module>Plugins::GoogleMusic::Plugin</module>
-	<version>0.1</version>
+	<version>0.2</version>
 	<description>PLUGIN_GOOGLEMUSIC_DESC</description>
 	<creator>Ronald Hecht</creator>
 	<email>ronald.hecht@gmx.de</email>

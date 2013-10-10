@@ -20,8 +20,12 @@ use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
 
+# TODO: move these constants to the configurable settings?
 use constant MAX_RECENT_ITEMS => 50;
 use constant RECENT_CACHE_TTL => 'never';
+use constant MAX_TOP_TRACKS => 10;
+use constant MAX_REL_ARTIST => 10;
+use constant MAX_ALL_ACCESS_SEARCH_RESULTS => 100;
 
 my %recent_searches;
 tie %recent_searches, 'Tie::Cache::LRU', MAX_RECENT_ITEMS;
@@ -31,9 +35,10 @@ my $cache = Slim::Utils::Cache->new('googlemusic', 3);
 my $log;
 my $prefs = preferences('plugin.googlemusic');
 
+
 BEGIN {
 	$log = Slim::Utils::Log->addLogCategory({
-		'category'     => 'plugin.googlemusic',
+		'category'	 => 'plugin.googlemusic',
 		'defaultLevel' => 'WARN',
 		'description'  => string('PLUGIN_GOOGLEMUSIC'),
 	});
@@ -45,7 +50,7 @@ sub initPlugin {
 	my $class = shift;
 
 	$class->SUPER::initPlugin(
-		tag    => 'googlemusic',
+		tag	=> 'googlemusic',
 		feed   => \&toplevel,
 		is_app => 1,
 		weight => 1,
@@ -61,13 +66,17 @@ sub initPlugin {
 	my $recent_searches = $cache->get('recent_searches');
 	map {
 		$recent_searches{$_} = $recent_searches->{$_};
-	} sort { 
-		$recent_searches->{$a}->{ts} <=> $recent_searches->{$a}->{ts} 
+	} sort {
+		$recent_searches->{$a}->{ts} <=> $recent_searches->{$a}->{ts}
 	} keys %$recent_searches;
+
+
 
 	if (!$googleapi->login($prefs->get('username'),
 						   $prefs->get('password'))) {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
+	} else {
+		$googleapi->get_all_songs();  # refresh user's library
 	}
 }
 
@@ -78,11 +87,51 @@ sub shutdownPlugin {
 sub toplevel {
 	my ($client, $callback, $args) = @_;
 
+	my @menu;
+
+	if ($prefs->get('all_access_enabled')) {
+		@menu = (
+			{ name => string('PLUGIN_GOOGLEMUSIC_MY_MUSIC'), type => 'link', url => \&my_music },
+			{ name => string('PLUGIN_GOOGLEMUSIC_ALL_ACCESS'), type => 'link', url => \&all_access },
+		);
+		$callback->(\@menu);
+	} else {
+		# go to my_music directly, making it the top level menu
+		my_music($client, $callback, $args);
+	}
+}
+
+sub my_music {
+	my ($client, $callback, $args) = @_;
 	my @menu = (
-		{ name => string('PLUGIN_GOOGLEMUSIC_MY_LIBRARY'), type => 'link', url => \&search },
-		{ name => string('PLUGIN_GOOGLEMUSIC_PLAYLISTS'), type => 'link', url => \&playlists },
-		{ name => string('PLUGIN_GOOGLEMUSIC_SEARCH'), type => 'search', url => \&search },
-		{ name => string('PLUGIN_GOOGLEMUSIC_RECENT_SEARCHES'), type => 'link', url => \&recent_searches },
+		{ name => string('PLUGIN_GOOGLEMUSIC_BROWSE'), type => 'link', url => \&search },
+		{ name => string('PLAYLISTS'), type => 'link', url => \&playlists },
+		{ name => string('SEARCH'), type => 'search', url => \&search },
+		{ name => string('RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 0 },] },
+		{ name => string('PLUGIN_GOOGLEMUSIC_RELOAD_LIBRARY'), type => 'func', url => \&reload_library },
+	);
+
+	$callback->(\@menu);
+}
+
+sub reload_library {
+	my ($client, $callback, $args) = @_;
+	$googleapi->get_all_songs();
+
+	my @menu;
+	push @menu, {
+		'name'	 => string('PLUGIN_GOOGLEMUSIC_LIBRARY_RELOADED'),
+		'type'	 => 'text',
+	};
+
+	$callback->(\@menu);
+}
+
+sub all_access {
+	my ($client, $callback, $args) = @_;
+	my @menu = (
+		{ name => string('SEARCH'), type => 'search', url => \&search_all_access },
+		{ name => string('RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 1 },] },
 	);
 
 	$callback->(\@menu);
@@ -101,8 +150,8 @@ sub playlists {
 
 	if (!scalar @menu) {
 		push @menu, {
-			'name'     => string('PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS'),
-			'type'     => 'text',
+			'name'	 => string('NO_SEARCH_RESULTS'),
+			'type'	 => 'text',
 		}
 
 	}
@@ -124,9 +173,9 @@ sub playlist {
 	}
 
 	my $menu = {
-		'name'        => $playlist->{'name'},
-		'type'        => 'playlist',
-		'url'         => \&_tracks,
+		'name'		=> $playlist->{'name'},
+		'type'		=> 'playlist',
+		'url'		 => \&_tracks,
 		'passthrough' => [\@tracks, { showArtist => 1, showAlbum => 1, playall => 1 }],
 	};
 
@@ -147,15 +196,15 @@ sub search {
 	my ($tracks, $albums, $artists) = $googleapi->search({'any' => \@query});
 
 	my @menu = (
-		{ name => "Artists (" . scalar @$artists . ")",
+		{ name => string("ARTISTS") . " (" . scalar @$artists . ")",
 		  type => 'link',
 		  url => \&_artists,
 		  passthrough => [ $artists ] },
-		{ name => "Albums (" . scalar @$albums . ")",
+		{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
 		  type => 'link',
 		  url => \&_albums,
 		  passthrough => [ $albums ] },
-		{ name => "Tracks (" . scalar @$tracks . ")",
+		{ name => string("SONGS") . " (" . scalar @$tracks . ")",
 		  type => 'playlist',
 		  url => \&_tracks,
 		  passthrough => [ $tracks , { showArtist => 1, showAlbum => 1 } ], },
@@ -164,35 +213,68 @@ sub search {
 	$callback->(\@menu);
 }
 
+sub search_all_access {
+	my ($client, $callback, $args, $passthrough) = @_;
+
+	$args->{search} ||= $passthrough->{search};
+
+	# The search string may be empty. We could forbid this.
+	my $search = $args->{'search'} || '';
+	add_recent_search($search) if $search;
+
+	my ($tracks, $albums, $artists) = $googleapi->search_all_access($search, MAX_ALL_ACCESS_SEARCH_RESULTS);
+
+	my @menu = (
+		{ name => string("ARTISTS") . " (" . scalar @$artists . ")",
+		  type => 'link',
+		  url => \&_artists,
+		  passthrough => [ $artists, { all_access => 1, } ], },
+		{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
+		  type => 'link',
+		  url => \&_albums,
+		  passthrough => [ $albums, { all_access => 1, } ], },
+		{ name => string("SONGS") . " (" . scalar @$tracks . ")",
+		  type => 'playlist',
+		  url => \&_tracks,
+		  passthrough => [ $tracks, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
+	);
+
+	$callback->(\@menu);
+}
+
 
 sub add_recent_search {
 	my $search = shift;
-	
+
 	return unless $search;
-	
+
 	$recent_searches{$search} = {
 		ts => time(),
 	};
-	
+
 	$cache->set('recent_searches', \%recent_searches, RECENT_CACHE_TTL);
 }
 
 sub recent_searches {
-	my ($client, $callback, $args) = @_;
+	my ($client, $callback, $args, $opts) = @_;
 
-	my $recent = [ 
-		sort { lc($a) cmp lc($b) } 
+	my $all_access = $opts->{'all_access'};
+	my $recent;
+
+	my $recent = [
+		sort { lc($a) cmp lc($b) }
 		grep { $recent_searches{$_} }
-		keys %recent_searches 
+		keys %recent_searches
 	];
-	
+
+	my $search_func = $all_access ? \&search_all_access : \&search;
 	my $items = [];
-	
+
 	foreach (@$recent) {
 		push @$items, {
 			type => 'link',
 			name => $_,
-			url  => \&search,
+			url  => $search_func,
 			passthrough => [{
 				search => $_
 			}],
@@ -203,7 +285,7 @@ sub recent_searches {
 		name => string('EMPTY'),
 		type => 'text',
 	} ] if !scalar @$items;
-	
+
 	$callback->({
 		items => $items
 	});
@@ -216,24 +298,25 @@ sub _show_track {
 	# Show artist and/or album in name and line2
 	my $showArtist = $opts->{'showArtist'};
 	my $showAlbum = $opts->{'showAlbum'};
+
 	# Play all tracks in a list or not when selecting. Useful for albums and playlists.
 	my $playall = $opts->{'playall'};
 
 	my $secs = $track->{'durationMillis'} / 1000;
 
 	my $menu = {
-		'name'     => $track->{'title'},
-		'line1'    => $track->{'title'},
-		'url'      => $track->{'uri'},
-		'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
-		'secs'     => $secs,
+		'name'	 => $track->{'title'},
+		'line1'	=> $track->{'title'},
+		'url'	  => $track->{'uri'},
+		'image'	=> Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
+		'secs'	 => $secs,
 		'duration' => $secs,
 		'bitrate'  => 320,
-		'genre'    => $track->{'genre'},
-		'_disc'    => $track->{'discNumber'},
+		'genre'	=> $track->{'genre'},
+		'_disc'	=> $track->{'discNumber'},
 		'_track'   => $track->{'trackNumber'},
-		'type'     => 'audio',
-		'play'     => $track->{'uri'},
+		'type'	 => 'audio',
+		'play'	 => $track->{'uri'},
 		'playall'  => $playall,
 	};
 
@@ -255,8 +338,8 @@ sub _show_track {
 
 }
 
-sub _show_tracks {
-	my ($client, $tracks, $opts) = @_;
+sub _tracks {
+	my ($client, $callback, $args, $tracks, $opts) = @_;
 	my $sortByTrack = $opts->{'sortByTrack'};
 
 	my @menu;
@@ -275,35 +358,45 @@ sub _show_tracks {
 			'type' => 'text',
 		}
 	}
-	
-	return \@menu;
+
+	$callback->(\@menu);
 }
 
-sub _tracks {
+sub _tracks_for_album {
+	my ($client, $callback, $args, $album, $opts) = @_;
 
-	my ($client, $callback, $args, $tracks, $opts) = @_;
+	my $all_access = $opts->{'all_access'};
+	my $tracks;
 
-	$callback->(_show_tracks($client, $tracks, $opts));
+	if ($all_access) {
+		my $info = $googleapi->get_album_info($album->{'albumId'});
+		$tracks = $info->{'tracks'};
+	} else {
+		my ($albums, $artists);
+		($tracks, $albums, $artists) = $googleapi->search({'artist' => $album->{'artist'},
+														   'album' => $album->{'name'},
+														   'year' => $album->{'year'}});
+	}
+
+	_tracks($client, $callback, $args, $tracks, $opts);
 }
 
 sub _show_album {
 	my ($client, $album, $opts) = @_;
 
-	my ($tracks, $albums, $artists) = $googleapi->search({'artist' => $album->{'artist'},
-														  'album' => $album->{'name'},
-														  'year' => $album->{'year'}});
+	my $all_access = $opts->{'all_access'};
 
 	my $menu = {
-		'name'  => $album->{'name'},
+		'name'  => $album->{'name'} . " (" . $album->{'year'} . ")",
 		'name2'  => $album->{'artist'},
-		'line1' => $album->{'name'},
+		'line1' => $album->{'name'} . " (" . $album->{'year'} . ")",
 		'line2' => $album->{'artist'},
 		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'type'  => 'playlist',
-		'url'   => \&_tracks,
+		'url'   => \&_tracks_for_album,
 		'hasMetadata'   => 'album',
-		'passthrough' => [ $tracks , { playall => 1, sortByTrack => 1 } ],
+		'passthrough' => [ $album , { all_access => $all_access, playall => 1, sortByTrack => 1 } ],
 		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
 		'albumData' => [
 			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}, url => 'anyurl',
@@ -316,8 +409,8 @@ sub _show_album {
 	return $menu;
 }
 
-sub _show_albums {
-	my ($client, $albums, $opts) = @_;
+sub _albums {
+	my ($client, $callback, $args, $albums, $opts) = @_;
 
 	my @menu;
 
@@ -331,32 +424,76 @@ sub _show_albums {
 			'type' => 'text',
 		}
 	}
-	
-	return \@menu;
+
+	$callback->(\@menu);
 }
 
-sub _albums {
-	my ($client, $callback, $args, $albums, $opts) = @_;
+sub _show_menu_for_artist {
+	my ($client, $callback, $args, $artist, $opts) = @_;
 
-	$callback->(_show_albums($client, $albums, $opts));
+	my @menu;
+
+	my $all_access = $opts->{'all_access'};
+	my $albums;
+
+	if ($all_access) {
+		my ($toptracks, $related_artists);
+		my $artistId = $artist->{'artistId'};
+		($toptracks, $albums, $related_artists) = $googleapi->get_artist_info($artistId, MAX_TOP_TRACKS, MAX_REL_ARTIST);
+
+		@menu = (
+			{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
+			  type => 'link',
+			  url => \&_albums,
+			  passthrough => [ $albums, $opts ], },
+			{ name => string("PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @$toptracks . ")",
+			  type => 'link',
+			  url => \&_tracks,
+			  passthrough => [ $toptracks, $opts ], },
+			{ name => string("PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @$related_artists . ")",
+			  type => 'link',
+			  url => \&_artists,
+			  passthrough => [ $related_artists, $opts ], },
+		);
+
+	} else {
+		my ($tracks, $artists);
+		($tracks, $albums, $artists) = $googleapi->search({'artist' => $artist->{'name'}});
+
+		for my $album (@{$albums}) {
+			push @menu, _show_album($client, $album, $opts);
+		}
+	}
+
+
+	if (!scalar @menu) {
+		push @menu, {
+			'name' => string('EMPTY'),
+			'type' => 'text',
+		}
+	}
+
+	$callback->(\@menu);
 }
 
 sub _show_artist {
 	my ($client, $artist, $opts) = @_;
 
-	my ($tracks, $albums, $artists) = $googleapi->search({'artist' => $artist->{'name'}});
+	my $menu;
 
-	my $menu = {
-		name  => $artist->{'name'},
+	$menu = {
+		name => $artist->{'name'},
 		image => Plugins::GoogleMusic::Image->uri($artist->{'artistImageBaseUrl'}),
-		items => _show_albums($client, $albums),
+		type => 'link',
+		url => \&_show_menu_for_artist,
+		passthrough => [ $artist, $opts ],
 	};
-	
+
 	return $menu;
 }
 
-sub _show_artists {
-	my ($client, $artists, $opts) = @_;
+sub _artists {
+	my ($client, $callback, $args, $artists, $opts) = @_;
 
 	my @menu;
 
@@ -370,14 +507,8 @@ sub _show_artists {
 			'type' => 'text',
 		}
 	}
-	
-	return \@menu;
-}
 
-sub _artists {
-	my ($client, $callback, $args, $artists, $opts) = @_;
-
-	$callback->(_show_artists($client, $artists, $opts));
+	$callback->(\@menu);
 }
 
 
