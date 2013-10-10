@@ -17,7 +17,7 @@ PLUGIN_GOOGLEMUSIC_USERNAME
 
 PLUGIN_GOOGLEMUSIC_USERNAME_DESC
 	EN	Enter your Google Play Music username or email address.
-	DE	Gib Deinen Google Play Music Benutzernamen oder deine E-Mail-Adresse ein.
+	DE	Gib Deinen Google Play Music Benutzernamen oder Deine E-Mail-Adresse ein.
 	NL	Voer je Google Play Music gebruikersnaam of emailadres in.
 
 PLUGIN_GOOGLEMUSIC_PASSWORD
@@ -27,7 +27,7 @@ PLUGIN_GOOGLEMUSIC_PASSWORD
 
 PLUGIN_GOOGLEMUSIC_PASSWORD_DESC
 	EN	Enter your Google Play Music password.
-	DE	Gib Deinen Google Play Music Passwort ein.
+	DE	Gib Dein Google Play Music Passwort ein.
 	NL	Voor je Google Play Music wachtwoord in.
 
 PLUGIN_GOOGLEMUSIC_DEVICE_ID
