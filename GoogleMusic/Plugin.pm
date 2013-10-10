@@ -373,9 +373,9 @@ sub _tracks_for_album {
 		$tracks = $info->{'tracks'};
 	} else {
 		my ($albums, $artists);
-		($tracks, $albums, $artists) = $googleapi->search({'artist' => $album->{'artist'},
-														   'album' => $album->{'name'},
-														   'year' => $album->{'year'}});
+		($tracks, $albums, $artists) = $googleapi->find_exact({'artist' => $album->{'artist'},
+															   'album' => $album->{'name'},
+															   'year' => $album->{'year'}});
 	}
 
 	_tracks($client, $callback, $args, $tracks, $opts);
@@ -458,7 +458,7 @@ sub _show_menu_for_artist {
 
 	} else {
 		my ($tracks, $artists);
-		($tracks, $albums, $artists) = $googleapi->search({'artist' => $artist->{'name'}});
+		($tracks, $albums, $artists) = $googleapi->find_exact({'artist' => $artist->{'name'}});
 
 		for my $album (@{$albums}) {
 			push @menu, _show_album($client, $album, $opts);

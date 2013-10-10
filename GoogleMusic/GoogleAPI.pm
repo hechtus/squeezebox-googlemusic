@@ -79,6 +79,54 @@ def get():
 		def get_track_by_id(self, song_id):
 			return self.get_track('googlemusic:track:' + song_id)
 
+		def find_exact(self, query):
+			if query is None:
+				query = {}
+
+			result = self.tracks.values()
+
+			for (field, values) in query.iteritems():
+				if not hasattr(values, '__iter__'):
+					values = [values]
+				for value in values:
+					if type(value) is unicode:
+						q = value.strip()
+					elif type(value) is str:
+						q = value.decode('utf-8').strip()
+					elif type(value) is int:
+						q = value
+
+					track_filter = lambda t: q == t['title']
+					album_filter = lambda t: q == t['album']
+					artist_filter = lambda t: q == t['artist'] or q == t['albumArtist']
+					year_filter = lambda t: q == t.get('year')
+					any_filter = lambda t: track_filter(t) or album_filter(t) or \
+						artist_filter(t)
+
+					if field == 'track':
+						result = filter(track_filter, result)
+					elif field == 'album':
+						result = filter(album_filter, result)
+					elif field == 'artist':
+						result = filter(artist_filter, result)
+					elif field == 'year':
+						result = filter(year_filter, result)
+					elif field == 'any':
+						result = filter(any_filter, result)
+
+			albums = {}
+			artists = {}
+			for track in result:
+				album = self.track_to_album(track)
+				artist = self.track_to_artist(track)
+				albums[album['uri']] = album
+				artists[artist['uri']] = artist
+
+			albums = [album for (uri, album) in albums.items()]
+			artists = [artist for (uri, artist) in artists.items()]
+
+			return [result, albums, artists]
+
 		def search(self, query):
 			if query is None:
 				query = {}
