@@ -76,7 +76,7 @@ sub initPlugin {
 						   $prefs->get('password'))) {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
 	} else {
-		$googleapi->get_all_songs();  # refresh user's library
+		$googleapi->get_all_songs();
 	}
 }
 

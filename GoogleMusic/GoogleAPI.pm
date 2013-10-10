@@ -42,6 +42,8 @@ def get():
 		def get_all_songs(self):
 			""" read all songs in user's library and store in local map """
 
+			if not self.api.is_authenticated():
+				return
 			songs = self.api.get_all_songs()
 			for track in songs:
 				if 'albumArtRef' in track:
@@ -128,7 +130,10 @@ def get():
 		def search_all_access(self, query, max_results=50):
 			""" do a search in 'all access' and return found songs, albums and artists """
 
-			results = self.api.search_all_access(query, max_results)
+			try:
+				results = self.api.search_all_access(query, max_results)
+			except CallFailure as error:
+				return [[], [], []]
 			albums = [album['album'] for album in results['album_hits']]
 			artists = [artist['artist'] for artist in results['artist_hits']]
 			songs = [track['track'] for track in results['song_hits']]
@@ -140,10 +145,6 @@ def get():
 			for album in albums:
 				album['uri'] = 'googlemusic:album:' + album['albumId']
 				album['albumArtUrl'] = album.get('albumArtRef', '/html/images/cover.png')
-
-			# not sure if we should sort the albums here.. perhaps better to use google music's ranking..
-			#albums = sorted(albums, key=lambda x: x.get('year'), reverse=True)
-
 			for artist in artists:
 				artist['uri'] = 'googlemusic:artist:' + artist['artistId']
 				artist['artistImageBaseUrl'] = artist.get('artistArtRef', '/html/images/artists.png')
@@ -153,7 +154,10 @@ def get():
 			""" return toptracks, albums, related_artists from the get_artist_info from the API """
 
 			INCLUDE_ALBUMS = True
-			results = self.api.get_artist_info(artist_id, INCLUDE_ALBUMS, max_top_tracks, max_rel_artist)
+			try:
+				results = self.api.get_artist_info(artist_id, INCLUDE_ALBUMS, max_top_tracks, max_rel_artist)
+			except CallFailure as error:
+				return [[], [], []]
 			toptracks = results.get('topTracks', [])
 			albums = results.get('albums', [])
 			# sort the albums on year
@@ -175,7 +179,10 @@ def get():
 
 		def get_album_info(self, albumid, include_tracks=True):
 			""" return API get_album_info """
-			result = self.api.get_album_info(albumid, include_tracks)
+			try:
+				result = self.api.get_album_info(albumid, include_tracks)
+			except CallFailure as error:
+				return {}
 			tracks = result.get('tracks', [])
 			for track in tracks:
 				track['uri'] = 'googlemusic:all_access_track:' + track['storeId']
@@ -225,11 +232,11 @@ def get():
 			return hashlib.md5(str(frozenset(d.items()))).hexdigest()
 
 		def get_device_id(self, username, password):
-			webapi = Webclient()
+			webapi = Webclient(validate=False)
 			webapi.login(username, password)
 			devices = webapi.get_registered_devices()
 			for device in devices:
-				if device['type'] == 'PHONE':
+				if device['type'] == 'PHONE' and device['id'][0:2] == u'0x':
 					webapi.logout()
 					# Omit the '0x' prefix
 					return device['id'][2:]
