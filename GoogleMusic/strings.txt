@@ -7,7 +7,7 @@ PLUGIN_GOOGLEMUSIC
 
 PLUGIN_GOOGLEMUSIC_DESC
 	EN	Google Music plugin. Listen to your Google Music library and Google Music All Access.
-	DE	Google Music plugin. Höre Musik aus Deiner Musiksammlung bei Google Music und Google Music All Access.
+	DE	Google Music Plugin. Höre Musik aus Deiner Musiksammlung bei Google Music und Google Music All Access.
 	NL	Google Music plugin. Luister naar je Google Music bibliotheek en Google Muziek All Access.
 
 PLUGIN_GOOGLEMUSIC_USERNAME
@@ -37,7 +37,7 @@ PLUGIN_GOOGLEMUSIC_DEVICE_ID
 
 PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC
 	EN	Enter the Google Service Framework (GSF) ID of your Android device. This ID is a 16-digit hexadecimal string (without the '0x' prefix) identifying the Android device you must already have registered for Google Play Music. You can obtain this ID by dialing *#*#8255#*#* on your phone (look for the aid) or using a device ID App (look for the Google Service Framework ID Key). If your Android device is already registered, you should leave this field empty. It will be filled in automatically after setting the username and password.
-	DE	Gib Deine Google Service Framework (GSF) ID Deines Androidgerätes ein. Diese ID ist ein 16-stelliger hexadezimaler Wert (ohne den '0x' Prefix), welcher das Androidgerät identifiziert, dass Du bei Google Play Music registriert haben musst. Du findest diese ID, wenn Du *#*#8255#*#* auf Deinem Telefon wählst (sie heißt hier aid) oder eine device ID App benutzt (sie heißt hier Google Service Framework ID Key). Wenn Dein Androidgerät bereits bei Google Play Music registriert ist, kannst Du dieses Feld auch leer lassen. Es wird automatisch nach Setzen des Benutzernamens und des Passworts ausgefüllt.
+	DE	Gib Deine Google Service Framework (GSF) ID Deines Androidgerätes ein. Diese ID ist ein 16-stelliger hexadezimaler Wert (ohne den '0x' Prefix), welcher das Androidgerät identifiziert, dass Du bei Google Play Music registriert haben musst. Du findest diese ID, wenn Du *#*#8255#*#* auf Deinem Telefon wählst (Die ID heißt hier aid) oder eine Device-ID-App benutzt (Die ID heißt hier Google Service Framework ID Key). Wenn Dein Androidgerät bereits bei Google Play Music registriert ist, kannst Du dieses Feld auch leer lassen. Es wird automatisch nach Setzen des Benutzernamens und Passworts ausgefüllt.
 	NL	Voer je Google Service Framework (GSF) ID van je Android apparaat in. Dit ID is een hexadecimaal woord van 16 karakters (zonder de '0x' prefix), en identificeert je Android apparaat dat je al geregistreerd hebt bij Google Play Muziek. je kunt dit ID achterhalen door *#*#8255#*#* te bellen op je telefoon (kijk bij de hulp) of door gebruik te maken van een apparaat ID App (zoek naar Google Service Framework ID Key). Als je Android apparaat al is geregistreerd moet je die veld leeg laten. Het zal dan automatisch worden ingevuld als je je gebruikersnaam en wachtwoord hebt ingevuld.
 
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED
