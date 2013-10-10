@@ -2,54 +2,84 @@
 
 PLUGIN_GOOGLEMUSIC
 	EN	Google Music
+	NL	Google Music
 
 PLUGIN_GOOGLEMUSIC_DESC
-	EN	Google Music plugin. Listen to your Google Music library.
+	EN	Google Music plugin. Listen to your Google Music library and Google Music All Access.
+	NL	Google Music plugin. Luister naar je Google Music bibliotheek en Google Muziek All Access.
 
 PLUGIN_GOOGLEMUSIC_USERNAME
 	EN	Username or email address
+	NL	Gebruikersnaam of emailadres
 
 PLUGIN_GOOGLEMUSIC_USERNAME_DESC
 	EN	Enter your Google Play Music username or email address.
+	NL	Voer je Google Play Music gebruikersnaam of emailadres in.
 
 PLUGIN_GOOGLEMUSIC_PASSWORD
 	EN	Password
+	NL	Wachtwoord
 
 PLUGIN_GOOGLEMUSIC_PASSWORD_DESC
 	EN	Enter your Google Play Music password.
+	NL	Voor je Google Play Music wachtwoord in.
 
 PLUGIN_GOOGLEMUSIC_DEVICE_ID
 	EN	Mobile Device ID
+	NL	Mobiel Apparaat ID
 
 PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC
 	EN	Enter the Google Service Framework (GSF) ID of your Android device. This ID is a 16-digit hexadecimal string (without the '0x' prefix) identifying the Android device you must already have registered for Google Play Music. You can obtain this ID by dialing *#*#8255#*#* on your phone (look for the aid) or using a device ID App (look for the Google Service Framework ID Key). If your Android device is already registered, you should leave this field empty. It will be filled in automatically after setting the username and password.
+	NL	Voer je Google Service Framework (GSF) ID van je Android apparaat in. Dit ID is een hexadecimaal woord van 16 karakters (zonder de '0x' prefix), en identificeert je Android apparaat dat je al geregistreerd hebt bij Google Play Muziek. je kunt dit ID achterhalen door *#*#8255#*#* te bellen op je telefoon (kijk bij de hulp) of door gebruik te maken van een apparaat ID App (zoek naar Google Service Framework ID Key). Als je Android apparaat al is geregistreerd moet je die veld leeg laten. Het zal dan automatisch worden ingevuld als je je gebruikersnaam en wachtwoord hebt ingevuld.
+
+PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED
+	EN	Enable All Access
+	NL	All Access aanzetten
+
+PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED_DESC
+	EN	This setting changes the menu structures in the plugin. Please note that for All Access you will need a paid subscription.
+	NL	Deze instelling wijzigt de menu structuur in de plugin. Let op dat je voor All Access een betaald abonnement moet hebben.
 
 PLUGIN_GOOGLEMUSIC_LOGIN_FAILED
 	EN	Login to Google Play Music failed. Bad username or password.
+	NL	Inloggen bij Google Play Muziek mislukt. Verkeerde gebruikersnaam of wachtwoord.
 
 PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS
 	EN	Successfully logged in to Google Play Music.
+	NL	Succesvol ingelogd bij Google Play Muziek.
 
 PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN
 	EN	Not logged in to Google Play Music. Set your username and password.
+	NL	Niet ingelogd bij Google Play Muziek. Stel je gebruikersnaam en wachtwoord in.
 
 PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID
 	EN	No mobile device (phone or tablet) registered for Google Play Music. Not able to obtain the mobile device ID automatically.
+	NL	Geen mobiel apparaat (telefoon of tablet) geregistreerd voor Google Play Muziek. Het is niet mogelijk om automatisch het mobiele apparaat ID te verkrijgen.
 
-PLUGIN_GOOGLEMUSIC_MY_LIBRARY
-	EN	My Library
+PLUGIN_GOOGLEMUSIC_MY_MUSIC
+	EN	My Music
+	NL	Mijn Muziek
 
-PLUGIN_GOOGLEMUSIC_PLAYLISTS
-	EN	Playlists
+PLUGIN_GOOGLEMUSIC_ALL_ACCESS
+	EN	All Access
+	NL	All Access
 
-PLUGIN_GOOGLEMUSIC_SEARCH
-	EN	Search
+PLUGIN_GOOGLEMUSIC_BROWSE
+	EN	Browse Library
+	NL	Blader door de bibliotheek
 
-PLUGIN_GOOGLEMUSIC_RECENT_SEARCHES
-	EN	Recent Searches
+PLUGIN_GOOGLEMUSIC_RELOAD_LIBRARY
+	EN	Reload library
+	NL	Bibliotheek herladen
 
-PLUGIN_GOOGLEMUSIC_NO_SEARCH_RESULTS
-	EN	No Search Results Found
+PLUGIN_GOOGLEMUSIC_LIBRARY_RELOADED
+	EN	Library is reloaded
+	NL	De bibliotheek is herladen
 
-PLUGIN_GOOGLEMUSIC_ERROR
-	EN	Error
+PLUGIN_GOOGLEMUSIC_TOP_TRACKS
+	EN	Top tracks
+	NL	Top tracks
+
+PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS
+	EN	Related artists
+	NL	Vergelijkbare artiesten
