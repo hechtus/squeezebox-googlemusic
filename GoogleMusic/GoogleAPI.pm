@@ -44,6 +44,9 @@ def get():
 
 			if not self.api.is_authenticated():
 				return
+			self.tracks = {}
+			self.albums = {}
+			self.artists = {}
 			songs = self.api.get_all_songs()
 			for track in songs:
 				if 'albumArtRef' in track:
