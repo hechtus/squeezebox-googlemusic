@@ -199,15 +199,15 @@ sub search {
 		{ name => string("ARTISTS") . " (" . scalar @$artists . ")",
 		  type => 'link',
 		  url => \&_artists,
-		  passthrough => [ $artists ] },
+		  passthrough => [ $artists, { sortArtists => 1, sortAlbums => 1 } ] },
 		{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
 		  type => 'link',
 		  url => \&_albums,
-		  passthrough => [ $albums ] },
+		  passthrough => [ $albums, { sortAlbums => 1 } ] },
 		{ name => string("SONGS") . " (" . scalar @$tracks . ")",
 		  type => 'playlist',
 		  url => \&_tracks,
-		  passthrough => [ $tracks , { showArtist => 1, showAlbum => 1 } ], },
+		  passthrough => [ $tracks, { showArtist => 1, showAlbum => 1, sortTracks => 1 } ], },
 	);
 
 	$callback->(\@menu);
@@ -313,8 +313,6 @@ sub _show_track {
 		'duration' => $secs,
 		'bitrate'  => 320,
 		'genre'	=> $track->{'genre'},
-		'_disc'	=> $track->{'discNumber'},
-		'_track'   => $track->{'trackNumber'},
 		'type'	 => 'audio',
 		'play'	 => $track->{'uri'},
 		'playall'  => $playall,
@@ -340,16 +338,26 @@ sub _show_track {
 
 sub _tracks {
 	my ($client, $callback, $args, $tracks, $opts) = @_;
-	my $sortByTrack = $opts->{'sortByTrack'};
+	my $sortByTrack = $opts->{sortByTrack};
+	my $sortTracks = $opts->{sortTracks};
 
 	my @menu;
 
-	for my $track (@{$tracks}) {
-		push @menu, _show_track($client, $track, $opts);
+	if ($sortByTrack) {
+		@$tracks = sort { $a->{discNumber} <=> $b->{discNumber} or
+						  $a->{trackNumber} <=> $b->{trackNumber}
+		} @$tracks;
+	} elsif ($sortTracks) {
+		@$tracks = sort { $a->{artist} cmp $b->{artist} or
+						  $b->{year} <=> $a->{year} or
+						  $a->{name} cmp $b->{name} or
+						  $a->{discNumber} <=> $b->{discNumber} or
+						  $a->{trackNumber} <=> $b->{trackNumber}
+		} @$tracks;
 	}
 
-	if ($sortByTrack) {
-		@menu = sort { $a->{_disc} <=> $b->{_disc} || $a->{_track} <=> $b->{_track} } @menu;
+	for my $track (@{$tracks}) {
+		push @menu, _show_track($client, $track, $opts);
 	}
 
 	if (!scalar @menu) {
@@ -411,8 +419,16 @@ sub _show_album {
 
 sub _albums {
 	my ($client, $callback, $args, $albums, $opts) = @_;
+	my $sortAlbums = $opts->{sortAlbums};
 
 	my @menu;
+
+	if ($sortAlbums) {
+		@$albums = sort { $a->{artist} cmp $b->{artist} or
+						  $b->{year} <=> $a->{year} or
+						  $a->{name} cmp $b->{name}
+		} @$albums;
+	}
 
 	for my $album (@{$albums}) {
 		push @menu, _show_album($client, $album, $opts);
@@ -430,10 +446,11 @@ sub _albums {
 
 sub _show_menu_for_artist {
 	my ($client, $callback, $args, $artist, $opts) = @_;
+	my $sortAlbums = $opts->{sortAlbums};
+	my $all_access = $opts->{all_access};
 
 	my @menu;
 
-	my $all_access = $opts->{'all_access'};
 	my $albums;
 
 	if ($all_access) {
@@ -459,6 +476,13 @@ sub _show_menu_for_artist {
 	} else {
 		my ($tracks, $artists);
 		($tracks, $albums, $artists) = $googleapi->find_exact({'artist' => $artist->{'name'}});
+
+		if ($sortAlbums) {
+			@$albums = sort { $a->{artist} cmp $b->{artist} or
+							  $b->{year} <=> $a->{year} or
+							  $a->{name} cmp $b->{name}
+			} @$albums;
+		}
 
 		for my $album (@{$albums}) {
 			push @menu, _show_album($client, $album, $opts);
@@ -494,8 +518,13 @@ sub _show_artist {
 
 sub _artists {
 	my ($client, $callback, $args, $artists, $opts) = @_;
+	my $sortArtists = $opts->{sortArtists};
 
 	my @menu;
+
+	if ($sortArtists) {
+		@$artists = sort { $a->{name} cmp $b->{name} } @$artists;
+	}
 
 	for my $artist (@{$artists}) {
 		push @menu, _show_artist($client, $artist, $opts);
