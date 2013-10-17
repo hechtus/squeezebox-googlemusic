@@ -80,7 +80,7 @@ def get():
 				return self.tracks[uri]
 
 		def get_track_by_id(self, song_id):
-			if song_id.beginswith('T'):
+			if song_id.startswith('T'):
 				return self.get_track('googlemusic:all_access_track:' + song_id)
 			else:
 				return self.get_track('googlemusic:track:' + song_id)
