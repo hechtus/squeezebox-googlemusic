@@ -6,10 +6,11 @@ package Plugins::GoogleMusic::GoogleAPI;
 # version 2.
 
 use strict;
+use warnings;
 use base 'Exporter';
 use File::Spec::Functions;
 
-our @EXPORT = qw($googleapi);
+our @EXPORT_OK = qw($googleapi);
 our $googleapi = get();
 
 my $inlineDir;
@@ -300,6 +301,5 @@ def get():
 
 END_OF_PYTHON_CODE
 
-1;
 
-__END__
+1;

@@ -3,17 +3,18 @@ package Plugins::GoogleMusic::Image;
 # Inspired by the Triode's Spotify Plugin
 
 use strict;
+use warnings;
 
 use List::Util qw[min];
 use HTTP::Status qw(RC_OK RC_NOT_FOUND RC_SERVICE_UNAVAILABLE);
 
 use Slim::Utils::Log;
 
-use constant EXP_TIME => 60 * 60 * 24 * 7; # expire in one week
-
-use constant MAX_IMAGE_REQUEST => 5;       # max images to fetch from Google at once
-use constant IMAGE_REQUEST_TIMEOUT1 => 30; # max time to queue
-use constant IMAGE_REQUEST_TIMEOUT2 => 35; # max time to wait for response
+use Readonly;
+Readonly my $EXP_TIME => 60 * 60 * 24 * 7; # expire in one week
+Readonly my $MAX_IMAGE_REQUEST => 5;       # max images to fetch from Google at once
+Readonly my $IMAGE_REQUEST_TIMEOUT1 => 30; # max time to queue
+Readonly my $IMAGE_REQUEST_TIMEOUT2 => 35; # max time to wait for response
 
 my $log = logger('plugin.googlemusic');
 
@@ -46,7 +47,7 @@ sub handler {
 		$response->code(RC_NOT_FOUND);
 		$response->content_length(0);
 
-		Slim::Web::HTTP::addHTTPResponse($httpClient, $response, \'', 1, 0);
+		Slim::Web::HTTP::addHTTPResponse($httpClient, $response, '', 1, 0);
 
 		return;
 	}
@@ -55,13 +56,13 @@ sub handler {
 
 	$log->info("queuing image id: $id request: $image (resizing: $needsResize)");
 
-	push @fetchQ, { id => $id, timeout => time() + IMAGE_REQUEST_TIMEOUT1, path => $path, 
+	push @fetchQ, { id => $id, timeout => time() + $IMAGE_REQUEST_TIMEOUT1, path => $path, 
 					httpClient => $httpClient, response => $response, resizeP => $resizeParams, image => $image,
 				  };
 
 	$log->debug(sub { "fetchQ: " . (scalar @fetchQ) . " fetching: " . (scalar keys %fetching) });
 
-	if (scalar keys %fetching < MAX_IMAGE_REQUEST) {
+	if (scalar keys %fetching < $MAX_IMAGE_REQUEST) {
 
 		_fetch();
 
@@ -81,7 +82,10 @@ sub handler {
 				_fetch();
 			}
 		}
-	}}
+	}
+
+	return;
+}
 
 
 sub _fetch {
@@ -114,13 +118,15 @@ sub _fetch {
 
 	$log->info("fetching image: $image");
 
-	$entry->{'timeout'} = time() + IMAGE_REQUEST_TIMEOUT2;
+	$entry->{'timeout'} = time() + $IMAGE_REQUEST_TIMEOUT2;
 
 	$fetching{ $entry->{'id'} } = $entry;
 
 	Slim::Networking::SimpleAsyncHTTP->new(
 		\&_gotImage, \&_gotError, $entry
 		)->get("https://$image");
+
+	return;
 }
 
 sub _gotImage {
@@ -138,8 +144,8 @@ sub _gotImage {
 		$response->code(RC_OK);
 		$response->content_type('image/jpeg');
 		
-		$response->header('Cache-Control' => 'max-age=' . EXP_TIME);
-		$response->expires(time() + EXP_TIME);
+		$response->header('Cache-Control' => 'max-age=' . $EXP_TIME);
+		$response->expires(time() + $EXP_TIME);
 		
 		use bytes;
 		$response->content_length($body ? length($$body) : length($http->content));
@@ -150,6 +156,8 @@ sub _gotImage {
 	delete $fetching{ $id };
 
 	_fetch();
+
+	return;
 }
 
 sub _gotError {
@@ -166,6 +174,8 @@ sub _gotError {
 	delete $fetching{ $id };
 
 	_fetch();
+
+	return;
 }
 
 sub _sendUnavailable {
@@ -178,23 +188,27 @@ sub _sendUnavailable {
 		$response->header('Retry-After' => 10);
 		$response->content_length(0);
 		
-		Slim::Web::HTTP::addHTTPResponse($httpClient, $response, \'', 1, 0);
+		Slim::Web::HTTP::addHTTPResponse($httpClient, $response, '', 1, 0);
 	}
 
+	return;
 }
 
 sub uri {
+	my ($client, $image) = @_;
+
 	# Check if it's an squeezebox provided image
-	if ($_[1] =~ /^\/html\/images\//) {
-		return $_[1];
+	if ($image =~ /^\/html\/images\//) {
+		return $image;
 	}
 
 	# Sometimes there is an https:// prefix. Remove it.
-	$_[1] =~ s/^https?\:\/\///;
+	$image =~ s/^https?\:\/\///;
 	# Very often there is already a size spec from Google. Remove it also.
-	$_[1] =~ s/\=(.*)$//;
+	$image =~ s/\=(.*)$//;
 
-	return "googlemusicimage/$_[1]/image.jpg";
+	return "googlemusicimage/$image/image.jpg";
 }
+
 
 1;

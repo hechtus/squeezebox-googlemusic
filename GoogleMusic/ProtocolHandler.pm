@@ -1,6 +1,7 @@
 package Plugins::GoogleMusic::ProtocolHandler;
 
 use strict;
+use warnings;
 use base qw(Slim::Player::Protocols::HTTP);
 
 use Scalar::Util qw(blessed);
@@ -10,7 +11,7 @@ use Slim::Utils::Misc;
 use Slim::Utils::Prefs;
 
 use Plugins::GoogleMusic::Plugin;
-use Plugins::GoogleMusic::GoogleAPI;
+use Plugins::GoogleMusic::GoogleAPI qw($googleapi);
 use Plugins::GoogleMusic::Image;
 
 my $log = logger('plugin.googlemusic');
@@ -43,7 +44,9 @@ sub new {
 }
 
 # Always MP3
-sub getFormatForURL { 'mp3' }
+sub getFormatForURL {
+	return 'mp3';
+}
 
 sub scanStream {
 	my ($class, $url, $track, $args) = @_;
@@ -68,6 +71,8 @@ sub scanStream {
 	$track->cover(Plugins::GoogleMusic::Image->uri($googleTrack->{'albumArtUrl'}));
 
 	$cb->( $track );
+
+	return;
 }
 
 sub getNextTrack {
@@ -86,6 +91,8 @@ sub getNextTrack {
 	$song->streamUrl($trackURL);
 
 	$successCb->();
+
+	return;
 }
 
 sub canDirectStreamSong {
@@ -116,3 +123,8 @@ sub getMetadataFor {
 		artistA  => $track->{'myAlbum'}->{'artist'},
 	};
 }
+
+
+1;
+
+__END__

@@ -6,6 +6,7 @@ package Plugins::GoogleMusic::Settings;
 # version 2.
 
 use strict;
+use warnings;
 use base qw(Slim::Web::Settings);
 
 use Slim::Utils::Log;
@@ -13,7 +14,7 @@ use Slim::Utils::Misc;
 use Slim::Utils::Strings qw(string);
 use Slim::Utils::Prefs;
 
-use Plugins::GoogleMusic::GoogleAPI;
+use Plugins::GoogleMusic::GoogleAPI qw($googleapi);
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');

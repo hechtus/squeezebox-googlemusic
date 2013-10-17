@@ -6,6 +6,7 @@ package Plugins::GoogleMusic::Plugin;
 # version 2.
 
 use strict;
+use warnings;
 use base qw(Slim::Plugin::OPMLBased);
 
 use Plugins::GoogleMusic::Settings;
@@ -16,19 +17,20 @@ use Slim::Utils::Log;
 use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(string);
 
-use Plugins::GoogleMusic::GoogleAPI;
+use Plugins::GoogleMusic::GoogleAPI qw($googleapi);
 use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
 
 # TODO: move these constants to the configurable settings?
-use constant MAX_RECENT_ITEMS => 50;
-use constant RECENT_CACHE_TTL => 'never';
-use constant MAX_TOP_TRACKS => 10;
-use constant MAX_REL_ARTIST => 10;
-use constant MAX_ALL_ACCESS_SEARCH_RESULTS => 100;
+use Readonly;
+Readonly my $MAX_RECENT_ITEMS => 50;
+Readonly my $RECENT_CACHE_TTL => 'never';
+Readonly my $MAX_TOP_TRACKS => 10;
+Readonly my $MAX_REL_ARTIST => 10;
+Readonly my $MAX_ALL_ACCESS_SEARCH_RESULTS => 100;
 
 my %recent_searches;
-tie %recent_searches, 'Tie::Cache::LRU', MAX_RECENT_ITEMS;
+tie %recent_searches, 'Tie::Cache::LRU', $MAX_RECENT_ITEMS;
 
 my $cache = Slim::Utils::Cache->new('googlemusic', 3);
 
@@ -44,7 +46,9 @@ BEGIN {
 	});
 }
 
-sub getDisplayName { 'PLUGIN_GOOGLEMUSIC' }
+sub getDisplayName {
+	return 'PLUGIN_GOOGLEMUSIC';
+}
 
 sub initPlugin {
 	my $class = shift;
@@ -78,10 +82,14 @@ sub initPlugin {
 	} else {
 		$googleapi->get_all_songs();
 	}
+
+	return;
 }
 
 sub shutdownPlugin {
 	$googleapi->logout();
+
+	return;
 }
 
 sub toplevel {
@@ -99,6 +107,8 @@ sub toplevel {
 		# go to my_music directly, making it the top level menu
 		my_music($client, $callback, $args);
 	}
+
+	return;
 }
 
 sub my_music {
@@ -112,6 +122,8 @@ sub my_music {
 	);
 
 	$callback->(\@menu);
+
+	return;
 }
 
 sub reload_library {
@@ -125,6 +137,8 @@ sub reload_library {
 	};
 
 	$callback->(\@menu);
+
+	return;
 }
 
 sub all_access {
@@ -135,6 +149,8 @@ sub all_access {
 	);
 
 	$callback->(\@menu);
+
+	return;
 }
 
 sub playlists {
@@ -157,6 +173,8 @@ sub playlists {
 	}
 
 	$callback->(\@menu);
+
+	return;
 }
 
 sub playlist {
@@ -211,6 +229,8 @@ sub search {
 	);
 
 	$callback->(\@menu);
+
+	return;
 }
 
 sub search_all_access {
@@ -222,7 +242,7 @@ sub search_all_access {
 	my $search = $args->{'search'} || '';
 	add_recent_search($search) if $search;
 
-	my ($tracks, $albums, $artists) = $googleapi->search_all_access($search, MAX_ALL_ACCESS_SEARCH_RESULTS);
+	my ($tracks, $albums, $artists) = $googleapi->search_all_access($search, $MAX_ALL_ACCESS_SEARCH_RESULTS);
 
 	my @menu = (
 		{ name => string("ARTISTS") . " (" . scalar @$artists . ")",
@@ -240,6 +260,8 @@ sub search_all_access {
 	);
 
 	$callback->(\@menu);
+
+	return;
 }
 
 
@@ -252,7 +274,9 @@ sub add_recent_search {
 		ts => time(),
 	};
 
-	$cache->set('recent_searches', \%recent_searches, RECENT_CACHE_TTL);
+	$cache->set('recent_searches', \%recent_searches, $RECENT_CACHE_TTL);
+
+	return;
 }
 
 sub recent_searches {
@@ -289,6 +313,8 @@ sub recent_searches {
 	$callback->({
 		items => $items
 	});
+
+	return;
 }
 
 sub _show_track {
@@ -333,7 +359,6 @@ sub _show_track {
 	}
 
 	return $menu;
-
 }
 
 sub _tracks {
@@ -368,6 +393,8 @@ sub _tracks {
 	}
 
 	$callback->(\@menu);
+
+	return;
 }
 
 sub _tracks_for_album {
@@ -387,6 +414,8 @@ sub _tracks_for_album {
 	}
 
 	_tracks($client, $callback, $args, $tracks, $opts);
+
+	return;
 }
 
 sub _show_album {
@@ -442,6 +471,8 @@ sub _albums {
 	}
 
 	$callback->(\@menu);
+
+	return;
 }
 
 sub _show_menu_for_artist {
@@ -456,7 +487,7 @@ sub _show_menu_for_artist {
 	if ($all_access) {
 		my ($toptracks, $related_artists);
 		my $artistId = $artist->{'artistId'};
-		($toptracks, $albums, $related_artists) = $googleapi->get_artist_info($artistId, MAX_TOP_TRACKS, MAX_REL_ARTIST);
+		($toptracks, $albums, $related_artists) = $googleapi->get_artist_info($artistId, $MAX_TOP_TRACKS, $MAX_REL_ARTIST);
 
 		@menu = (
 			{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
@@ -498,6 +529,8 @@ sub _show_menu_for_artist {
 	}
 
 	$callback->(\@menu);
+
+	return;
 }
 
 sub _show_artist {
@@ -538,9 +571,9 @@ sub _artists {
 	}
 
 	$callback->(\@menu);
+
+	return;
 }
 
 
 1;
-
-__END__
