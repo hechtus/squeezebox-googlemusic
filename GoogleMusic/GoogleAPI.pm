@@ -260,7 +260,7 @@ def get():
 			if 'myAlbum' in track:
 				return track['myAlbum']
 			album = {}
-			artist = track['albumArtist']
+			artist = track.get('albumArtist', '')
 			if artist.strip() == '':
 				artist = track['artist']
 			album['artist'] = artist
