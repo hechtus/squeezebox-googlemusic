@@ -1,6 +1,8 @@
 squeezebox-googlemusic
 ======================
 
+![Travis CI build status](https://travis-ci.org/hechtus/squeezebox-googlemusic.png?branch=master)
+
 This is a [Squeezebox](http://www.mysqueezebox.com/) (Logitech Media
 Server) Plug-in for playing music from your [Google Play
 Music](https://play.google.com/music/) library. It is based on the

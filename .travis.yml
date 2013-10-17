@@ -1,0 +1,11 @@
+language: perl
+perl:
+   - "5.16"
+   - "5.14"
+   - "5.12"
+   - "5.10"
+
+install:
+   - cpanm --quiet --notest --skip-satisfied Perl::Critic
+script:
+   - perlcritic -4 $(find . -iname '*.pm')
