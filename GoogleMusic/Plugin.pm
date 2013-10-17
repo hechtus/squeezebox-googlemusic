@@ -40,7 +40,7 @@ my $prefs = preferences('plugin.googlemusic');
 
 BEGIN {
 	$log = Slim::Utils::Log->addLogCategory({
-		'category'	 => 'plugin.googlemusic',
+		'category'     => 'plugin.googlemusic',
 		'defaultLevel' => 'WARN',
 		'description'  => string('PLUGIN_GOOGLEMUSIC'),
 	});
@@ -54,7 +54,7 @@ sub initPlugin {
 	my $class = shift;
 
 	$class->SUPER::initPlugin(
-		tag	=> 'googlemusic',
+		tag    => 'googlemusic',
 		feed   => \&toplevel,
 		is_app => 1,
 		weight => 1,
@@ -132,8 +132,8 @@ sub reload_library {
 
 	my @menu;
 	push @menu, {
-		'name'	 => string('PLUGIN_GOOGLEMUSIC_LIBRARY_RELOADED'),
-		'type'	 => 'text',
+		'name' => string('PLUGIN_GOOGLEMUSIC_LIBRARY_RELOADED'),
+		'type' => 'text',
 	};
 
 	$callback->(\@menu);
@@ -166,8 +166,8 @@ sub playlists {
 
 	if (!scalar @menu) {
 		push @menu, {
-			'name'	 => string('NO_SEARCH_RESULTS'),
-			'type'	 => 'text',
+			'name' => string('NO_SEARCH_RESULTS'),
+			'type' => 'text',
 		}
 
 	}
@@ -191,9 +191,9 @@ sub playlist {
 	}
 
 	my $menu = {
-		'name'		=> $playlist->{'name'},
-		'type'		=> 'playlist',
-		'url'		 => \&_tracks,
+		'name'        => $playlist->{'name'},
+		'type'        => 'playlist',
+		'url'         => \&_tracks,
 		'passthrough' => [\@tracks, { showArtist => 1, showAlbum => 1, playall => 1 }],
 	};
 
@@ -283,7 +283,6 @@ sub recent_searches {
 	my ($client, $callback, $args, $opts) = @_;
 
 	my $all_access = $opts->{'all_access'};
-	my $recent;
 
 	my $recent = [
 		sort { lc($a) cmp lc($b) }
@@ -331,16 +330,16 @@ sub _show_track {
 	my $secs = $track->{'durationMillis'} / 1000;
 
 	my $menu = {
-		'name'	 => $track->{'title'},
-		'line1'	=> $track->{'title'},
-		'url'	  => $track->{'uri'},
-		'image'	=> Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
-		'secs'	 => $secs,
+		'name'     => $track->{'title'},
+		'line1'    => $track->{'title'},
+		'url'      => $track->{'uri'},
+		'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
+		'secs'     => $secs,
 		'duration' => $secs,
 		'bitrate'  => 320,
-		'genre'	=> $track->{'genre'},
-		'type'	 => 'audio',
-		'play'	 => $track->{'uri'},
+		'genre'    => $track->{'genre'},
+		'type'     => 'audio',
+		'play'     => $track->{'uri'},
 		'playall'  => $playall,
 	};
 
