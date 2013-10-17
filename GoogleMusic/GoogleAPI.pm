@@ -77,7 +77,10 @@ def get():
 				return self.tracks[uri]
 
 		def get_track_by_id(self, song_id):
-			return self.get_track('googlemusic:track:' + song_id)
+			if song_id.beginswith('T'):
+				return self.get_track('googlemusic:all_access_track:' + song_id)
+			else:
+				return self.get_track('googlemusic:track:' + song_id)
 
 		def find_exact(self, query):
 			if query is None:
