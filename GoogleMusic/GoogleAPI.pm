@@ -33,6 +33,7 @@ def get():
 			self.tracks = {}
 			self.albums = {}
 			self.artists = {}
+			self.playlists = []
 
 		def login(self, username, password):
 			return self.api.login(username, password)
