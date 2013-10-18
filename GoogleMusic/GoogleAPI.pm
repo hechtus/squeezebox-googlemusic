@@ -40,16 +40,16 @@ def get():
 		def logout(self):
 			return self.api.logout()
 
-		def get_all_songs(self):
-			""" read all songs in user's library and store in local map """
+		def reload_library(self):
+			""" read all songs and playlists in user's library and store in local map """
 
 			if not self.api.is_authenticated():
 				return
 			self.tracks = {}
 			self.albums = {}
 			self.artists = {}
-			songs = self.api.get_all_songs()
-			for track in songs:
+			self.playlists = []
+			for track in self.api.get_all_songs():
 				if 'albumArtRef' in track:
 					track['albumArtUrl'] = track['albumArtRef'][0]['url']
 				else:
@@ -57,6 +57,14 @@ def get():
 				uri = 'googlemusic:track:' + track['id']
 				track['uri'] = uri
 				self.tracks[uri] = track
+
+			for playlist in self.api.get_all_playlist_contents():
+				myPlaylist = {}
+				myPlaylist['name'] = playlist['name']
+				myPlaylist['uri'] = 'googlemusic:playlist:' + playlist['id']
+				myPlaylist['tracks'] = [self.get_track_by_id(track['trackId'])
+							for track in playlist['tracks']]
+				self.playlists.append(myPlaylist)
 
 		def is_authenticated(self):
 			return self.api.is_authenticated()
@@ -68,14 +76,16 @@ def get():
 				except CallFailure as error:
 					pass
 
+		def get_playlists(self):
+			return self.playlists
+
 		def get_track(self, uri):
 			if uri.startswith('googlemusic:all_access_track:'):
 				store_track_id = uri[len('googlemusic:all_access_track:'):]
 				track = self.api.get_track_info(store_track_id)
-				if 'albumArtRef' in track:
-					track['albumArtUrl'] = track['albumArtRef'][0]['url']
-				else:
-					track['albumArtUrl'] = '/html/images/cover.png'
+				track['uri'] = uri
+				albumArtRef = track.get('albumArtRef')
+				track['albumArtUrl'] = albumArtRef and albumArtRef[0]['url'] or '/html/images/cover.png'
 				return track
 			if uri in self.tracks:
 				return self.tracks[uri]
@@ -245,8 +255,6 @@ def get():
 				track['albumArtUrl'] = albumArtRef and albumArtRef[0]['url'] or '/html/images/cover.png'
 			return result
 
-		def get_all_playlist_contents(self):
-			return self.api.get_all_playlist_contents()
 
 		def track_to_artist(self, track):
 			if 'myArtist' in track:

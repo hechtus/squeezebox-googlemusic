@@ -80,7 +80,7 @@ sub initPlugin {
 						   $prefs->get('password'))) {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
 	} else {
-		$googleapi->get_all_songs();
+		$googleapi->reload_library();
 	}
 
 	return;
@@ -115,7 +115,7 @@ sub my_music {
 	my ($client, $callback, $args) = @_;
 	my @menu = (
 		{ name => string('PLUGIN_GOOGLEMUSIC_BROWSE'), type => 'link', url => \&search },
-		{ name => string('PLAYLISTS'), type => 'link', url => \&playlists },
+		{ name => string('PLAYLISTS'), type => 'link', url => \&_playlists },
 		{ name => string('SEARCH'), type => 'search', url => \&search },
 		{ name => string('RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 0 },] },
 		{ name => string('PLUGIN_GOOGLEMUSIC_RELOAD_LIBRARY'), type => 'func', url => \&reload_library },
@@ -128,7 +128,7 @@ sub my_music {
 
 sub reload_library {
 	my ($client, $callback, $args) = @_;
-	$googleapi->get_all_songs();
+	$googleapi->reload_library();
 
 	my @menu;
 	push @menu, {
@@ -153,20 +153,35 @@ sub all_access {
 	return;
 }
 
-sub playlists {
+sub _show_playlist {
+	my ($client, $playlist) = @_;
+
+	my $menu;
+
+	$menu = {
+		name => $playlist->{'name'},
+		type => 'playlist',
+		url => \&_tracks,
+		passthrough => [$playlist->{tracks}, { showArtist => 1, showAlbum => 1, playall => 1 }],
+	};
+
+	return $menu;
+}
+
+sub _playlists {
 	my ($client, $callback, $args) = @_;
 
 	my @menu;
 
-	my $playlists = $googleapi->get_all_playlist_contents();
+	my $playlists = $googleapi->get_playlists();
 
 	for my $playlist (@{$playlists}) {
-		push @menu, playlist($client, $playlist);
+		push @menu, _show_playlist($client, $playlist);
 	}
 
 	if (!scalar @menu) {
 		push @menu, {
-			'name' => string('NO_SEARCH_RESULTS'),
+			'name' => string('EMPTY'),
 			'type' => 'text',
 		}
 
@@ -175,29 +190,6 @@ sub playlists {
 	$callback->(\@menu);
 
 	return;
-}
-
-sub playlist {
-
-	my ($client, $playlist) = @_;
-
-	my @tracks;
-
-	for my $playlist_track (@{$playlist->{'tracks'}}) {
-		my $track = $googleapi->get_track_by_id($playlist_track->{'trackId'});
-		if ($track) {
-			push @tracks, $track;
-		}
-	}
-
-	my $menu = {
-		'name'        => $playlist->{'name'},
-		'type'        => 'playlist',
-		'url'         => \&_tracks,
-		'passthrough' => [\@tracks, { showArtist => 1, showAlbum => 1, playall => 1 }],
-	};
-
-	return $menu;
 }
 
 sub search {
