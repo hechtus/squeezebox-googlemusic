@@ -68,7 +68,7 @@ Project resources
 
 * [Source code](https://github.com/hechtus/squeezebox-googlemusic)
 * [Issue tracker](https://github.com/hechtus/squeezebox-googlemusic/issues)
-* [Current development snapshot](https://github.com/hechtus/squeezebox-googlemusic/archive/develop.zip)
+* [Current development snapshot](https://github.com/hechtus/squeezebox-googlemusic/archive/master.zip)
 
 ToDo
 ----
