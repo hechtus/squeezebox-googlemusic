@@ -244,7 +244,7 @@ sub search_all_access {
 		{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
 		  type => 'link',
 		  url => \&_albums,
-		  passthrough => [ $albums, { all_access => 1, } ], },
+		  passthrough => [ $albums, { all_access => 1, sortAlbums => 1 } ], },
 		{ name => string("SONGS") . " (" . scalar @$tracks . ")",
 		  type => 'playlist',
 		  url => \&_tracks,
@@ -360,15 +360,15 @@ sub _tracks {
 	my @menu;
 
 	if ($sortByTrack) {
-		@$tracks = sort { $a->{discNumber} <=> $b->{discNumber} or
-						  $a->{trackNumber} <=> $b->{trackNumber}
+		@$tracks = sort { ($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+						  ($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1)
 		} @$tracks;
 	} elsif ($sortTracks) {
-		@$tracks = sort { $a->{artist} cmp $b->{artist} or
-						  $b->{year} <=> $a->{year} or
-						  $a->{name} cmp $b->{name} or
-						  $a->{discNumber} <=> $b->{discNumber} or
-						  $a->{trackNumber} <=> $b->{trackNumber}
+		@$tracks = sort { lc($a->{artist}) cmp lc($b->{artist}) or
+						 ($b->{year} || -1)  <=> ($a->{year} || -1) or
+						 lc(($a->{name} || '')) cmp lc(($b->{name} || ''))  or
+						 ($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+						 ($a->{trackNumber} || -1)  <=> ($b->{trackNumber} || -1)
 		} @$tracks;
 	}
 
@@ -394,8 +394,14 @@ sub _tracks_for_album {
 	my $all_access = $opts->{'all_access'};
 	my $tracks;
 
-	if ($all_access) {
-		my $info = $googleapi->get_album_info($album->{'albumId'});
+	# all_access is either forced by parameter or by album uri pattern 
+	my ($all_access_albumid) = $album->{'uri'} =~ m{^googlemusic:all_access_album:(.*)$}x;
+	if (!$all_access_albumid && $all_access) {
+		$all_access_albumid = $album->{'albumId'};
+	}
+
+	if ($all_access_albumid) {
+		my $info = $googleapi->get_album_info($all_access_albumid);
 		$tracks = $info->{'tracks'};
 	} else {
 		my ($albums, $artists);
@@ -414,10 +420,12 @@ sub _show_album {
 
 	my $all_access = $opts->{'all_access'};
 
+    my $albumYear = $album->{'year'} || " ? ";
+
 	my $menu = {
-		'name'  => $album->{'name'} . " (" . $album->{'year'} . ")",
+		'name'  => $album->{'name'} . " (" . $albumYear . ")",
 		'name2'  => $album->{'artist'},
-		'line1' => $album->{'name'} . " (" . $album->{'year'} . ")",
+		'line1' => $album->{'name'} . " (" . $albumYear . ")",
 		'line2' => $album->{'artist'},
 		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
 		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
@@ -444,9 +452,9 @@ sub _albums {
 	my @menu;
 
 	if ($sortAlbums) {
-		@$albums = sort { $a->{artist} cmp $b->{artist} or
-						  $b->{year} <=> $a->{year} or
-						  $a->{name} cmp $b->{name}
+		@$albums = sort { lc($a->{artist}) cmp lc($b->{artist}) or
+						 ($b->{year} || -1) <=> ($a->{year} || -1) or
+						  lc($a->{name}) cmp lc($b->{name})
 		} @$albums;
 	}
 
@@ -500,9 +508,9 @@ sub _show_menu_for_artist {
 		($tracks, $albums, $artists) = $googleapi->find_exact({'artist' => $artist->{'name'}});
 
 		if ($sortAlbums) {
-			@$albums = sort { $a->{artist} cmp $b->{artist} or
-							  $b->{year} <=> $a->{year} or
-							  $a->{name} cmp $b->{name}
+			@$albums = sort { lc($a->{artist}) cmp lc($b->{artist}) or
+							 ($b->{year} || -1) <=> ($a->{year} || -1) or
+							  lc($a->{name}) cmp lc($b->{name})
 			} @$albums;
 		}
 
@@ -547,7 +555,7 @@ sub _artists {
 	my @menu;
 
 	if ($sortArtists) {
-		@$artists = sort { $a->{name} cmp $b->{name} } @$artists;
+		@$artists = sort { lc($a->{name}) cmp lc($b->{name}) } @$artists;
 	}
 
 	for my $artist (@{$artists}) {

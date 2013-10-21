@@ -209,7 +209,7 @@ def get():
 				albumArtRef = track.get('albumArtRef')
 				track['albumArtUrl'] = albumArtRef and albumArtRef[0]['url'] or '/html/images/cover.png'
 			for album in albums:
-				album['uri'] = 'googlemusic:album:' + album['albumId']
+				album['uri'] = 'googlemusic:all_access_album:' + album['albumId']
 				album['albumArtUrl'] = album.get('albumArtRef', '/html/images/cover.png')
 			for artist in artists:
 				artist['uri'] = 'googlemusic:artist:' + artist['artistId']
@@ -232,7 +232,7 @@ def get():
 
 			# add URIs to albums:
 			for album in albums:
-				album['uri'] = 'googlemusic:album:' + album['albumId']
+				album['uri'] = 'googlemusic:all_access_album:' + album['albumId']
 				album['albumArtUrl'] = album.get('albumArtRef', '/html/images/cover.png')
 			for track in toptracks:
 				track['uri'] = 'googlemusic:all_access_track:' + track['storeId']
@@ -283,6 +283,8 @@ def get():
 			album['name'] = track['album']
 			album['year'] = track.get('year')  # year is not always present
 			uri = 'googlemusic:album:' + self.create_id(album)
+			if 'storeId' in track and track['storeId'].startswith('T'):
+				uri = 'googlemusic:all_access_album:' + track['albumId']
 			album['uri'] = uri
 			if 'albumArtRef' in track:
 				album['albumArtUrl'] = track['albumArtRef'][0]['url']
