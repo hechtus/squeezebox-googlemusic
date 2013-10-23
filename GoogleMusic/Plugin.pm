@@ -405,9 +405,7 @@ sub _tracks_for_album {
 		$tracks = $info->{'tracks'};
 	} else {
 		my ($albums, $artists);
-		($tracks, $albums, $artists) = $googleapi->find_exact({'artist' => $album->{'artist'},
-															   'album' => $album->{'name'},
-															   'year' => $album->{'year'}});
+		($tracks, $albums, $artists) = $googleapi->find_exact({'album_uri' => $album->{'uri'}});
 	}
 
 	_tracks($client, $callback, $args, $tracks, $opts);

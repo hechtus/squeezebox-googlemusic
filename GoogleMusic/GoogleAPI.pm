@@ -118,6 +118,7 @@ def get():
 					album_filter = lambda t: q == t['album']
 					artist_filter = lambda t: q == t['artist'] or q == t['albumArtist']
 					year_filter = lambda t: q == t.get('year')
+					album_uri_filter = lambda t: q == t['myAlbum']['uri']
 					any_filter = lambda t: track_filter(t) or album_filter(t) or \
 						artist_filter(t)
 
@@ -129,6 +130,8 @@ def get():
 						result = filter(artist_filter, result)
 					elif field == 'year':
 						result = filter(year_filter, result)
+					elif field == 'album_uri':
+						result = filter(album_uri_filter, result)
 					elif field == 'any':
 						result = filter(any_filter, result)
 
@@ -261,13 +264,25 @@ def get():
 			if 'myArtist' in track:
 				return track['myArtist']
 			artist = {}
-			artist['name'] = track['artist']
+
+			# ugly check to see if this album is a compilation from various artists
+			# The Google Music webinterface also shows a 'various' artist in my library
+			# instead of all seperate artists.. which should justify this functionality
+			various_artists = track['albumArtist'].lower() != track['artist'].lower()
+
+			# in one test case (the band 'Poliça') GoogleMusic messed up
+			# the 'artist' is sometime lowercase, where the 'albumArtist' is uppercase
+			# the albumArtist is the most consistent so take that
+			# or else we will see multiple entries in the Artists listing (lower + upper case)
+			artist['name'] = track['albumArtist'] or track['artist']  # fallback
+
 			uri = 'googlemusic:artist:' + self.create_id(artist)
 			artist['uri'] = uri
-			if 'artistArtRef' in track:
+			if 'artistArtRef' in track and not various_artists:
 				artist['artistImageBaseUrl'] = track['artistArtRef'][0]['url']
 			else:
 				artist['artistImageBaseUrl'] = '/html/images/artists.png'
+
 			self.artists[uri] = artist
 			track['myArtist'] = artist
 			return artist
@@ -283,8 +298,6 @@ def get():
 			album['name'] = track['album']
 			album['year'] = track.get('year')  # year is not always present
 			uri = 'googlemusic:album:' + self.create_id(album)
-			if 'storeId' in track and track['storeId'].startswith('T'):
-				uri = 'googlemusic:all_access_album:' + track['albumId']
 			album['uri'] = uri
 			if 'albumArtRef' in track:
 				album['albumArtUrl'] = track['albumArtRef'][0]['url']
