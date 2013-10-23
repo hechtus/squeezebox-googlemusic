@@ -23,6 +23,11 @@ BEGIN {
 use Inline (Config => DIRECTORY => $inlineDir);
 use Inline Python => <<'END_OF_PYTHON_CODE';
 
+# Define a couple of global variables. These should go to a configurable setting at some time.
+MAX_TOP_TRACKS = 10
+MAX_REL_ARTIST = 10
+MAX_ALL_ACCESS_SEARCH_RESULTS = 100
+
 from gmusicapi import Mobileclient, Webclient, CallFailure
 import hashlib
 
@@ -196,11 +201,11 @@ def get():
 
 			return [result, albums, artists]
 
-		def search_all_access(self, query, max_results=50):
+		def search_all_access(self, query):
 			""" do a search in 'all access' and return found songs, albums and artists """
 
 			try:
-				results = self.api.search_all_access(query, max_results)
+				results = self.api.search_all_access(query, MAX_ALL_ACCESS_SEARCH_RESULTS)
 			except CallFailure as error:
 				return [[], [], []]
 			albums = [album['album'] for album in results['album_hits']]
@@ -219,12 +224,12 @@ def get():
 				artist['artistImageBaseUrl'] = artist.get('artistArtRef', '/html/images/artists.png')
 			return [songs, albums, artists]
 
-		def get_artist_info(self, artist_id, max_top_tracks=5, max_rel_artist=5):
+		def get_artist_info(self, artist_id):
 			""" return toptracks, albums, related_artists from the get_artist_info from the API """
 
 			INCLUDE_ALBUMS = True
 			try:
-				results = self.api.get_artist_info(artist_id, INCLUDE_ALBUMS, max_top_tracks, max_rel_artist)
+				results = self.api.get_artist_info(artist_id, INCLUDE_ALBUMS, MAX_TOP_TRACKS, MAX_REL_ARTIST)
 			except CallFailure as error:
 				return [[], [], []]
 			toptracks = results.get('topTracks', [])

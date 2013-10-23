@@ -22,12 +22,10 @@ use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
 
 # TODO: move these constants to the configurable settings?
+# Note: these constants can't be passed to the python API
 use Readonly;
 Readonly my $MAX_RECENT_ITEMS => 50;
 Readonly my $RECENT_CACHE_TTL => 'never';
-Readonly my $MAX_TOP_TRACKS => 10;
-Readonly my $MAX_REL_ARTIST => 10;
-Readonly my $MAX_ALL_ACCESS_SEARCH_RESULTS => 100;
 
 my %recent_searches;
 tie %recent_searches, 'Tie::Cache::LRU', $MAX_RECENT_ITEMS;
@@ -234,7 +232,7 @@ sub search_all_access {
 	my $search = $args->{'search'} || '';
 	add_recent_search($search) if $search;
 
-	my ($tracks, $albums, $artists) = $googleapi->search_all_access($search, $MAX_ALL_ACCESS_SEARCH_RESULTS);
+	my ($tracks, $albums, $artists) = $googleapi->search_all_access($search);
 
 	my @menu = (
 		{ name => string("ARTISTS") . " (" . scalar @$artists . ")",
@@ -484,7 +482,7 @@ sub _show_menu_for_artist {
 	if ($all_access) {
 		my ($toptracks, $related_artists);
 		my $artistId = $artist->{'artistId'};
-		($toptracks, $albums, $related_artists) = $googleapi->get_artist_info($artistId, $MAX_TOP_TRACKS, $MAX_REL_ARTIST);
+		($toptracks, $albums, $related_artists) = $googleapi->get_artist_info($artistId);
 
 		@menu = (
 			{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
