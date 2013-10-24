@@ -121,7 +121,7 @@ def get():
 
 					track_filter = lambda t: q == t['title']
 					album_filter = lambda t: q == t['album']
-					artist_filter = lambda t: q == t['artist'] or q == t['albumArtist']
+					artist_filter = lambda t: q == t['artist'] or q == t.get('albumArtist', '')
 					year_filter = lambda t: q == t.get('year')
 					album_uri_filter = lambda t: q == t['myAlbum']['uri']
 					any_filter = lambda t: track_filter(t) or album_filter(t) or \
@@ -172,7 +172,7 @@ def get():
 
 					track_filter = lambda t: q in t['title'].lower()
 					album_filter = lambda t: q in t['album'].lower()
-					artist_filter = lambda t: q in t['artist'].lower() or q in t['albumArtist'].lower()
+					artist_filter = lambda t: q in t['artist'].lower() or q in t.get('albumArtist', '').lower()
 					year_filter = lambda t: q == t.get('year')
 					any_filter = lambda t: track_filter(t) or album_filter(t) or \
 						artist_filter(t)
@@ -273,13 +273,13 @@ def get():
 			# ugly check to see if this album is a compilation from various artists
 			# The Google Music webinterface also shows a 'various' artist in my library
 			# instead of all seperate artists.. which should justify this functionality
-			various_artists = track['albumArtist'].lower() != track['artist'].lower()
+			various_artists = track.get('albumArtist', '').lower() not in track['artist'].lower()
 
 			# in one test case (the band 'Poliça') GoogleMusic messed up
 			# the 'artist' is sometime lowercase, where the 'albumArtist' is uppercase
 			# the albumArtist is the most consistent so take that
 			# or else we will see multiple entries in the Artists listing (lower + upper case)
-			artist['name'] = track['albumArtist'] or track['artist']  # fallback
+			artist['name'] = track.get('albumArtist', '') or track['artist']  # fallback
 
 			uri = 'googlemusic:artist:' + self.create_id(artist)
 			artist['uri'] = uri
