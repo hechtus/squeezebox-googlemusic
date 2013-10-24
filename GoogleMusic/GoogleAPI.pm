@@ -23,6 +23,11 @@ BEGIN {
 use Inline (Config => DIRECTORY => $inlineDir);
 use Inline Python => <<'END_OF_PYTHON_CODE';
 
+# Define a couple of global variables. These should go to a configurable setting at some time.
+MAX_TOP_TRACKS = 10
+MAX_REL_ARTIST = 10
+MAX_ALL_ACCESS_SEARCH_RESULTS = 100
+
 from gmusicapi import Mobileclient, Webclient, CallFailure
 import hashlib
 
@@ -116,8 +121,9 @@ def get():
 
 					track_filter = lambda t: q == t['title']
 					album_filter = lambda t: q == t['album']
-					artist_filter = lambda t: q == t['artist'] or q == t['albumArtist']
+					artist_filter = lambda t: q == t['artist'] or q == t.get('albumArtist', '')
 					year_filter = lambda t: q == t.get('year')
+					album_uri_filter = lambda t: q == t['myAlbum']['uri']
 					any_filter = lambda t: track_filter(t) or album_filter(t) or \
 						artist_filter(t)
 
@@ -129,6 +135,8 @@ def get():
 						result = filter(artist_filter, result)
 					elif field == 'year':
 						result = filter(year_filter, result)
+					elif field == 'album_uri':
+						result = filter(album_uri_filter, result)
 					elif field == 'any':
 						result = filter(any_filter, result)
 
@@ -164,7 +172,7 @@ def get():
 
 					track_filter = lambda t: q in t['title'].lower()
 					album_filter = lambda t: q in t['album'].lower()
-					artist_filter = lambda t: q in t['artist'].lower() or q in t['albumArtist'].lower()
+					artist_filter = lambda t: q in t['artist'].lower() or q in t.get('albumArtist', '').lower()
 					year_filter = lambda t: q == t.get('year')
 					any_filter = lambda t: track_filter(t) or album_filter(t) or \
 						artist_filter(t)
@@ -193,11 +201,11 @@ def get():
 
 			return [result, albums, artists]
 
-		def search_all_access(self, query, max_results=50):
+		def search_all_access(self, query):
 			""" do a search in 'all access' and return found songs, albums and artists """
 
 			try:
-				results = self.api.search_all_access(query, max_results)
+				results = self.api.search_all_access(query, MAX_ALL_ACCESS_SEARCH_RESULTS)
 			except CallFailure as error:
 				return [[], [], []]
 			albums = [album['album'] for album in results['album_hits']]
@@ -216,12 +224,12 @@ def get():
 				artist['artistImageBaseUrl'] = artist.get('artistArtRef', '/html/images/artists.png')
 			return [songs, albums, artists]
 
-		def get_artist_info(self, artist_id, max_top_tracks=5, max_rel_artist=5):
+		def get_artist_info(self, artist_id):
 			""" return toptracks, albums, related_artists from the get_artist_info from the API """
 
 			INCLUDE_ALBUMS = True
 			try:
-				results = self.api.get_artist_info(artist_id, INCLUDE_ALBUMS, max_top_tracks, max_rel_artist)
+				results = self.api.get_artist_info(artist_id, INCLUDE_ALBUMS, MAX_TOP_TRACKS, MAX_REL_ARTIST)
 			except CallFailure as error:
 				return [[], [], []]
 			toptracks = results.get('topTracks', [])
@@ -261,13 +269,25 @@ def get():
 			if 'myArtist' in track:
 				return track['myArtist']
 			artist = {}
-			artist['name'] = track['artist']
+
+			# ugly check to see if this album is a compilation from various artists
+			# The Google Music webinterface also shows a 'various' artist in my library
+			# instead of all seperate artists.. which should justify this functionality
+			various_artists = track.get('albumArtist', '').lower() not in track['artist'].lower()
+
+			# in one test case (the band 'Poliça') GoogleMusic messed up
+			# the 'artist' is sometime lowercase, where the 'albumArtist' is uppercase
+			# the albumArtist is the most consistent so take that
+			# or else we will see multiple entries in the Artists listing (lower + upper case)
+			artist['name'] = track.get('albumArtist', '') or track['artist']  # fallback
+
 			uri = 'googlemusic:artist:' + self.create_id(artist)
 			artist['uri'] = uri
-			if 'artistArtRef' in track:
+			if 'artistArtRef' in track and not various_artists:
 				artist['artistImageBaseUrl'] = track['artistArtRef'][0]['url']
 			else:
 				artist['artistImageBaseUrl'] = '/html/images/artists.png'
+
 			self.artists[uri] = artist
 			track['myArtist'] = artist
 			return artist
@@ -283,8 +303,6 @@ def get():
 			album['name'] = track['album']
 			album['year'] = track.get('year')  # year is not always present
 			uri = 'googlemusic:album:' + self.create_id(album)
-			if 'storeId' in track and track['storeId'].startswith('T'):
-				uri = 'googlemusic:all_access_album:' + track['albumId']
 			album['uri'] = uri
 			if 'albumArtRef' in track:
 				album['albumArtUrl'] = track['albumArtRef'][0]['url']
