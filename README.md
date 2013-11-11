@@ -23,10 +23,8 @@ Installation
 
          sudo pip install gmusicapi
          
-   **Note**: For the 'All Access' functionality you need the **latest
-   version of the gmusicapi** (which supports get_album_info):
-
-         sudo easy_install https://github.com/simon-weber/Unofficial-Google-Music-API/archive/develop.zip
+   **Note**: For 'All Access' functionality you need at least version
+   3.0.0 of gmusicapi.
 
 3. Install the Perl CPAN [Inline](http://search.cpan.org/~ingy/Inline/)
    package and
