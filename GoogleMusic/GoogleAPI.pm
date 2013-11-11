@@ -28,6 +28,7 @@ MAX_TOP_TRACKS = 10
 MAX_REL_ARTIST = 10
 MAX_ALL_ACCESS_SEARCH_RESULTS = 100
 
+import gmusicapi
 from gmusicapi import Mobileclient, Webclient, CallFailure
 import hashlib
 
@@ -64,7 +65,12 @@ def get():
 				track['uri'] = uri
 				self.tracks[uri] = track
 
-			for playlist in self.api.get_all_playlist_contents():
+			if gmusicapi.__version__ >= '3.0.0':
+				playlist_contents = self.api.get_all_user_playlist_contents()
+			else:
+				playlist_contents = self.api.get_all_playlist_contents()
+
+			for playlist in playlist_contents:
 				myPlaylist = {}
 				myPlaylist['name'] = playlist['name']
 				myPlaylist['uri'] = 'googlemusic:playlist:' + playlist['id']
