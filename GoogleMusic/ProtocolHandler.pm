@@ -48,6 +48,12 @@ sub getFormatForURL {
 	return 'mp3';
 }
 
+# Source for AudioScrobbler
+sub audioScrobblerSource {
+	# P = Chosen by the user
+	return 'P';
+}
+
 sub scanStream {
 	my ($class, $url, $track, $args) = @_;
 	my $cb = $args->{cb} || sub {};
