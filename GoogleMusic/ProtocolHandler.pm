@@ -11,11 +11,12 @@ use Slim::Utils::Misc;
 use Slim::Utils::Prefs;
 
 use Plugins::GoogleMusic::Plugin;
-use Plugins::GoogleMusic::GoogleAPI qw($googleapi);
+use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::Image;
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
+my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 Slim::Player::ProtocolHandlers->registerHandler('googlemusic', __PACKAGE__);
 

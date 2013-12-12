@@ -14,10 +14,11 @@ use Slim::Utils::Misc;
 use Slim::Utils::Strings qw(string);
 use Slim::Utils::Prefs;
 
-use Plugins::GoogleMusic::GoogleAPI qw($googleapi);
+use Plugins::GoogleMusic::GoogleAPI;
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
+my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 sub name {
 	return Slim::Web::HTTP::CSRF->protectName('PLUGIN_GOOGLEMUSIC');

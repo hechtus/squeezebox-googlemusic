@@ -17,7 +17,7 @@ use Slim::Utils::Log;
 use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(string);
 
-use Plugins::GoogleMusic::GoogleAPI qw($googleapi);
+use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
 
@@ -34,6 +34,7 @@ my $cache = Slim::Utils::Cache->new('googlemusic', 3);
 
 my $log;
 my $prefs = preferences('plugin.googlemusic');
+my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 
 BEGIN {
