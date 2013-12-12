@@ -10,7 +10,7 @@ use warnings;
 use File::Spec::Functions;
 
 my $inlineDir;
-my $googleapi = new Plugins::GoogleMusic::GoogleAPI::API;
+my $googleapi = Plugins::GoogleMusic::GoogleAPI::API->new();
 
 sub get {
 	return $googleapi;
@@ -19,7 +19,7 @@ sub get {
 sub get_device_id {
 	my ($username, $password) = @_;
 
-	my $webapi = new Plugins::GoogleMusic::GoogleAPI::Webclient(0, 0);
+	my $webapi = Plugins::GoogleMusic::GoogleAPI::Webclient->new(validate => 0);
 	if (!$webapi->login($username, $password)) {
 		return;
 	}
