@@ -11,7 +11,7 @@ def main():
 
     args = parser.parse_args()
     
-    api = Webclient()
+    api = Webclient(validate = False)
 
     if not api.login(args.username, args.password):
         print "Could not login to Google Play Music. Incorrect username or password."
@@ -19,7 +19,7 @@ def main():
 
     for device in api.get_registered_devices():
         print '%s | %s | %s | %s' % (device['name'],
-                                     device['manufacturer'],
+                                     device.get('manufacturer'),
                                      device['type'],
                                      device['id'])
 
