@@ -50,7 +50,8 @@ sub handler {
 				$prefs->set('device_id', $params->{'device_id'});
 			} else {
 				# If no mobile device ID provided try to set it automatically
-				my $device_id = $googleapi->get_device_id($params->{'username'}, $params->{'password'});
+				my $device_id = Plugins::GoogleMusic::GoogleAPI::get_device_id($params->{'username'},
+																			   $params->{'password'});
 				if ($device_id) {
 					$prefs->set('device_id', $device_id);
 				} else {

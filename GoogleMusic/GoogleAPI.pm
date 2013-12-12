@@ -10,11 +10,31 @@ use warnings;
 use File::Spec::Functions;
 
 my $inlineDir;
-
 my $googleapi = new Plugins::GoogleMusic::GoogleAPI::API;
 
 sub get {
 	return $googleapi;
+}
+
+sub get_device_id {
+	my ($username, $password) = @_;
+
+	my $webapi = new Plugins::GoogleMusic::GoogleAPI::Webclient(0, 0);
+	if (!$webapi->login($username, $password)) {
+		return;
+	}
+
+	my $devices = $webapi->get_registered_devices();
+	for my $device (@$devices) {
+		if ($device->{type} eq 'PHONE' and $device->{id} =~ /^0x/) {
+			$webapi->logout();
+			# Omit the '0x' prefix
+			return substr($device->{id}, 2);
+		}
+	}
+	
+	$webapi->logout();
+	return;
 }
 
 BEGIN {
@@ -321,17 +341,6 @@ class API(object):
 
 	def create_id(self, d):
 		return hashlib.md5(str(frozenset(d.items()))).hexdigest()
-
-	def get_device_id(self, username, password):
-		webapi = Webclient(validate=False)
-		webapi.login(username, password)
-		devices = webapi.get_registered_devices()
-		for device in devices:
-			if device['type'] == 'PHONE' and device['id'][0:2] == u'0x':
-				webapi.logout()
-				# Omit the '0x' prefix
-				return device['id'][2:]
-		webapi.logout()
 
 END_OF_PYTHON_CODE
 
