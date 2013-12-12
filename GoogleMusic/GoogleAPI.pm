@@ -19,7 +19,7 @@ sub get {
 sub get_device_id {
 	my ($username, $password) = @_;
 
-	my $webapi = Plugins::GoogleMusic::GoogleAPI::Webclient->new(validate => 0);
+	my $webapi = Plugins::GoogleMusic::GoogleAPI::Webclient->new(0, 0);
 	if (!$webapi->login($username, $password)) {
 		return;
 	}
