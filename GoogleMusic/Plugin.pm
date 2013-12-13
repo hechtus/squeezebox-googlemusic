@@ -20,6 +20,7 @@ use Slim::Utils::Strings qw(string);
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
+use Plugins::GoogleMusic::Library;
 
 # TODO: move these constants to the configurable settings?
 # Note: these constants can't be passed to the python API
@@ -79,7 +80,7 @@ sub initPlugin {
 						   $prefs->get('password'))) {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
 	} else {
-		$googleapi->reload_library();
+		Plugins::GoogleMusic::Library::refresh();
 	}
 
 	return;
@@ -127,7 +128,8 @@ sub my_music {
 
 sub reload_library {
 	my ($client, $callback, $args) = @_;
-	$googleapi->reload_library();
+
+	Plugins::GoogleMusic::Library::refresh();
 
 	my @menu;
 	push @menu, {
@@ -202,7 +204,7 @@ sub search {
 
 	add_recent_search($search) if scalar @query;
 
-	my ($tracks, $albums, $artists) = $googleapi->search({'any' => \@query});
+	my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::search({'any' => \@query});
 
 	my @menu = (
 		{ name => string("ARTISTS") . " (" . scalar @$artists . ")",
@@ -318,33 +320,31 @@ sub _show_track {
 	# Play all tracks in a list or not when selecting. Useful for albums and playlists.
 	my $playall = $opts->{'playall'};
 
-	my $secs = $track->{'durationMillis'} / 1000;
-
 	my $menu = {
-		'name'     => $track->{'title'},
-		'line1'    => $track->{'title'},
-		'url'      => $track->{'uri'},
-		'image'    => Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'}),
-		'secs'     => $secs,
-		'duration' => $secs,
-		'bitrate'  => 320,
-		'genre'    => $track->{'genre'},
+		'name'     => $track->{title},
+		'line1'    => $track->{title},
+		'url'      => $track->{uri},
+		'image'    => $track->{cover},
+		'secs'     => $track->{secs},
+		'duration' => $track->{secs},
+		'bitrate'  => $track->{bitrate},
+		'genre'    => $track->{genre},
 		'type'     => 'audio',
-		'play'     => $track->{'uri'},
+		'play'     => $track->{uri},
 		'playall'  => $playall,
 	};
 
 	if ($showArtist) {
-		$menu->{'name'} .= " " . string('BY') . " " . $track->{'artist'};
-		$menu->{'line2'} = $track->{'artist'};
+		$menu->{'name'} .= " " . string('BY') . " " . $track->{artist};
+		$menu->{'line2'} = $track->{artist};
 	}
 
 	if ($showAlbum) {
-		$menu->{'name'} .= " \x{2022} " . $track->{'album'};
+		$menu->{'name'} .= " \x{2022} " . $track->{album};
 		if ($menu->{'line2'}) {
-			$menu->{'line2'} .= " \x{2022} " . $track->{'album'};
+			$menu->{'line2'} .= " \x{2022} " . $track->{album};
 		} else {
-			$menu->{'line2'} = $track->{'album'};
+			$menu->{'line2'} = $track->{album};
 		}
 	}
 
@@ -404,7 +404,7 @@ sub _tracks_for_album {
 		$tracks = $info->{'tracks'};
 	} else {
 		my ($albums, $artists);
-		($tracks, $albums, $artists) = $googleapi->find_exact({'album_uri' => $album->{'uri'}});
+		($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({'album_uri' => $album->{'uri'}});
 	}
 
 	_tracks($client, $callback, $args, $tracks, $opts);
@@ -502,7 +502,7 @@ sub _show_menu_for_artist {
 
 	} else {
 		my ($tracks, $artists);
-		($tracks, $albums, $artists) = $googleapi->find_exact({'artist' => $artist->{'name'}});
+		($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({'artist' => $artist->{'name'}});
 
 		if ($sortAlbums) {
 			@$albums = sort { lc($a->{artist}) cmp lc($b->{artist}) or

@@ -13,6 +13,7 @@ use Slim::Utils::Prefs;
 use Plugins::GoogleMusic::Plugin;
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::Image;
+use Plugins::GoogleMusic::Library;
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
@@ -59,23 +60,23 @@ sub scanStream {
 	my ($class, $url, $track, $args) = @_;
 	my $cb = $args->{cb} || sub {};
  
-	my $googleTrack = $googleapi->get_track($url);
+	my $googleTrack = Plugins::GoogleMusic::Library::get_track($url);
 
 	# To support seeking set duration and bitrate
-	$track->secs($googleTrack->{'durationMillis'} / 1000);
+	$track->secs($googleTrack->{'secs'});
 	# Always 320k at Google Music
 	$track->bitrate(320000);
 
 	$track->content_type('mp3');
 	$track->artistname($googleTrack->{'artist'});
 	$track->albumname($googleTrack->{'album'});
-	$track->coverurl(Plugins::GoogleMusic::Image->uri($googleTrack->{'albumArtUrl'}));
+	$track->coverurl($googleTrack->{'cover'});
 	$track->title($googleTrack->{'title'});
 	$track->tracknum($googleTrack->{'trackNumber'});
-	$track->filesize($googleTrack->{'estimatedSize'});
+	$track->filesize($googleTrack->{'filesize'});
 	$track->audio(1);
 	$track->year($googleTrack->{'year'});
-	$track->cover(Plugins::GoogleMusic::Image->uri($googleTrack->{'albumArtUrl'}));
+	$track->cover($googleTrack->{'cover'});
 
 	$cb->( $track );
 
@@ -113,21 +114,17 @@ sub canDirectStreamSong {
 sub getMetadataFor {
 	my ($class, $client, $url) = @_; 
 
-	my $track = $googleapi->get_track($url);
-	my $secs = $track->{'durationMillis'} / 1000;
-	my $image = Plugins::GoogleMusic::Image->uri($track->{'albumArtUrl'});
+	my $track = Plugins::GoogleMusic::Library::get_track($url);
 
 	return {
 		title    => $track->{'title'},
 		artist   => $track->{'artist'},
 		album    => $track->{'album'},
-		duration => $secs,
-		cover    => $image,
-		icon     => $image,
+		duration => $track->{'secs'},
+		cover    => $track->{'cover'},
+		icon     => $track->{'cover'},
 		bitrate  => '320k CBR',
 		type     => 'MP3 (Google Music)',
-		albumuri => $track->{'myAlbum'}->{'uri'},
-		artistA  => $track->{'myAlbum'}->{'artist'},
 	};
 }
 
