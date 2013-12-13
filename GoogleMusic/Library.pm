@@ -59,10 +59,10 @@ sub search {
 	}
 
 	my @result = values(%$tracks);
-	my $albums = [];
-	my $artists = [];
+	my @albums = values(%$albums);
+	my @artists = values(%$artists);
 
-	return (\@result, $albums, $artists);
+	return (\@result, \@albums, \@artists);
 }
 
 sub search_tracks {

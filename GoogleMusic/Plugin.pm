@@ -424,8 +424,8 @@ sub _show_album {
 		'name2'  => $album->{'artist'},
 		'line1' => $album->{'name'} . " (" . $albumYear . ")",
 		'line2' => $album->{'artist'},
-		'cover' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
-		'image' => Plugins::GoogleMusic::Image->uri($album->{'albumArtUrl'}),
+		'cover' => $album->{'cover'},
+		'image' => $album->{'cover'},
 		'type'  => 'playlist',
 		'url'   => \&_tracks_for_album,
 		'hasMetadata'   => 'album',
@@ -536,7 +536,7 @@ sub _show_artist {
 
 	$menu = {
 		name => $artist->{'name'},
-		image => Plugins::GoogleMusic::Image->uri($artist->{'artistImageBaseUrl'}),
+		image => $artist->{'image'},
 		type => 'link',
 		url => \&_show_menu_for_artist,
 		passthrough => [ $artist, $opts ],
