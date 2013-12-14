@@ -54,15 +54,11 @@ sub refresh {
 sub search {
 	my $query = shift;
 
-	if (!$query) {
-		$query = {};
-	}
-
-	my @result = values(%$tracks);
+	my $result = search_tracks($query);
 	my @albums = values(%$albums);
 	my @artists = values(%$artists);
 
-	return (\@result, \@albums, \@artists);
+	return ($result, \@albums, \@artists);
 }
 
 sub search_tracks {
@@ -72,9 +68,35 @@ sub search_tracks {
 		$query = {};
 	}
 
-	my $result = $tracks;
+	my @result = values %{$tracks};
 
+	while (my ($key, $values) = each %{$query} ) {
+		if (ref($values) ne 'ARRAY') {
+			$values = [$values];
+		}
+		for my $value (@{$values}) {
 
+			# TODO: Need to strip $value first
+			my $q = lc($value);
+
+			my $track_filter = sub { lc($_->{title}) =~ $q };
+			my $album_filter = sub { lc($_->{album}) =~ $q };
+			my $artist_filter = sub { lc($_->{artist}) =~ $q };
+			my $year_filter = sub { lc($_->{year}) == $q };
+			my $any_filter = sub { &$track_filter($_) || &$album_filter($_) || &$artist_filter($_) };
+
+			if ($key eq 'track') {
+				@result = grep { &$track_filter($_) } @result;
+			} elsif ($key eq 'album') {
+				@result = grep { &$album_filter($_) } @result;
+			} elsif ($key eq 'year') {
+				@result = grep { &$year_filter($_) } @result;
+			} elsif ($key eq 'any') {
+				@result = grep { &$any_filter($_) } @result;
+			}
+		}
+	}
+	return \@result;
 }
 
 sub get_track {
