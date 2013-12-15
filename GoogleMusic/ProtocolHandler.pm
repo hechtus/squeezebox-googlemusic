@@ -68,8 +68,8 @@ sub scanStream {
 	$track->bitrate(320000);
 
 	$track->content_type('mp3');
-	$track->artistname($googleTrack->{'artist'});
-	$track->albumname($googleTrack->{'album'});
+	$track->artistname($googleTrack->{'artist'}->{'name'});
+	$track->albumname($googleTrack->{'album'}->{'name'});
 	$track->coverurl($googleTrack->{'cover'});
 	$track->title($googleTrack->{'title'});
 	$track->tracknum($googleTrack->{'trackNumber'});
@@ -118,8 +118,8 @@ sub getMetadataFor {
 
 	return {
 		title    => $track->{'title'},
-		artist   => $track->{'artist'},
-		album    => $track->{'album'},
+		artist   => $track->{'artist'}->{'name'},
+		album    => $track->{'album'}->{'name'},
 		duration => $track->{'secs'},
 		cover    => $track->{'cover'},
 		icon     => $track->{'cover'},

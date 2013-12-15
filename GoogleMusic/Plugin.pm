@@ -335,16 +335,16 @@ sub _show_track {
 	};
 
 	if ($showArtist) {
-		$menu->{'name'} .= " " . string('BY') . " " . $track->{artist};
-		$menu->{'line2'} = $track->{artist};
+		$menu->{'name'} .= " " . string('BY') . " " . $track->{artist}->{name};
+		$menu->{'line2'} = $track->{artist}->{name};
 	}
 
 	if ($showAlbum) {
-		$menu->{'name'} .= " \x{2022} " . $track->{album};
+		$menu->{'name'} .= " \x{2022} " . $track->{album}->{name};
 		if ($menu->{'line2'}) {
-			$menu->{'line2'} .= " \x{2022} " . $track->{album};
+			$menu->{'line2'} .= " \x{2022} " . $track->{album}->{name};
 		} else {
-			$menu->{'line2'} = $track->{album};
+			$menu->{'line2'} = $track->{album}->{name};
 		}
 	}
 
@@ -363,7 +363,7 @@ sub _tracks {
 						  ($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1)
 		} @$tracks;
 	} elsif ($sortTracks) {
-		@$tracks = sort { lc($a->{artist}) cmp lc($b->{artist}) or
+		@$tracks = sort { lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 						 ($b->{year} || -1)  <=> ($a->{year} || -1) or
 						 lc(($a->{name} || '')) cmp lc(($b->{name} || ''))  or
 						 ($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
@@ -421,9 +421,9 @@ sub _show_album {
 
 	my $menu = {
 		'name'  => $album->{'name'} . " (" . $albumYear . ")",
-		'name2'  => $album->{'artist'},
+		'name2'  => $album->{'artist'}->{'name'},
 		'line1' => $album->{'name'} . " (" . $albumYear . ")",
-		'line2' => $album->{'artist'},
+		'line2' => $album->{'artist'}->{'name'},
 		'cover' => $album->{'cover'},
 		'image' => $album->{'cover'},
 		'type'  => 'playlist',
@@ -432,7 +432,7 @@ sub _show_album {
 		'passthrough' => [ $album , { all_access => $all_access, playall => 1, sortByTrack => 1 } ],
 		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
 		'albumData' => [
-			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}, url => 'anyurl',
+			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}->{'name'}, url => 'anyurl',
 		  },
 			{ type => 'link', label => 'ALBUM', name => $album->{'name'} },
 			{ type => 'link', label => 'YEAR', name => $album->{'year'} },
@@ -449,7 +449,7 @@ sub _albums {
 	my @menu;
 
 	if ($sortAlbums) {
-		@$albums = sort { lc($a->{artist}) cmp lc($b->{artist}) or
+		@$albums = sort { lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 						 ($b->{year} || -1) <=> ($a->{year} || -1) or
 						  lc($a->{name}) cmp lc($b->{name})
 		} @$albums;
@@ -505,7 +505,7 @@ sub _show_menu_for_artist {
 		($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({'artist' => $artist->{'name'}});
 
 		if ($sortAlbums) {
-			@$albums = sort { lc($a->{artist}) cmp lc($b->{artist}) or
+			@$albums = sort { lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 							 ($b->{year} || -1) <=> ($a->{year} || -1) or
 							  lc($a->{name}) cmp lc($b->{name})
 			} @$albums;
