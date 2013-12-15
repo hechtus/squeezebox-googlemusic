@@ -45,11 +45,17 @@ sub refresh {
 sub search {
 	my $query = shift;
 
-	my $result = search_tracks($query);
-	my @albums = values(%$albums);
-	my @artists = values(%$artists);
+	my $tracks = search_tracks($query);
+	my $albums = {};
+	my $artists = {};
 
-	return ($result, \@albums, \@artists);
+	for my $track (@$tracks) {
+		$albums->{$track->{album}->{uri}} = $track->{album};
+		$artists->{$track->{artist}->{uri}} = $track->{artist};
+		$artists->{$track->{album}->{artist}->{uri}} = $track->{album}->{artist};
+	}
+
+	return ($tracks, [values %$albums], [values %$artists]);
 }
 
 sub search_tracks {
@@ -73,7 +79,64 @@ sub search_tracks {
 			my $track_filter = sub { lc($_->{title}) =~ $q };
 			my $album_filter = sub { lc($_->{album}->{name}) =~ $q };
 			my $artist_filter = sub { lc($_->{artist}->{name}) =~ $q || lc($_->{album}->{artist}->{name}) =~ $q};
-			my $year_filter = sub { lc($_->{year}) == $q };
+			my $year_filter = sub { $_->{year} == $q };
+			my $any_filter = sub { &$track_filter($_) || &$album_filter($_) || &$artist_filter($_) };
+
+			if ($key eq 'track') {
+				@result = grep { &$track_filter($_) } @result;
+			} elsif ($key eq 'album') {
+				@result = grep { &$album_filter($_) } @result;
+			} elsif ($key eq 'artist') {
+				@result = grep { &$artist_filter($_) } @result;
+			} elsif ($key eq 'year') {
+				@result = grep { &$year_filter($_) } @result;
+			} elsif ($key eq 'any') {
+				@result = grep { &$any_filter($_) } @result;
+			}
+		}
+	}
+	return \@result;
+}
+
+
+sub find_exact {
+	my $query = shift;
+
+	my $tracks = find_exact_tracks($query);
+	my $albums = {};
+	my $artists = {};
+
+	for my $track (@$tracks) {
+		$albums->{$track->{album}->{uri}} = $track->{album};
+		$artists->{$track->{artist}->{uri}} = $track->{artist};
+		$artists->{$track->{album}->{artist}->{uri}} = $track->{album}->{artist};
+	}
+
+	return ($tracks, [values %$albums], [values %$artists]);
+}
+
+sub find_exact_tracks {
+	my $query = shift;
+
+	if (!$query) {
+		$query = {};
+	}
+
+	my @result = values %{$tracks};
+
+	while (my ($key, $values) = each %{$query} ) {
+		if (ref($values) ne 'ARRAY') {
+			$values = [$values];
+		}
+		for my $value (@{$values}) {
+
+			# TODO: Need to strip $value first
+			my $q = $value;
+
+			my $track_filter = sub { $_->{title} eq $q };
+			my $album_filter = sub { $_->{album}->{name} eq $q };
+			my $artist_filter = sub { $_->{artist}->{name} eq $q || $_->{album}->{artist}->{name} eq $q};
+			my $year_filter = sub { $_->{year} == $q };
 			my $any_filter = sub { &$track_filter($_) || &$album_filter($_) || &$artist_filter($_) };
 
 			if ($key eq 'track') {
@@ -114,10 +177,14 @@ sub to_slim_track {
 		$cover = Plugins::GoogleMusic::Image->uri($cover);
 	}
 
+	# Get/create the album for this song
+	my $album = to_slim_album($song);
+
+	# Build track info
 	my $track = {
 		uri => $uri,
 		title => $song->{title},
-		album => to_slim_album($song),
+		album => $album,
 		artist => to_slim_artist($song),
 		year => $song->{year} || 0,
 		cover => $cover,
@@ -129,6 +196,10 @@ sub to_slim_track {
 		discNumber => $song->{discNumber} || 1,
 	};
 
+	# Add the track to the album track list
+	push @{$album->{tracks}}, $track;
+
+	# Add the track to the track database
 	$tracks->{$uri} = $track;
 
 	return $track;
@@ -163,6 +234,7 @@ sub to_slim_album {
 		artist => $artist,
 		year => $year,
 		cover => $cover,
+		tracks => [],
 	};
 
 	$albums->{$uri} = $album;

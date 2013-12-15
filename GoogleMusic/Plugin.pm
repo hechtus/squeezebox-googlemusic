@@ -403,8 +403,7 @@ sub _tracks_for_album {
 		my $info = $googleapi->get_album_info($all_access_albumid);
 		$tracks = $info->{'tracks'};
 	} else {
-		my ($albums, $artists);
-		($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({'album_uri' => $album->{'uri'}});
+		$tracks = $album->{tracks};
 	}
 
 	_tracks($client, $callback, $args, $tracks, $opts);
