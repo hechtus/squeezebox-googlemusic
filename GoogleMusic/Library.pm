@@ -5,7 +5,6 @@ use warnings;
 
 use Digest::MD5 qw(md5_hex);
 use Encode qw(encode_utf8);
-use Data::Dumper;
 
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
@@ -18,28 +17,32 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
-my $tracks;
-my $albums;
-my $artists;
+# Database for tracks, albums, and artists indexed by URIs
+my $tracks = {};
+my $albums = {};
+my $artists = {};
 
 # Reload and reparse your music collection
 sub refresh {
 	my $songs;
-	my ($track, $album, $artist);
 
 	if (!$googleapi->is_authenticated()) {
 		return;
 	}
 	
+	# Clear the database
 	$tracks = {};
 	$albums = {};
 	$artists = {};
 
+	# Reload from Google
 	$songs = $googleapi->get_all_songs();
-
+	# Initialize
 	for my $song (@{$songs}) {
 		to_slim_track($song);
 	}
+
+	return;
 }
 
 sub search {
@@ -300,7 +303,7 @@ sub to_slim_album_artist {
 	# artists' in my library instead of all seperate artists.. which
 	# should justify this functionality
 	my $various = index(lc($song->{artist}), lc($song->{albumArtist} || '')) == -1;
-	if (exists $song->{artistArtRef} and !$various) {
+	if (exists $song->{artistArtRef} and not $various) {
 		$image = $song->{artistArtRef}[0]{url};
 		$image = Plugins::GoogleMusic::Image->uri($image);
 	}
