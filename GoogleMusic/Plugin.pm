@@ -21,6 +21,7 @@ use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
 use Plugins::GoogleMusic::Library;
+use Plugins::GoogleMusic::Playlists;
 
 # TODO: move these constants to the configurable settings?
 # Note: these constants can't be passed to the python API
@@ -81,6 +82,7 @@ sub initPlugin {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
 	} else {
 		Plugins::GoogleMusic::Library::refresh();
+		Plugins::GoogleMusic::Playlists::refresh();
 	}
 
 	return;
@@ -130,6 +132,7 @@ sub reload_library {
 	my ($client, $callback, $args) = @_;
 
 	Plugins::GoogleMusic::Library::refresh();
+	Plugins::GoogleMusic::Playlists::refresh();
 
 	my @menu;
 	push @menu, {
@@ -174,7 +177,7 @@ sub _playlists {
 
 	my @menu;
 
-	my $playlists = $googleapi->get_playlists();
+	my $playlists = Plugins::GoogleMusic::Playlists->get();
 
 	for my $playlist (@{$playlists}) {
 		push @menu, _show_playlist($client, $playlist);

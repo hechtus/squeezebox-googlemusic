@@ -164,6 +164,12 @@ sub get_track {
 	return $tracks->{$uri};
 }
 
+sub get_track_by_id {
+	my $uri = shift;
+
+	return $tracks->{'googlemusic:track:' . $uri};
+}
+
 # Convert a Google Music Song dictionary to a consistent
 # robust track representation
 sub to_slim_track {
