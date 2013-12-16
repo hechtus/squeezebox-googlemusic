@@ -39,6 +39,10 @@ sub refresh {
 			my $track = Plugins::GoogleMusic::Library::get_track_by_id($song->{trackId});
 			if ($track) {
 				push @{$playlist->{tracks}}, $track;
+			} else {
+				$log->error('Not able to find track ' . $song->{trackId} .
+							' for playlist ' . $playlist->{name} .
+							' in your library');
 			}
 		}
 		$playlists->{$playlist->{uri}} = $playlist;
