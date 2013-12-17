@@ -238,7 +238,7 @@ sub search_all_access {
 	my $search = $args->{'search'} || '';
 	add_recent_search($search) if $search;
 
-	my ($tracks, $albums, $artists) = $googleapi->search_all_access($search);
+	my ($tracks, $albums, $artists) = Plugins::GoogleMusic::AllAccess::search($search);
 
 	my @menu = (
 		{ name => string("ARTISTS") . " (" . scalar @$artists . ")",
@@ -484,8 +484,8 @@ sub _show_menu_for_artist {
 
 	if ($all_access) {
 		my ($toptracks, $related_artists);
-		my $artistId = $artist->{'artistId'};
-		($toptracks, $albums, $related_artists) = $googleapi->get_artist_info($artistId);
+		my $artistId = $artist->{uri};
+		($toptracks, $albums, $related_artists) = Plugins::GoogleMusic::AllAccess::get_artist_info($artistId);
 
 		@menu = (
 			{ name => string("ALBUMS") . " (" . scalar @$albums . ")",

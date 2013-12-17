@@ -5,7 +5,7 @@ use warnings;
 use File::Spec::Functions;
 
 my $inlineDir;
-my $googleapi = Plugins::GoogleMusic::GoogleAPI::Mobileclient->new();
+my $googleapi = Plugins::GoogleMusic::GoogleAPI::Mobileclient->new(0, 0);
 
 sub get {
 	return $googleapi;

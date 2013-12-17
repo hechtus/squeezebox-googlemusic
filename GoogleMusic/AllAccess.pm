@@ -3,6 +3,8 @@ package Plugins::GoogleMusic::AllAccess;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tie::Cache::LRU;
 
 use Slim::Utils::Prefs;
@@ -99,7 +101,7 @@ sub to_slim_artist {
 	my $song = shift;
 
 	my $name = $song->{artist};
-	
+
 	my $uri = 'googlemusic:artist:' . $song->{artistId}[0];
 
 	my $image = '/html/images/artists.png';
@@ -176,6 +178,137 @@ sub get_track_by_id {
 	my $id = shift;
 
 	return get_track('googlemusic:track:' . $id);
+}
+
+# Search All Access
+sub search {
+	my $query = shift;
+
+	my $result;
+	my $tracks = [];
+	my $albums = [];
+	my $artists = [];
+
+	if ($prefs->get('all_access_enabled')) {
+		eval {
+			# TODO: Make constanst configurable
+			$result = $googleapi->search_all_access($query, 100);
+			1;
+		} or do {
+			return ([], [], []);
+		};
+		for my $hit (@{$result->{song_hits}}) {
+			push @$tracks, to_slim_track($hit->{track});
+		}
+		for my $hit (@{$result->{album_hits}}) {
+			push @$albums, album_to_slim_album($hit->{album});
+		}
+		for my $hit (@{$result->{artist_hits}}) {
+			push @$artists, artist_to_slim_artist($hit->{artist});
+		}
+	}
+
+
+	return ( $tracks, $albums, $artists );
+}
+
+# Get Information for an artistSearch All Access
+sub get_artist_info {
+	my $uri = shift;
+
+	my ($id) = $uri =~ m{^googlemusic:artist:(.*)$}x;
+
+	my $result;
+	my $tracks = [];
+	my $albums = [];
+	my $artists = [];
+
+	if ($prefs->get('all_access_enabled')) {
+		eval {
+			# TODO: Make constants configurable.
+			# TODO: We can not pass a Python Boolean here :-/
+			$result = $googleapi->get_artist_info($id);
+			1;
+		} or do {
+			return ([], [], []);
+		};
+		if (exists $result->{topTracks}) {
+			for my $track (@{$result->{topTracks}}) {
+				push @$tracks, to_slim_track($track);
+			}
+		}
+		print Dumper $result;
+		if (exists $result->{albums}) {
+			for my $album (@{$result->{albums}}) {
+				push @$albums, album_to_slim_album($album);
+			}
+		}
+		if (exists $result->{related_artists}) {
+			for my $artist (@{$result->{related_artists}}) {
+				push @$artists, artist_to_slim_artist($artist);
+			}
+		}
+	}
+
+	return ( $tracks, $albums, $artists );
+}
+
+# Convert an All Access Google album dictionary to a consistent
+# robust album representation
+sub album_to_slim_album {
+	my $googleAlbum = shift;
+
+	# TODO!
+	my $artist = {
+		uri => 'googlemusic:album:' . $googleAlbum->{artistId}[0],
+		name => $googleAlbum->{artist},
+	};
+
+	my $name = $googleAlbum->{name};
+	my $year = $googleAlbum->{year} || 0;
+
+	my $uri = 'googlemusic:album:' . $googleAlbum->{albumId};
+
+	my $cover = '/html/images/cover.png';
+	if (exists $googleAlbum->{albumArtRef}) {
+		$cover = $googleAlbum->{albumArtRef};
+		$cover = Plugins::GoogleMusic::Image->uri($cover);
+	}
+
+	my $album = {
+		uri => $uri,
+		name => $name,
+		artist => $artist,
+		year => $year,
+		cover => $cover,
+		tracks => [],
+	};
+
+	return $album;
+}
+
+# Convert an All Access Google Music artist dictionary to a consistent
+# robust artist representation
+sub artist_to_slim_artist {
+	my $googleArtist = shift;
+
+	my $name = $googleArtist->{name};
+
+	my $uri = 'googlemusic:artist:' . $googleArtist->{artistId};
+
+	my $image = '/html/images/artists.png';
+	if (exists $googleArtist->{artistArtRef}) {
+		$image = $googleArtist->{artistArtRef};
+		$image = Plugins::GoogleMusic::Image->uri($image);
+	}
+
+	my $artist = {
+		uri => $uri,
+		name => $name,
+		image => $image,
+	};
+
+	return $artist;
 }
 
 1;
