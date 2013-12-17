@@ -162,16 +162,20 @@ sub get_track {
 	my $uri = shift;
 
 	if ($uri =~ '^googlemusic:track:T') {
-		return Plugins::GoogleMusic::AllAccess::get_track();
+		return Plugins::GoogleMusic::AllAccess::get_track($uri);
 	} else {
 		return $tracks->{$uri};
 	}
 }
 
 sub get_track_by_id {
-	my $uri = shift;
+	my $id = shift;
 
-	return get_track('googlemusic:track:' . $uri);
+	if ($id =~ '^T') {
+		return Plugins::GoogleMusic::AllAccess::get_track_by_id($id);
+	} else {
+		return get_track('googlemusic:track:' . $id);
+	}
 }
 
 # Convert a Google Music Song dictionary to a consistent

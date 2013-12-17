@@ -3,6 +3,8 @@ package Plugins::GoogleMusic::AllAccess;
 use strict;
 use warnings;
 
+use Tie::Cache::LRU;
+
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
@@ -14,12 +16,19 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
+# Cache song translation results for one hour
+use constant CACHE_TIME => 3600;
+tie my %cache, 'Tie::Cache::LRU', 100;
+
 # Convert an All Access Google Music Song dictionary to a consistent
 # robust track representation
 sub to_slim_track {
 	my $song = shift;
 
 	my $uri = 'googlemusic:track:' . $song->{storeId};
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < CACHE_TIME) {
+		return $cache{$uri}->{data};
+	}
 
 	my $cover = '/html/images/cover.png';
 	if (exists $song->{albumArtRef}) {
@@ -44,6 +53,12 @@ sub to_slim_track {
 		filesize => $song->{estimatedSize},
 		trackNumber => $song->{trackNumber} || 1,
 		discNumber => $song->{discNumber} || 1,
+	};
+
+	# Add to the cache
+	$cache{$uri} = {
+		data => $track,
+		time => time(),
 	};
 
 	return $track;
@@ -138,13 +153,29 @@ sub to_slim_album_artist {
 }
 
 sub get_track {
-	# TODO: We need to cache them ...
-	return;
+	my $uri = shift;
+
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < CACHE_TIME) {
+		return $cache{$uri}->{data};
+	}
+
+	my ($id) = $uri =~ m{^googlemusic:track:(.*)$}x;
+	my $track;
+
+	if ($prefs->get('all_access_enabled')) {
+		eval {
+			my $song = $googleapi->get_track_info($id);
+			$track = to_slim_track($song);
+		};
+	}
+
+	return $track;
 }
 
 sub get_track_by_id {
-	# TODO: We need to cache them ...
-	return;
+	my $id = shift;
+
+	return get_track('googlemusic:track:' . $id);
 }
 
 1;

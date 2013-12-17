@@ -87,7 +87,7 @@ sub getNextTrack {
 	my ($class, $song, $successCb, $errorCb) = @_;
 
 	my $url = $song->currentTrack()->url;
-	my ($type, $id) = $url =~ m{^googlemusic:(track|all_access_track):(.*)$}x;
+	my ($id) = $url =~ m{^googlemusic:track:(.*)$}x;
 
 	my $trackURL = $googleapi->get_stream_url($id, $prefs->get('device_id'));
 
