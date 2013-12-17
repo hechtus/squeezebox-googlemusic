@@ -3,14 +3,14 @@ package Plugins::GoogleMusic::Playlists;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(string);
 
 use Plugins::GoogleMusic::GoogleAPI;
+use Plugins::GoogleMusic::Library;
+use Plugins::GoogleMusic::AllAccess;
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
@@ -34,17 +34,7 @@ sub refresh {
 		my $playlist = {};
 		$playlist->{name} = $googlePlaylist->{name};
 		$playlist->{uri} = 'googlemusic:playlist:' . $googlePlaylist->{id};
-		$playlist->{tracks} = [];
-		for my $song (@{$googlePlaylist->{tracks}}) {
-			my $track = Plugins::GoogleMusic::Library::get_track_by_id($song->{trackId});
-			if ($track) {
-				push @{$playlist->{tracks}}, $track;
-			} else {
-				$log->error('Not able to find track ' . $song->{trackId} .
-							' for playlist ' . $playlist->{name} .
-							' in your library');
-			}
-		}
+		$playlist->{tracks} = to_slim_playlist_tracks($googlePlaylist->{tracks});
 		$playlists->{$playlist->{uri}} = $playlist;
 	}
 
@@ -55,23 +45,43 @@ sub refresh {
 			my $playlist = {};
 			$playlist->{name} = $googlePlaylist->{name};
 			$playlist->{uri} = 'googlemusic:playlist:' . $googlePlaylist->{id};
-			$playlist->{tracks} = [];
-			my $googleTracks = $googleapi->get_shared_playlist_contents(
-				$googlePlaylist->{shareToken});
-			print Dumper $googleTracks;
-			for my $song (@{$googleTracks}) {
-				# TODO: We don't need to lookup. We can simply all-access-translate $song->{track}
-				my $track = Plugins::GoogleMusic::Library::get_track_by_id($song->{trackId});
-				if ($track) {
-					push @{$playlist->{tracks}}, $track;
-				}
-			}
+			my $googleTracks = $googleapi->get_shared_playlist_contents($googlePlaylist->{shareToken});
+			$playlist->{tracks} = to_slim_playlist_tracks($googleTracks);
 			$playlists->{$playlist->{uri}} = $playlist;
 		}
 	}
 	
 	return;
 }
+
+sub to_slim_playlist_tracks {
+	my $googleTracks = shift;
+	
+	my $tracks = [];
+
+	for my $song (@{$googleTracks}) {
+		my $track;
+		# Is it an All Access track?
+		if ($song->{trackId} =~ '^T') {
+			# Already populated?
+			if (exists $song->{track}) {
+				$track = Plugins::GoogleMusic::AllAccess::to_slim_track($song->{track});
+			} else {
+				$track = Plugins::GoogleMusic::AllAccess::get_track_by_id($song->{trackId});
+			}
+		} else {
+			$track = Plugins::GoogleMusic::Library::get_track_by_id($song->{trackId});
+		}
+		if ($track) {
+			push @{$tracks}, $track;
+		} else {
+			$log->error('Not able to lookup playlist track ' . $song->{trackId});
+		}
+	}
+
+	return $tracks;
+}
+
 
 sub get {
 	return [sort {lc($a->{name}) cmp lc($b->{name})} values %$playlists];

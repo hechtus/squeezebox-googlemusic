@@ -161,13 +161,17 @@ sub find_exact_tracks {
 sub get_track {
 	my $uri = shift;
 
-	return $tracks->{$uri};
+	if ($uri =~ '^googlemusic:track:T') {
+		return Plugins::GoogleMusic::AllAccess::get_track();
+	} else {
+		return $tracks->{$uri};
+	}
 }
 
 sub get_track_by_id {
 	my $uri = shift;
 
-	return $tracks->{'googlemusic:track:' . $uri};
+	return get_track('googlemusic:track:' . $uri);
 }
 
 # Convert a Google Music Song dictionary to a consistent
@@ -273,7 +277,7 @@ sub to_slim_artist {
 	}
 
 	my $artist = {
-		uri => 'googlemusic:artist:' . $id,
+		uri => $uri,
 		name => $name,
 		image => $image,
 	};
@@ -315,7 +319,7 @@ sub to_slim_album_artist {
 	}
 	
 	my $artist = {
-		uri => 'googlemusic:artist:' . $id,
+		uri => $uri,
 		name => $name,
 		image => $image,
 	};
