@@ -19,7 +19,8 @@ my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 # Cache track, album, and artist translation results for one hour
-use constant CACHE_TIME => 3600;
+use Readonly;
+Readonly my $CACHE_TIME => 3600;
 tie my %cache, 'Tie::Cache::LRU', 100;
 
 # Convert an All Access Google Music Song dictionary to a consistent
@@ -28,7 +29,7 @@ sub to_slim_track {
 	my $song = shift;
 
 	my $uri = 'googlemusic:track:' . $song->{storeId};
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < CACHE_TIME) {
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		return $cache{$uri}->{data};
 	}
 
@@ -159,7 +160,7 @@ sub to_slim_album_artist {
 sub get_track {
 	my $uri = shift;
 
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < CACHE_TIME) {
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		return $cache{$uri}->{data};
 	}
 
@@ -218,7 +219,7 @@ sub search {
 sub get_artist_info {
 	my $uri = shift;
 
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < CACHE_TIME) {
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		return $cache{$uri}->{data};
 	}
 
@@ -253,7 +254,7 @@ sub get_artist_info {
 sub get_album_info {
 	my $uri = shift;
 
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < CACHE_TIME) {
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		return $cache{$uri}->{data};
 	}
 
