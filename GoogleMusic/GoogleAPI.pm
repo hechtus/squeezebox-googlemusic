@@ -43,6 +43,9 @@ use Inline Python => <<'END_OF_PYTHON_CODE';
 import gmusicapi
 from gmusicapi import Mobileclient, Webclient, CallFailure
 
+def get_version():
+	return gmusicapi.__version__
+
 END_OF_PYTHON_CODE
 
 

@@ -54,6 +54,17 @@ sub getDisplayName {
 sub initPlugin {
 	my $class = shift;
 
+	# Chech version of gmusicapi first
+	if (Plugins::GoogleMusic::GoogleAPI::get_version() lt '3.0.0') {
+		$class->SUPER::initPlugin(
+			tag    => 'googlemusic',
+			feed   => \&badVersion,
+			is_app => 1,
+			weight => 1,
+			);
+		return;
+	}
+
 	$class->SUPER::initPlugin(
 		tag    => 'googlemusic',
 		feed   => \&toplevel,
@@ -90,6 +101,21 @@ sub initPlugin {
 
 sub shutdownPlugin {
 	$googleapi->logout();
+
+	return;
+}
+
+
+sub badVersion {
+	my ($client, $callback, $args) = @_;
+
+	my @menu;
+	push @menu, {
+		name => string('PLUGIN_GOOGLEMUSIC_BAD_VERSION'),
+		type => 'text',
+	};
+
+	$callback->(\@menu);
 
 	return;
 }

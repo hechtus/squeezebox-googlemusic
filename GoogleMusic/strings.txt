@@ -70,6 +70,10 @@ PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID
 	DE	Kein Androidgerät bei Google Play Music registriert. Es ist nicht möglich die Mobile Device ID automatisch zu ermitteln.
 	NL	Geen mobiel apparaat (telefoon of tablet) geregistreerd voor Google Play Muziek. Het is niet mogelijk om automatisch het mobiele apparaat ID te verkrijgen.
 
+PLUGIN_GOOGLEMUSIC_BAD_VERSION
+	EN	A more recent version of the Python package "gmusicapi" is required. Please install at least version 3.0.0 and restart Logitech Media Server.
+	DE	Eine neuere Version des Python Pakets "gmusicapi" ist nötig. Bitte installiere mindestens Version 3.0.0 und starte den Logitech Media Server neu.
+
 PLUGIN_GOOGLEMUSIC_MY_MUSIC
 	EN	My Music
 	DE	Meine Musik
