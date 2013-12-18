@@ -396,15 +396,14 @@ sub _tracks_for_album {
 	my $all_access = $opts->{'all_access'};
 	my $tracks;
 
-	# all_access is either forced by parameter or by album uri pattern 
-	my ($all_access_albumid) = $album->{'uri'} =~ m{^googlemusic:all_access_album:(.*)$}x;
-	if (!$all_access_albumid && $all_access) {
-		$all_access_albumid = $album->{'albumId'};
-	}
-
-	if ($all_access_albumid) {
-		my $info = $googleapi->get_album_info($all_access_albumid);
-		$tracks = $info->{'tracks'};
+	# All Access or All Access album?
+	if ($all_access || $album->{uri} =~ '^googlemusic:album:B') {
+		my $info = Plugins::GoogleMusic::AllAccess::get_album_info($album->{uri});
+		if ($info) {
+			$tracks = $info->{tracks};
+		} else {
+			$tracks = [];
+		}
 	} else {
 		$tracks = $album->{tracks};
 	}

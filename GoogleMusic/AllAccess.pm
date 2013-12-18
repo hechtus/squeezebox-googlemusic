@@ -18,7 +18,7 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
-# Cache song translation results for one hour
+# Cache track, album, and artist translation results for one hour
 use constant CACHE_TIME => 3600;
 tie my %cache, 'Tie::Cache::LRU', 100;
 
@@ -102,6 +102,7 @@ sub to_slim_artist {
 
 	my $name = $song->{artist};
 
+	# TODO: This seems not to work always!
 	my $uri = 'googlemusic:artist:' . $song->{artistId}[0];
 
 	my $image = '/html/images/artists.png';
@@ -212,7 +213,7 @@ sub search {
 	return ( $tracks, $albums, $artists );
 }
 
-# Get Information for an artistSearch All Access
+# Get information for an artist
 sub get_artist_info {
 	my $uri = shift;
 
@@ -237,7 +238,6 @@ sub get_artist_info {
 				push @$tracks, to_slim_track($track);
 			}
 		}
-		print Dumper $result;
 		if (exists $result->{albums}) {
 			for my $album (@{$result->{albums}}) {
 				push @$albums, album_to_slim_album($album);
@@ -251,6 +251,42 @@ sub get_artist_info {
 	}
 
 	return ( $tracks, $albums, $artists );
+}
+
+# Get information for an album
+sub get_album_info {
+	my $uri = shift;
+
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < CACHE_TIME) {
+		return $cache{$uri}->{data};
+	}
+
+	my ($id) = $uri =~ m{^googlemusic:album:(.*)$}x;
+
+	my $googleAlbum;
+	my $album;
+
+	if ($prefs->get('all_access_enabled')) {
+		eval {
+			# TODO: Make constants configurable.
+			# TODO: We can not pass a Python Boolean here :-/
+			$googleAlbum = $googleapi->get_album_info($id);
+			1;
+		} or do {
+			return;
+		};
+		
+	}
+
+	$album = album_to_slim_album($googleAlbum);
+
+	# Add to the cache
+	$cache{$uri} = {
+		data => $album,
+		time => time(),
+	};
+
+	return $album;
 }
 
 # Convert an All Access Google album dictionary to a consistent
@@ -283,6 +319,12 @@ sub album_to_slim_album {
 		cover => $cover,
 		tracks => [],
 	};
+
+	if (exists $googleAlbum->{tracks}) {
+		for my $track (@{$googleAlbum->{tracks}}) {
+			push @{$album->{tracks}}, to_slim_track($track);
+		}
+	}
 
 	return $album;
 }
