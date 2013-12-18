@@ -482,23 +482,23 @@ sub _show_menu_for_artist {
 	my $albums;
 
 	if ($all_access) {
-		my ($toptracks, $related_artists);
 		my $artistId = $artist->{uri};
-		($toptracks, $albums, $related_artists) = Plugins::GoogleMusic::AllAccess::get_artist_info($artistId);
+		my $info = Plugins::GoogleMusic::AllAccess::get_artist_info($artist->{uri});
 
+		# TODO Error handling
 		@menu = (
-			{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
+			{ name => string("ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
 			  type => 'link',
 			  url => \&_albums,
-			  passthrough => [ $albums, $opts ], },
-			{ name => string("PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @$toptracks . ")",
+			  passthrough => [ $info->{albums}, $opts ], },
+			{ name => string("PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
 			  type => 'link',
 			  url => \&_tracks,
-			  passthrough => [ $toptracks, $opts ], },
-			{ name => string("PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @$related_artists . ")",
+			  passthrough => [ $info->{tracks}, $opts ], },
+			{ name => string("PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
 			  type => 'link',
 			  url => \&_artists,
-			  passthrough => [ $related_artists, $opts ], },
+			  passthrough => [ $info->{related}, $opts ], },
 		);
 
 	} else {

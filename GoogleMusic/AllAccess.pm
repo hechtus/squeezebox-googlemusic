@@ -102,7 +102,8 @@ sub to_slim_artist {
 
 	my $name = $song->{artist};
 
-	# TODO: This seems not to work always!
+	# TODO: Sometimes the array is empty, sometimes it has multiple
+	# entries
 	my $uri = 'googlemusic:artist:' . $song->{artistId}[0];
 
 	my $image = '/html/images/artists.png';
@@ -217,40 +218,35 @@ sub search {
 sub get_artist_info {
 	my $uri = shift;
 
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < CACHE_TIME) {
+		return $cache{$uri}->{data};
+	}
+
 	my ($id) = $uri =~ m{^googlemusic:artist:(.*)$}x;
 
-	my $result;
-	my $tracks = [];
-	my $albums = [];
-	my $artists = [];
+	my $googleArtist;
+	my $artist;
 
 	if ($prefs->get('all_access_enabled')) {
 		eval {
 			# TODO: Make constants configurable.
 			# TODO: We can not pass a Python Boolean here :-/
-			$result = $googleapi->get_artist_info($id);
+			$googleArtist = $googleapi->get_artist_info($id);
 			1;
 		} or do {
-			return ([], [], []);
+			return;
 		};
-		if (exists $result->{topTracks}) {
-			for my $track (@{$result->{topTracks}}) {
-				push @$tracks, to_slim_track($track);
-			}
-		}
-		if (exists $result->{albums}) {
-			for my $album (@{$result->{albums}}) {
-				push @$albums, album_to_slim_album($album);
-			}
-		}
-		if (exists $result->{related_artists}) {
-			for my $artist (@{$result->{related_artists}}) {
-				push @$artists, artist_to_slim_artist($artist);
-			}
-		}
 	}
+	
+	$artist = artist_to_slim_artist($googleArtist);
 
-	return ( $tracks, $albums, $artists );
+	# Add to the cache
+	$cache{$uri} = {
+		data => $artist,
+		time => time(),
+	};
+
+	return $artist;
 }
 
 # Get information for an album
@@ -275,7 +271,6 @@ sub get_album_info {
 		} or do {
 			return;
 		};
-		
 	}
 
 	$album = album_to_slim_album($googleAlbum);
@@ -348,7 +343,26 @@ sub artist_to_slim_artist {
 		uri => $uri,
 		name => $name,
 		image => $image,
+		tracks => [],
+		albums => [],
+		related => [],
 	};
+
+	if (exists $googleArtist->{topTracks}) {
+		for my $track (@{$googleArtist->{topTracks}}) {
+			push @{$artist->{tracks}}, to_slim_track($track);
+		}
+	}
+	if (exists $googleArtist->{albums}) {
+		for my $album (@{$googleArtist->{albums}}) {
+			push @{$artist->{albums}}, album_to_slim_album($album);
+		}
+	}
+	if (exists $googleArtist->{related_artists}) {
+		for my $artist (@{$googleArtist->{related_artists}}) {
+			push @{$artist->{related}}, artist_to_slim_artist($artist);
+		}
+	}
 
 	return $artist;
 }
