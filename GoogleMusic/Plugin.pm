@@ -78,7 +78,9 @@ sub initPlugin {
 		Plugins::GoogleMusic::Settings->new;
 	}
 
-	Slim::Web::Pages->addRawFunction('/googlemusicimage', \&Plugins::GoogleMusic::Image::handler);
+	# Initialize submodules
+	Plugins::GoogleMusic::Image::init();
+	Plugins::GoogleMusic::Radio::init();
 
 	# initialize recent searches: need to add them to the LRU cache ordered by timestamp
 	my $recent_searches = $cache->get('recent_searches');
@@ -176,7 +178,7 @@ sub reload_library {
 sub all_access {
 	my ($client, $callback, $args) = @_;
 	my @menu = (
-		{ name => string('RADIO'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
+		{ name => string('PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
 		{ name => string('SEARCH'), type => 'search', url => \&search_all_access },
 		{ name => string('RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 1 },] },
 	);

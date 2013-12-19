@@ -7,7 +7,7 @@ PLUGIN_GOOGLEMUSIC
 
 PLUGIN_GOOGLEMUSIC_DESC
 	EN	Google Music plugin. Listen to your Google Music library and Google Music All Access.
-	DE	Google Music Plugin. Höre Musik aus Deiner Musiksammlung bei Google Music und Google Music All Access.
+	DE	Google Music Plugin. Höre Musik aus Deiner Musiksammlung bei Google Music und Google Music All-Inclusive.
 	NL	Google Music plugin. Luister naar je Google Music bibliotheek en Google Muziek All Access.
 
 PLUGIN_GOOGLEMUSIC_USERNAME
@@ -42,12 +42,12 @@ PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC
 
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED
 	EN	Enable All Access
-	DE	Verwende All Access
+	DE	Verwende All-Inclusive
 	NL	All Access aanzetten
 
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED_DESC
 	EN	This setting changes the menu structures in the plugin. Please note that for All Access you will need a paid subscription.
-	DE	Diese Einstellung verändert die Menustruktur des Plugins. Du benötigst hierfür einen kostenpflichtigen All Access Zugang.
+	DE	Diese Einstellung verändert die Menustruktur des Plugins. Du benötigst hierfür einen kostenpflichtigen All-Inclusive Zugang.
 	NL	Deze instelling wijzigt de menu structuur in de plugin. Let op dat je voor All Access een betaald abonnement moet hebben.
 
 PLUGIN_GOOGLEMUSIC_LOGIN_FAILED
@@ -81,8 +81,12 @@ PLUGIN_GOOGLEMUSIC_MY_MUSIC
 
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS
 	EN	All Access
-	DE	All Access
+	DE	All-Inclusive
 	NL	All Access
+
+PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS
+	EN	My Radio Stations
+	DE	Meine Radio Sender
 
 PLUGIN_GOOGLEMUSIC_BROWSE
 	EN	Browse Library

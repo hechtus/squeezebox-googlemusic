@@ -23,6 +23,11 @@ my %fetching; # hash of images being fetched
 
 my $id = 0;
 
+# Initialization of the module
+sub init {
+	Slim::Web::Pages->addRawFunction('/googlemusicimage', \&handler);
+}
+
 # TBD: We could do this, but for now we use the squeezebox image proxy
 sub handler {
 	my ($httpClient, $response) = @_;
