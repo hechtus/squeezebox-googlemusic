@@ -21,7 +21,9 @@ use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
 use Plugins::GoogleMusic::Library;
+use Plugins::GoogleMusic::AllAccess;
 use Plugins::GoogleMusic::Playlists;
+use Plugins::GoogleMusic::Radio;
 
 # TODO: move these constants to the configurable settings?
 # Note: these constants can't be passed to the python API
@@ -92,8 +94,8 @@ sub initPlugin {
 						   $prefs->get('password'))) {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
 	} else {
-		Plugins::GoogleMusic::Library::refresh();
-		Plugins::GoogleMusic::Playlists::refresh();
+		# Plugins::GoogleMusic::Library::refresh();
+		# Plugins::GoogleMusic::Playlists::refresh();
 	}
 
 	return;
@@ -174,6 +176,7 @@ sub reload_library {
 sub all_access {
 	my ($client, $callback, $args) = @_;
 	my @menu = (
+		{ name => string('RADIO'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
 		{ name => string('SEARCH'), type => 'search', url => \&search_all_access },
 		{ name => string('RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 1 },] },
 	);
