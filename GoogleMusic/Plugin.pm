@@ -96,8 +96,8 @@ sub initPlugin {
 						   $prefs->get('password'))) {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
 	} else {
-		# Plugins::GoogleMusic::Library::refresh();
-		# Plugins::GoogleMusic::Playlists::refresh();
+		Plugins::GoogleMusic::Library::refresh();
+		Plugins::GoogleMusic::Playlists::refresh();
 	}
 
 	return;

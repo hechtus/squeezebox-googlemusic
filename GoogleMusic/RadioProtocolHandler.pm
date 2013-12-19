@@ -3,6 +3,7 @@ package Plugins::GoogleMusic::RadioProtocolHandler;
 # Inspired by the Triode's Spotify Plugin
 
 use strict;
+use warnings;
 
 Slim::Player::ProtocolHandlers->registerHandler(googlemusicradio => __PACKAGE__);
 
@@ -16,13 +17,16 @@ sub overridePlayback {
 		return 1;
 	}
 
-	return undef;
+	return;
 }
 
-sub canDirectStream { 0 }
+sub canDirectStream {
+	return 0;
+}
 
-sub isRemote { 0 }
-
+sub isRemote {
+	return 0;
+}
 sub contentType {
 	return 'googlemusicradio';
 }

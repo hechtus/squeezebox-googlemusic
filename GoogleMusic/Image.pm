@@ -26,6 +26,8 @@ my $id = 0;
 # Initialization of the module
 sub init {
 	Slim::Web::Pages->addRawFunction('/googlemusicimage', \&handler);
+
+	return;
 }
 
 # TBD: We could do this, but for now we use the squeezebox image proxy

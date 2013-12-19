@@ -28,6 +28,8 @@ my @stopcommands = qw(clear loadtracks playtracks load play loadalbum playalbum)
 sub init {
 	Slim::Control::Request::addDispatch(['googlemusicradio', '_type'], [1, 0, 0, \&cliRequest]);
 	Slim::Control::Request::subscribe(\&commandCallback, [['playlist'], ['newsong', 'delete', @stopcommands]]);
+
+	return;
 }
 
 # Google Music All Access Radio menu
@@ -93,6 +95,8 @@ sub cliRequest {
 	}
 
 	$request->setStatusDone();
+
+	return;
 }
 
 sub _playRadio {
@@ -193,6 +197,8 @@ sub _playRadio {
 
 		}
 	}
+
+	return;
 }
 
 sub fetchStationTracks {
@@ -272,6 +278,8 @@ sub commandCallback {
 			_playRadio($master);
 		}
 	}
+
+	return;
 }
 
 
