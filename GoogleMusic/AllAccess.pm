@@ -360,8 +360,8 @@ sub artist_to_slim_artist {
 		}
 	}
 	if (exists $googleArtist->{related_artists}) {
-		for my $artist (@{$googleArtist->{related_artists}}) {
-			push @{$artist->{related}}, artist_to_slim_artist($artist);
+		for my $related (@{$googleArtist->{related_artists}}) {
+			push @{$artist->{related}}, artist_to_slim_artist($related);
 		}
 	}
 
