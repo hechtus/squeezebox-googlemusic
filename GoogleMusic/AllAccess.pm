@@ -235,8 +235,7 @@ sub get_artist_info {
 	if ($prefs->get('all_access_enabled')) {
 		eval {
 			# TODO: Make constants configurable.
-			# TODO: Quite ugly to pass Python Booleans
-			$googleArtist = $googleapi->get_artist_info($id, Plugins::GoogleMusic::GoogleAPI::py_True(), 10, 10);
+			$googleArtist = $googleapi->get_artist_info($id, $Inline::Python::Boolean::true, 10, 10);
 			1;
 		} or do {
  			$log->error("Not able to get the artist info for artist ID $id");
