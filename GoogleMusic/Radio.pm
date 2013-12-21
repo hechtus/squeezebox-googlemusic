@@ -44,6 +44,7 @@ sub menu {
 		$stations = $googleapi->get_all_stations();
 		1;
 	} or do {
+		$log->error("Not able to get user created radio stations");
 		$stations = [];
 	};
 

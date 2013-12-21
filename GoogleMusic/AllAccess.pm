@@ -165,16 +165,19 @@ sub get_track {
 	}
 
 	my ($id) = $uri =~ m{^googlemusic:track:(.*)$}x;
-	my $track;
+	my $song;
 
 	if ($prefs->get('all_access_enabled')) {
 		eval {
-			my $song = $googleapi->get_track_info($id);
-			$track = to_slim_track($song);
+			$song = $googleapi->get_track_info($id);
+			1;
+		} or do {
+ 			$log->error("Not able to get the track info for track ID $id");
+			return;
 		};
 	}
 
-	return $track;
+	return to_slim_track($song);
 }
 
 sub get_track_by_id {
@@ -198,6 +201,7 @@ sub search {
 			$result = $googleapi->search_all_access($query, 100);
 			1;
 		} or do {
+ 			$log->error("Not able to search All Access for: $query");
 			return ([], [], []);
 		};
 		for my $hit (@{$result->{song_hits}}) {
@@ -231,10 +235,11 @@ sub get_artist_info {
 	if ($prefs->get('all_access_enabled')) {
 		eval {
 			# TODO: Make constants configurable.
-			# TODO: We can not pass a Python Boolean here :-/
-			$googleArtist = $googleapi->get_artist_info($id);
+			# TODO: Quite ugly to pass Python Booleans
+			$googleArtist = $googleapi->get_artist_info($id, Plugins::GoogleMusic::GoogleAPI::py_True(), 10, 10);
 			1;
 		} or do {
+ 			$log->error("Not able to get the artist info for artist ID $id");
 			return;
 		};
 	}
@@ -265,11 +270,10 @@ sub get_album_info {
 
 	if ($prefs->get('all_access_enabled')) {
 		eval {
-			# TODO: Make constants configurable.
-			# TODO: We can not pass a Python Boolean here :-/
 			$googleAlbum = $googleapi->get_album_info($id);
 			1;
 		} or do {
+ 			$log->error("Not able to get the album info for album ID $id");
 			return;
 		};
 	}

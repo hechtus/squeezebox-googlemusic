@@ -46,6 +46,12 @@ from gmusicapi import Mobileclient, Webclient, CallFailure
 def get_version():
 	return gmusicapi.__version__
 
+def py_True():
+	return True
+
+def py_False():
+	return False
+
 END_OF_PYTHON_CODE
 
 
