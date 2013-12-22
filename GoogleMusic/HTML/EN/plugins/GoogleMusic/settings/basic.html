@@ -21,6 +21,18 @@
 			<input type="checkbox" name="all_access_enabled" [% IF prefs.all_access_enabled %] checked [% END %]>
 		[% END %]
 
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS" desc="PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS_DESC" %]
+			<input type="text" class="stdedit" name="max_search_items" id="max_search_items" value="[% prefs.max_search_items %]" size="20" />
+		[% END %]
+
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MAX_ARTIST_TRACKS" desc="PLUGIN_GOOGLEMUSIC_MAX_ARTIST_TRACKS_DESC" %]
+			<input type="text" class="stdedit" name="max_artist_tracks" id="max_artist_tracks" value="[% prefs.max_artist_tracks %]" size="20" />
+		[% END %]
+
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS" desc="PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS_DESC" %]
+			<input type="text" class="stdedit" name="max_related_artists" id="max_related_artists" value="[% prefs.max_related_artists %]" size="20" />
+		[% END %]
+
 	[% END %]
 
 [% PROCESS settings/footer.html %]

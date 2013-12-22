@@ -20,6 +20,12 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
+$prefs->init({
+	max_search_items => 100,
+	max_artist_tracks => 25,
+	max_related_artists => 10,
+});
+
 sub name {
 	return Slim::Web::HTTP::CSRF->protectName('PLUGIN_GOOGLEMUSIC');
 }
@@ -63,13 +69,17 @@ sub handler {
 
 	if ($params->{'saveSettings'}) {
 		$prefs->set('all_access_enabled',  $params->{'all_access_enabled'} ? 1 : 0);
+		for my $param(qw(max_search_items max_artist_tracks max_related_artists)) {
+			if ($params->{ $param } ne $prefs->get( $param )) {
+				$prefs->set($param, $params->{ $param });
+			}
+		}
 	}
 
-	$params->{'prefs'}->{'username'} = $prefs->get('username');
-	# To avoid showing the password remove this
-	$params->{'prefs'}->{'password'} = $prefs->get('password');
-	$params->{'prefs'}->{'device_id'} = $prefs->get('device_id');
-	$params->{'prefs'}->{'all_access_enabled'} = $prefs->get('all_access_enabled');
+	# To avoid showing the password remove it from the list
+	for my $param(qw(username password device_id all_access_enabled max_search_items max_artist_tracks max_related_artists)) {
+		$params->{'prefs'}->{$param} = $prefs->get($param);
+	}
 
 	return $class->SUPER::handler($client, $params);
 }

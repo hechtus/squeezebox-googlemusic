@@ -197,8 +197,7 @@ sub search {
 
 	if ($prefs->get('all_access_enabled')) {
 		eval {
-			# TODO: Make constanst configurable
-			$result = $googleapi->search_all_access($query, 100);
+			$result = $googleapi->search_all_access($query, $prefs->get('max_search_items'));
 			1;
 		} or do {
  			$log->error("Not able to search All Access for: $query");
@@ -234,8 +233,7 @@ sub get_artist_info {
 
 	if ($prefs->get('all_access_enabled')) {
 		eval {
-			# TODO: Make constants configurable.
-			$googleArtist = $googleapi->get_artist_info($id, $Inline::Python::Boolean::true, 10, 10);
+			$googleArtist = $googleapi->get_artist_info($id, $Inline::Python::Boolean::true, $prefs->get('max_artist_tracks'), $prefs->get('max_related_artists'));
 			1;
 		} or do {
  			$log->error("Not able to get the artist info for artist ID $id");

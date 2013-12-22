@@ -50,6 +50,30 @@ PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED_DESC
 	DE	Diese Einstellung verändert die Menustruktur des Plugins. Du benötigst hierfür einen kostenpflichtigen All-Inclusive Zugang.
 	NL	Deze instelling wijzigt de menu structuur in de plugin. Let op dat je voor All Access een betaald abonnement moet hebben.
 
+PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS
+	EN	Maximum number of All Access search results
+	DE	Maximale All-Inclusive Suchergebnisse
+
+PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS_DESC
+	EN	Limits the number of All Access search results for album, artists, and tracks. If you are having performance or bandwidth problems or difficulties to visualize the search results you should decrease this value.
+	DE	Beschränkt die Anzahl der All-Inclusive Suchergebnisse für Albums, Interpreten und Titel. Wenn Du Probleme mit der Plugin-Performance, der Bandbreite oder Schwierigkeiten hast, die Suchergebnisse anzuzeigen, kannst Du diesen Wert verringern.
+
+PLUGIN_GOOGLEMUSIC_MAX_ARTIST_TRACKS
+	EN	Maximum number of All Access tracks per artist
+	DE	Maximale All-Inclusive Titel pro Interpret
+
+PLUGIN_GOOGLEMUSIC_MAX_ARTIST_TRACKS_DESC
+	EN	Limits the number of All Access tracks per Artist. If you are having performance or bandwidth problems or difficulties to visualize all tracks you should decrease this value.
+	DE	Beschränkt die Anzahl der All-Inclusive Titel pro Interpret. Wenn Du Probleme mit der Plugin-Performance, der Bandbreite oder Schwierigkeiten hast, die Titel anzuzeigen, kannst Du diesen Wert verringern.
+
+PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS
+	EN	Maximum number of All Access related artists
+	DE	Maximale All-Inclusive ähnliche Interpreten
+
+PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS_DESC
+	EN	Limits the number of All Access releated artists. If you are having performance or bandwidth problems or difficulties to visualize all related artists you should decrease this value.
+	DE	Beschränkt die Anzahl der All-Inclusive ähnlichen Interpreten. Wenn Du Probleme mit der Plugin-Performance, der Bandbreite oder Schwierigkeiten hast, die ähnlichen Interpreten anzuzeigen, kannst Du diesen Wert verringern.
+
 PLUGIN_GOOGLEMUSIC_LOGIN_FAILED
 	EN	Login to Google Play Music failed. Bad username or password.
 	DE	Das Einloggen bei Google Play Music schlug fehl. Der Benutzername oder das Passwort sind falsch.
@@ -105,10 +129,10 @@ PLUGIN_GOOGLEMUSIC_LIBRARY_RELOADED
 
 PLUGIN_GOOGLEMUSIC_TOP_TRACKS
 	EN	Top tracks
-	DE	Top tracks
+	DE	Top-Titel
 	NL	Top tracks
 
 PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS
 	EN	Related artists
-	DE	Verwandte Interpreten
+	DE	Ähnliche Interpreten
 	NL	Vergelijkbare artiesten
