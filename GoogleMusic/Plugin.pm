@@ -15,7 +15,7 @@ use Slim::Control::Request;
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
-use Slim::Utils::Strings qw(string);
+use Slim::Utils::Strings qw(string cstring);
 
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
@@ -45,7 +45,7 @@ BEGIN {
 	$log = Slim::Utils::Log->addLogCategory({
 		'category'     => 'plugin.googlemusic',
 		'defaultLevel' => 'WARN',
-		'description'  => string('PLUGIN_GOOGLEMUSIC'),
+		'description'  => 'PLUGIN_GOOGLEMUSIC',
 	});
 }
 
@@ -115,7 +115,7 @@ sub badVersion {
 
 	my @menu;
 	push @menu, {
-		name => string('PLUGIN_GOOGLEMUSIC_BAD_VERSION'),
+		name => cstring($client, 'PLUGIN_GOOGLEMUSIC_BAD_VERSION'),
 		type => 'text',
 	};
 
@@ -131,8 +131,8 @@ sub toplevel {
 
 	if ($prefs->get('all_access_enabled')) {
 		@menu = (
-			{ name => string('PLUGIN_GOOGLEMUSIC_MY_MUSIC'), type => 'link', url => \&my_music },
-			{ name => string('PLUGIN_GOOGLEMUSIC_ALL_ACCESS'), type => 'link', url => \&all_access },
+			{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_MUSIC'), type => 'link', url => \&my_music },
+			{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_ALL_ACCESS'), type => 'link', url => \&all_access },
 		);
 		$callback->(\@menu);
 	} else {
@@ -146,11 +146,11 @@ sub toplevel {
 sub my_music {
 	my ($client, $callback, $args) = @_;
 	my @menu = (
-		{ name => string('PLUGIN_GOOGLEMUSIC_BROWSE'), type => 'link', url => \&search },
-		{ name => string('PLAYLISTS'), type => 'link', url => \&_playlists },
-		{ name => string('SEARCH'), type => 'search', url => \&search },
-		{ name => string('RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 0 },] },
-		{ name => string('PLUGIN_GOOGLEMUSIC_RELOAD_LIBRARY'), type => 'func', url => \&reload_library },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_BROWSE'), type => 'link', url => \&search },
+		{ name => cstring($client, 'PLAYLISTS'), type => 'link', url => \&_playlists },
+		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search },
+		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 0 },] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RELOAD_LIBRARY'), type => 'func', url => \&reload_library },
 	);
 
 	$callback->(\@menu);
@@ -166,7 +166,7 @@ sub reload_library {
 
 	my @menu;
 	push @menu, {
-		'name' => string('PLUGIN_GOOGLEMUSIC_LIBRARY_RELOADED'),
+		'name' => cstring($client, 'PLUGIN_GOOGLEMUSIC_LIBRARY_RELOADED'),
 		'type' => 'text',
 	};
 
@@ -178,9 +178,9 @@ sub reload_library {
 sub all_access {
 	my ($client, $callback, $args) = @_;
 	my @menu = (
-		{ name => string('PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
-		{ name => string('SEARCH'), type => 'search', url => \&search_all_access },
-		{ name => string('RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 1 },] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
+		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search_all_access },
+		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 1 },] },
 	);
 
 	$callback->(\@menu);
@@ -216,7 +216,7 @@ sub _playlists {
 
 	if (!scalar @menu) {
 		push @menu, {
-			'name' => string('EMPTY'),
+			'name' => cstring($client, 'EMPTY'),
 			'type' => 'text',
 		}
 
@@ -241,15 +241,15 @@ sub search {
 	my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::search({'any' => \@query});
 
 	my @menu = (
-		{ name => string("ARTISTS") . " (" . scalar @$artists . ")",
+		{ name => cstring($client, "ARTISTS") . " (" . scalar @$artists . ")",
 		  type => 'link',
 		  url => \&_artists,
 		  passthrough => [ $artists, { sortArtists => 1, sortAlbums => 1 } ] },
-		{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
+		{ name => cstring($client, "ALBUMS") . " (" . scalar @$albums . ")",
 		  type => 'link',
 		  url => \&_albums,
 		  passthrough => [ $albums, { sortAlbums => 1 } ] },
-		{ name => string("SONGS") . " (" . scalar @$tracks . ")",
+		{ name => cstring($client, "SONGS") . " (" . scalar @$tracks . ")",
 		  type => 'playlist',
 		  url => \&_tracks,
 		  passthrough => [ $tracks, { showArtist => 1, showAlbum => 1, sortTracks => 1 } ], },
@@ -272,15 +272,15 @@ sub search_all_access {
 	my ($tracks, $albums, $artists) = Plugins::GoogleMusic::AllAccess::search($search);
 
 	my @menu = (
-		{ name => string("ARTISTS") . " (" . scalar @$artists . ")",
+		{ name => cstring($client, "ARTISTS") . " (" . scalar @$artists . ")",
 		  type => 'link',
 		  url => \&_artists,
 		  passthrough => [ $artists, { all_access => 1, } ], },
-		{ name => string("ALBUMS") . " (" . scalar @$albums . ")",
+		{ name => cstring($client, "ALBUMS") . " (" . scalar @$albums . ")",
 		  type => 'link',
 		  url => \&_albums,
 		  passthrough => [ $albums, { all_access => 1, sortAlbums => 1 } ], },
-		{ name => string("SONGS") . " (" . scalar @$tracks . ")",
+		{ name => cstring($client, "SONGS") . " (" . scalar @$tracks . ")",
 		  type => 'playlist',
 		  url => \&_tracks,
 		  passthrough => [ $tracks, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
@@ -332,7 +332,7 @@ sub recent_searches {
 	}
 
 	$items = [ {
-		name => string('EMPTY'),
+		name => cstring($client, 'EMPTY'),
 		type => 'text',
 	} ] if !scalar @$items;
 
@@ -369,7 +369,7 @@ sub _show_track {
 	};
 
 	if ($showArtist) {
-		$menu->{'name'} .= " " . string('BY') . " " . $track->{artist}->{name};
+		$menu->{'name'} .= " " . cstring($client, 'BY') . " " . $track->{artist}->{name};
 		$menu->{'line2'} = $track->{artist}->{name};
 	}
 
@@ -411,7 +411,7 @@ sub _tracks {
 
 	if (!scalar @menu) {
 		push @menu, {
-			'name' => string('EMPTY'),
+			'name' => cstring($client, 'EMPTY'),
 			'type' => 'text',
 		}
 	}
@@ -493,7 +493,7 @@ sub _albums {
 
 	if (!scalar @menu) {
 		push @menu, {
-			'name' => string('EMPTY'),
+			'name' => cstring($client, 'EMPTY'),
 			'type' => 'text',
 		}
 	}
@@ -518,15 +518,15 @@ sub _show_menu_for_artist {
 
 		# TODO Error handling
 		@menu = (
-			{ name => string("ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
+			{ name => cstring($client, "ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
 			  type => 'link',
 			  url => \&_albums,
 			  passthrough => [ $info->{albums}, $opts ], },
-			{ name => string("PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
+			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
 			  type => 'link',
 			  url => \&_tracks,
 			  passthrough => [ $info->{tracks}, $opts ], },
-			{ name => string("PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
+			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
 			  type => 'link',
 			  url => \&_artists,
 			  passthrough => [ $info->{related}, $opts ], },
@@ -551,7 +551,7 @@ sub _show_menu_for_artist {
 
 	if (!scalar @menu) {
 		push @menu, {
-			'name' => string('EMPTY'),
+			'name' => cstring($client, 'EMPTY'),
 			'type' => 'text',
 		}
 	}
@@ -593,7 +593,7 @@ sub _artists {
 
 	if (!scalar @menu) {
 		push @menu, {
-			'name' => string('EMPTY'),
+			'name' => cstring($client, 'EMPTY'),
 			'type' => 'text',
 		}
 	}

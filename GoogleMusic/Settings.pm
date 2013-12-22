@@ -11,7 +11,7 @@ use base qw(Slim::Web::Settings);
 
 use Slim::Utils::Log;
 use Slim::Utils::Misc;
-use Slim::Utils::Strings qw(string);
+use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Prefs;
 
 use Plugins::GoogleMusic::GoogleAPI;
@@ -38,7 +38,7 @@ sub handler {
 	my ($class, $client, $params) = @_;
 
 	if (!$googleapi->is_authenticated()) {
-		$params->{'warning'} = string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN');
+		$params->{'warning'} = cstring($client, 'PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN');
 	}
 
 	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'}) {
@@ -49,9 +49,9 @@ sub handler {
 		$googleapi->logout();
 		# Now try to login with new username/password
 		if(!$googleapi->login($params->{'username'}, $params->{'password'})) {
-			$params->{'warning'} = string('PLUGIN_GOOGLEMUSIC_LOGIN_FAILED');
+			$params->{'warning'} = cstring($client, 'PLUGIN_GOOGLEMUSIC_LOGIN_FAILED');
 		} else {
-			$params->{'warning'} = string('PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS');
+			$params->{'warning'} = cstring($client, 'PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS');
 			if ($params->{'device_id'}) {
 				$prefs->set('device_id', $params->{'device_id'});
 			} else {
@@ -61,7 +61,7 @@ sub handler {
 				if ($device_id) {
 					$prefs->set('device_id', $device_id);
 				} else {
-					$params->{'warning'} .= " " . string('PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID');
+					$params->{'warning'} .= " " . cstring($client, 'PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID');
 				}
 			}
 		}
