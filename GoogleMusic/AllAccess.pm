@@ -101,11 +101,15 @@ sub to_slim_album {
 sub to_slim_artist {
 	my $song = shift;
 
+	my $uri;
 	my $name = $song->{artist};
 
-	# TODO: Sometimes the array is empty, sometimes it has multiple
-	# entries
-	my $uri = 'googlemusic:artist:' . $song->{artistId}[0];
+	# TODO: Sometimes the array has multiple entries
+	if (scalar $song->{artistId}) {
+		$uri = 'googlemusic:artist:' . $song->{artistId}[0];
+	} else {
+		$uri = 'googlemusic:artist:unknown';
+	}
 
 	my $image = '/html/images/artists.png';
 	if (exists $song->{artistArtRef}) {
@@ -293,7 +297,7 @@ sub album_to_slim_album {
 
 	# TODO!
 	my $artist = {
-		uri => 'googlemusic:album:' . $googleAlbum->{artistId}[0],
+		uri => 'googlemusic:artist:' . $googleAlbum->{artistId}[0],
 		name => $googleAlbum->{artist},
 	};
 
