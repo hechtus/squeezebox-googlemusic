@@ -219,7 +219,14 @@ sub fetchStationTracks {
 
 	# Convert to slim format and add to the list of tracks
 	for my $googleTrack (@{$googleTracks}) {
-		push @{$tracks}, Plugins::GoogleMusic::AllAccess::to_slim_track($googleTrack);
+		my $track;
+		# Check if the track is in My Library
+		if (exists $googleTrack->{id}) {
+			$track = Plugins::GoogleMusic::Library::get_track_by_id($googleTrack->{id});
+		} else {
+			$track = Plugins::GoogleMusic::AllAccess::to_slim_track($googleTrack);
+		}
+		push @{$tracks}, $track;
 	}
 
 	my $newtracks = scalar @{$googleTracks || []};
