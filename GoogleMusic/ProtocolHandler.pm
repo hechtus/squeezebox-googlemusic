@@ -86,15 +86,30 @@ sub scanStream {
 sub getNextTrack {
 	my ($class, $song, $successCb, $errorCb) = @_;
 
+	my $client = $song->master();
 	my $url = $song->currentTrack()->url;
 	my ($id) = $url =~ m{^googlemusic:track:(.*)$}x;
+	my $trackURL;
 
-	my $trackURL = $googleapi->get_stream_url($id, $prefs->get('device_id'));
+	eval {
+		$trackURL = $googleapi->get_stream_url($id, $prefs->get('device_id'));
+		1;
+	} or do {
+		# We didn't get the next track to play
+		$log->error("Looking up stream url for url $url failed.");
 
-	if (!$trackURL) {
-		$log->error("Looking up stream url for ID $id failed.");
-		$errorCb->();
-	}
+		my $error = ( $client->isPlaying(1) && $client->playingSong()->track()->url =~ /^googlemusic:track:/ )
+					? 'PLUGIN_GOOGLEMUSIC_NO_NEXT_TRACK'
+					: 'PLUGIN_GOOGLEMUSIC_NO_TRACK';
+		
+		$errorCb->($error, $url);
+
+		# Set the title after the errro callback so the current title
+		# is still the title name during the callback
+		Slim::Music::Info::setCurrentTitle( $url, $client->string('PLUGIN_GOOGLEMUSIC_NO_TRACK') );
+			
+		return;
+	};
 
 	$song->streamUrl($trackURL);
 

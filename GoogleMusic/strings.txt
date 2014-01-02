@@ -136,3 +136,22 @@ PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS
 	EN	Related artists
 	DE	Ähnliche Interpreten
 	NL	Vergelijkbare artiesten
+
+PLUGIN_GOOGLEMUSIC_NO_TRACK
+	DE	Google Music Titel kann nicht abgerufen werden.
+	EN	Unable to retrieve Google Music track.
+
+PLUGIN_GOOGLEMUSIC_NO_NEXT_TRACK
+	CS	Není možné načíst další stopu, zkuste znovu stiskem PLAY.
+	DA	Det næste nummer kunne ikke hentes. Tryk på Afspil for at forsøge igen.
+	DE	Nächster Titel konnte nicht geladen werden, drücken Sie zum Wiederholen PLAY.
+	EN	Unable to retrieve next track, press PLAY to try again.
+	ES	Imposible obtener pista siguiente. Pulse PLAY para volver a intentarlo.
+	FI	Seuraavaa raitaa ei voi hakea, yritä uudelleen painamalla toistonäppäintä.
+	FR	Impossible d'accéder à la piste suivante, appuyez sur PLAY pour réessayer.
+	IT	Impossibile recuperare brano successivo. Premere PLAY per riprovare.
+	NL	Kan volgend nummer niet ophalen. Druk op PLAY om het nogmaals te proberen.
+	NO	Får ikke til å hente neste spor, trykk på PLAY for å prøve på nytt.
+	PL	Nie można pobrać następnego utworu, naciśnij przycisk PLAY, aby spróbować ponownie.
+	RU	Невозможно извлечь следующую дорожку. Нажмите кнопку воспроизведения, чтобы повторить попытку.
+	SV	Det gick inte att hämta nästa spår. Tryck på Spela om du vill försöka igen.
