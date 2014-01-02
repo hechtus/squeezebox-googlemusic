@@ -155,3 +155,17 @@ PLUGIN_GOOGLEMUSIC_NO_NEXT_TRACK
 	PL	Nie można pobrać następnego utworu, naciśnij przycisk PLAY, aby spróbować ponownie.
 	RU	Невозможно извлечь следующую дорожку. Нажмите кнопку воспроизведения, чтобы повторить попытку.
 	SV	Det gick inte att hämta nästa spår. Tryck på Spela om du vill försöka igen.
+
+PLUGIN_GOOGLEMUSIC_ON_GOOGLEMUSIC
+	CS	Na Google Music
+	DA	På Google Music
+	DE	Bei Google Music
+	EN	On Google Music
+	ES	En Google Music
+	FR	Sur Google Music
+	IT	Su Google Music
+	NL	Op Google Music
+	NO	På Google Music
+	PL	W usłudze Google Music
+	RU	На Google Music
+	SV	På Google Music

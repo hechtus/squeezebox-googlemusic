@@ -103,7 +103,12 @@ sub initPlugin {
 		Plugins::GoogleMusic::Playlists::refresh();
 	}
 
-	Slim::Menu::GlobalSearch->registerInfoProvider( googlemusiclibrary => (
+	Slim::Menu::TrackInfo->registerInfoProvider( googlemusic => (
+		after => 'middle',
+		func  => \&trackInfoMenu,
+	) );
+
+	Slim::Menu::GlobalSearch->registerInfoProvider( googlemusic => (
 		after => 'middle',
 		name  => 'PLUGIN_GOOGLEMUSIC',
 		func  => \&searchInfoMenu,
@@ -610,6 +615,58 @@ sub _artists {
 	$callback->(\@menu);
 
 	return;
+}
+
+sub trackInfoMenu {
+	my ($client, $url, $track, $remoteMeta) = @_;
+	
+	return unless $client;
+	return unless $prefs->get('all_access_enabled');
+
+	my $artist = $track->remote ? $remoteMeta->{artist} : $track->artistName;
+	my $album  = $track->remote ? $remoteMeta->{album}  : ( $track->album ? $track->album->name : undef );
+	my $title  = $track->remote ? $remoteMeta->{title}  : $track->title;
+
+	my @menu;
+
+	if ($artist) {
+		push @menu, {
+			name        => cstring($client, 'ARTIST') . ": " . $artist,
+			url         => \&search_all_access,
+			passthrough => [{ search => $artist },],
+			type        => 'link',
+			favorites   => 0,
+		},
+	};
+
+	if ($album) {
+		push @menu, {
+			name        => cstring($client, 'ALBUM') . ": " . $album,
+			url         => \&search_all_access,
+			passthrough => [{ search => "$artist $album" },],
+			type        => 'link',
+			favorites   => 0,
+		},
+	};
+
+	if ($track) {
+		push @menu, {
+			name        => cstring($client, 'TRACK') . ": " . $title,
+			url         => \&search_all_access,
+			passthrough => [{ search => "$artist $title" },],
+			type        => 'link',
+			favorites   => 0,
+		},
+	};
+
+	if (scalar @menu) {
+		return {
+			name  => string('PLUGIN_GOOGLEMUSIC_ON_GOOGLEMUSIC'),
+			items => \@menu,
+		};
+	}
+
+	return undef;
 }
 
 sub searchInfoMenu {
