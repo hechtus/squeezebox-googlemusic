@@ -661,7 +661,7 @@ sub trackInfoMenu {
 
 	if (scalar @menu) {
 		return {
-			name  => string('PLUGIN_GOOGLEMUSIC_ON_GOOGLEMUSIC'),
+			name  => cstring($client, 'PLUGIN_GOOGLEMUSIC_ON_GOOGLEMUSIC'),
 			items => \@menu,
 		};
 	}
