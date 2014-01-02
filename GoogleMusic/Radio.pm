@@ -18,7 +18,7 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
-my $PLAYLIST_MAXLENGTH = 10;
+my $PLAYLIST_MAXLENGTH = 25;
 
 my @stopcommands = qw(clear loadtracks playtracks load play loadalbum playalbum);
 
