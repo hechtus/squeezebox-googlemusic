@@ -9,6 +9,8 @@ use strict;
 use warnings;
 use base qw(Slim::Plugin::OPMLBased);
 
+use Encode qw(decode_utf8);
+
 use Plugins::GoogleMusic::Settings;
 use Scalar::Util qw(blessed);
 use Slim::Control::Request;
@@ -16,6 +18,7 @@ use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(string cstring);
+use Slim::Menu::GlobalSearch;
 
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
@@ -99,6 +102,12 @@ sub initPlugin {
 		Plugins::GoogleMusic::Library::refresh();
 		Plugins::GoogleMusic::Playlists::refresh();
 	}
+
+	Slim::Menu::GlobalSearch->registerInfoProvider( googlemusiclibrary => (
+		after => 'middle',
+		name  => 'PLUGIN_GOOGLEMUSIC',
+		func  => \&searchInfoMenu,
+	) );
 
 	return;
 }
@@ -603,5 +612,24 @@ sub _artists {
 	return;
 }
 
+sub searchInfoMenu {
+	my ($client, $tags) = @_;
+
+	# For some reason the search string gets encoded
+	my $query = decode_utf8($tags->{'search'});
+
+	return {
+		name => cstring($client, 'PLUGIN_GOOGLEMUSIC'),
+		items => [{
+			name        => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_MUSIC'),
+			url         => \&search,
+			passthrough => [{ search => $query },],
+		},{
+			name        => cstring($client, 'PLUGIN_GOOGLEMUSIC_ALL_ACCESS'),
+			url         => \&search_all_access,
+			passthrough => [{ search => $query },],
+		}],
+	};
+}
 
 1;
