@@ -628,6 +628,7 @@ sub trackInfoMenu {
 	my $title  = $track->remote ? $remoteMeta->{title}  : $track->title;
 
 	my @menu;
+	my $item;
 
 	if ($artist) {
 		push @menu, {
@@ -643,7 +644,7 @@ sub trackInfoMenu {
 		push @menu, {
 			name        => cstring($client, 'ALBUM') . ": " . $album,
 			url         => \&search_all_access,
-			passthrough => [{ search => "$artist $album" },],
+			passthrough => [{ search => "$album" },],
 			type        => 'link',
 			favorites   => 0,
 		},
@@ -660,13 +661,13 @@ sub trackInfoMenu {
 	};
 
 	if (scalar @menu) {
-		return {
+		$item = {
 			name  => cstring($client, 'PLUGIN_GOOGLEMUSIC_ON_GOOGLEMUSIC'),
 			items => \@menu,
 		};
 	}
 
-	return undef;
+	return $item;
 }
 
 sub searchInfoMenu {
