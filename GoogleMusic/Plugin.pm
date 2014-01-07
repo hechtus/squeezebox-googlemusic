@@ -110,7 +110,6 @@ sub initPlugin {
 
 	Slim::Menu::GlobalSearch->registerInfoProvider( googlemusic => (
 		after => 'middle',
-		name  => 'PLUGIN_GOOGLEMUSIC',
 		func  => \&searchInfoMenu,
 	) );
 
@@ -537,9 +536,9 @@ sub _show_menu_for_artist {
 			  url => \&_albums,
 			  passthrough => [ $info->{albums}, $opts ], },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
-			  type => 'link',
+			  type => 'playlist',
 			  url => \&_tracks,
-			  passthrough => [ $info->{tracks}, $opts ], },
+			  passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1 } ], },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
 			  type => 'link',
 			  url => \&_artists,
@@ -633,8 +632,8 @@ sub trackInfoMenu {
 	if ($artist) {
 		push @menu, {
 			name        => cstring($client, 'ARTIST') . ": " . $artist,
-			url         => \&search_all_access,
-			passthrough => [{ search => $artist },],
+			url         => \&_artists,
+			passthrough => [Plugins::GoogleMusic::AllAccess::search($artist)->{artists}, { all_access => 1, }, ],
 			type        => 'link',
 			favorites   => 0,
 		},
@@ -643,8 +642,8 @@ sub trackInfoMenu {
 	if ($album) {
 		push @menu, {
 			name        => cstring($client, 'ALBUM') . ": " . $album,
-			url         => \&search_all_access,
-			passthrough => [{ search => "$album" },],
+			url         => \&_albums,
+			passthrough => [Plugins::GoogleMusic::AllAccess::search($album)->{albums}, { all_access => 1, }, ],
 			type        => 'link',
 			favorites   => 0,
 		},
@@ -653,9 +652,9 @@ sub trackInfoMenu {
 	if ($track) {
 		push @menu, {
 			name        => cstring($client, 'TRACK') . ": " . $title,
-			url         => \&search_all_access,
-			passthrough => [{ search => "$artist $title" },],
-			type        => 'link',
+			url         => \&_tracks,
+			passthrough => [Plugins::GoogleMusic::AllAccess::search("$artist $title")->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, }, ],
+			type        => 'playlist',
 			favorites   => 0,
 		},
 	};
