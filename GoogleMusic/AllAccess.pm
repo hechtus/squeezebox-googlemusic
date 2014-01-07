@@ -194,32 +194,45 @@ sub get_track_by_id {
 sub search {
 	my $query = shift;
 
-	my $result;
-	my $tracks = [];
-	my $albums = [];
-	my $artists = [];
+	my $uri = 'googlemusic:search:' . $query;
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
+		print "using cached search for $uri\n";
+		return $cache{$uri}->{data};
+	}
+
+	my $googleResult;
+	my $result = {
+		tracks => [],
+		albums => [],
+		artists => [],
+	};		  
 
 	if ($prefs->get('all_access_enabled')) {
 		eval {
-			$result = $googleapi->search_all_access($query, $prefs->get('max_search_items'));
+			$googleResult = $googleapi->search_all_access($query, $prefs->get('max_search_items'));
 			1;
 		} or do {
  			$log->error("Not able to search All Access for: $query");
 			return ([], [], []);
 		};
-		for my $hit (@{$result->{song_hits}}) {
-			push @$tracks, to_slim_track($hit->{track});
+		for my $hit (@{$googleResult->{song_hits}}) {
+			push @{$result->{tracks}}, to_slim_track($hit->{track});
 		}
-		for my $hit (@{$result->{album_hits}}) {
-			push @$albums, album_to_slim_album($hit->{album});
+		for my $hit (@{$googleResult->{album_hits}}) {
+			push @{$result->{albums}}, album_to_slim_album($hit->{album});
 		}
-		for my $hit (@{$result->{artist_hits}}) {
-			push @$artists, artist_to_slim_artist($hit->{artist});
+		for my $hit (@{$googleResult->{artist_hits}}) {
+			push @{$result->{artists}}, artist_to_slim_artist($hit->{artist});
 		}
 	}
 
+	# Add to the cache
+	$cache{$uri} = {
+		data => $result,
+		time => time(),
+	};
 
-	return ( $tracks, $albums, $artists );
+	return $result;
 }
 
 # Get information for an artist

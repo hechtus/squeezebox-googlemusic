@@ -283,21 +283,21 @@ sub search_all_access {
 	my $search = $args->{'search'} || '';
 	add_recent_search($search) if $search;
 
-	my ($tracks, $albums, $artists) = Plugins::GoogleMusic::AllAccess::search($search);
+	my $result = Plugins::GoogleMusic::AllAccess::search($search);
 
 	my @menu = (
-		{ name => cstring($client, "ARTISTS") . " (" . scalar @$artists . ")",
+		{ name => cstring($client, "ARTISTS") . " (" . scalar @{$result->{artists}} . ")",
 		  type => 'link',
 		  url => \&_artists,
-		  passthrough => [ $artists, { all_access => 1, } ], },
-		{ name => cstring($client, "ALBUMS") . " (" . scalar @$albums . ")",
+		  passthrough => [ $result->{artists}, { all_access => 1, } ], },
+		{ name => cstring($client, "ALBUMS") . " (" . scalar @{$result->{albums}} . ")",
 		  type => 'link',
 		  url => \&_albums,
-		  passthrough => [ $albums, { all_access => 1, sortAlbums => 1 } ], },
-		{ name => cstring($client, "SONGS") . " (" . scalar @$tracks . ")",
+		  passthrough => [ $result->{albums}, { all_access => 1, sortAlbums => 1 } ], },
+		{ name => cstring($client, "SONGS") . " (" . scalar @{$result->{tracks}} . ")",
 		  type => 'playlist',
 		  url => \&_tracks,
-		  passthrough => [ $tracks, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
+		  passthrough => [ $result->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
 	);
 
 	$callback->(\@menu);
