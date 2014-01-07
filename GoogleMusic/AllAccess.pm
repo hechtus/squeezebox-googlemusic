@@ -196,7 +196,6 @@ sub search {
 
 	my $uri = 'googlemusic:search:' . $query;
 	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
-		print "using cached search for $uri\n";
 		return $cache{$uri}->{data};
 	}
 
