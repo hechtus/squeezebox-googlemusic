@@ -74,7 +74,6 @@ sub scanStream {
 	$track->title($googleTrack->{'title'});
 	$track->tracknum($googleTrack->{'trackNumber'});
 	$track->filesize($googleTrack->{'filesize'});
-	$track->audio(1);
 	$track->year($googleTrack->{'year'});
 	$track->cover($googleTrack->{'cover'});
 

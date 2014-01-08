@@ -165,6 +165,7 @@ sub _playRadio {
 				title   => $entry->{'title'},
 				artist  => $entry->{'artist'}->{'name'},
 				album   => $entry->{'album'}->{'name'},
+				year    => $entry->{'year'},
 				secs    => $entry->{'secs'},
 				cover   => $entry->{'cover'},
 				tracknum=> $entry->{'trackNumber'},

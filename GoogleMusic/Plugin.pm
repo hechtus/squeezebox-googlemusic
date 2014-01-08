@@ -241,15 +241,15 @@ sub _playlists {
 }
 
 sub search {
-	my ($client, $callback, $args, $passthrough) = @_;
+	my ($client, $callback, $args, $search) = @_;
 
-	$args->{search} ||= $passthrough->{search};
+	$args->{search} ||= $search;
 
 	# The search string may be empty. We could forbid this.
-	my $search = $args->{'search'} || '';
-	my @query = split(' ', $search);
+	$args->{search} ||= '';
+	my @query = split(' ', $args->{search});
 
-	add_recent_search($search) if scalar @query;
+	add_recent_search($args->{search}) if scalar @query;
 
 	my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::search({'any' => \@query});
 
@@ -274,25 +274,38 @@ sub search {
 }
 
 sub search_all_access {
-	my ($client, $callback, $args, $passthrough) = @_;
+	my ($client, $callback, $args, $search, $opts) = @_;
 
-	$args->{search} ||= $passthrough->{search};
+	$args->{search} ||= $search;
 
 	# The search string may be empty. We could forbid this.
-	my $search = $args->{'search'} || '';
-	add_recent_search($search) if $search;
+	$args->{search} ||= '';
 
-	my $result = Plugins::GoogleMusic::AllAccess::search($search);
+	my $result = Plugins::GoogleMusic::AllAccess::search($args->{search});
+
+	# Pass to artist/album/track menu when doing artist/album/track search
+	if ($opts->{artistSearch}) {
+		return _artists($client, $callback, $args, $result->{artists}, { all_access => 1 });
+	}
+	if ($opts->{albumSearch}) {
+		return _albums($client, $callback, $args, $result->{albums}, { all_access => 1 });
+	}
+	if ($opts->{trackSearch}) {
+		return _tracks($client, $callback, $args, $result->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1 });
+	}
+
+	# Do not add to recent searches when we are doing artist/album/track search
+	add_recent_search($search) if $args->{search};
 
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @{$result->{artists}} . ")",
 		  type => 'link',
 		  url => \&_artists,
-		  passthrough => [ $result->{artists}, { all_access => 1, } ], },
+		  passthrough => [ $result->{artists}, { all_access => 1 } ], },
 		{ name => cstring($client, "ALBUMS") . " (" . scalar @{$result->{albums}} . ")",
 		  type => 'link',
 		  url => \&_albums,
-		  passthrough => [ $result->{albums}, { all_access => 1, sortAlbums => 1 } ], },
+		  passthrough => [ $result->{albums}, { all_access => 1 } ], },
 		{ name => cstring($client, "SONGS") . " (" . scalar @{$result->{tracks}} . ")",
 		  type => 'playlist',
 		  url => \&_tracks,
@@ -338,9 +351,7 @@ sub recent_searches {
 			type => 'link',
 			name => $_,
 			url  => $search_func,
-			passthrough => [{
-				search => $_
-			}],
+			passthrough => [ $_ ],
 		}
 	}
 
@@ -475,7 +486,6 @@ sub _show_album {
 		'url'   => \&_tracks_for_album,
 		'hasMetadata'   => 'album',
 		'passthrough' => [ $album , { all_access => $all_access, playall => 1, sortByTrack => 1 } ],
-		'albumInfo' => { info => { command => [ 'items' ], fixedParams => { uri => $album->{'uri'} } } },
 		'albumData' => [
 			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}->{'name'}, url => 'anyurl',
 		  },
@@ -632,8 +642,8 @@ sub trackInfoMenu {
 	if ($artist) {
 		push @menu, {
 			name        => cstring($client, 'ARTIST') . ": " . $artist,
-			url         => \&_artists,
-			passthrough => [Plugins::GoogleMusic::AllAccess::search($artist)->{artists}, { all_access => 1, }, ],
+			url         => \&search_all_access,
+			passthrough => [ $artist, { artistSearch => 1 } ],
 			type        => 'link',
 			favorites   => 0,
 		},
@@ -642,8 +652,8 @@ sub trackInfoMenu {
 	if ($album) {
 		push @menu, {
 			name        => cstring($client, 'ALBUM') . ": " . $album,
-			url         => \&_albums,
-			passthrough => [Plugins::GoogleMusic::AllAccess::search($album)->{albums}, { all_access => 1, }, ],
+			url         => \&search_all_access,
+			passthrough => [ $album, { albumSearch => 1 } ],
 			type        => 'link',
 			favorites   => 0,
 		},
@@ -652,8 +662,8 @@ sub trackInfoMenu {
 	if ($track) {
 		push @menu, {
 			name        => cstring($client, 'TRACK') . ": " . $title,
-			url         => \&_tracks,
-			passthrough => [Plugins::GoogleMusic::AllAccess::search("$artist $title")->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, }, ],
+			url         => \&search_all_access,
+			passthrough => [ "$artist $title", { trackSearch => 1 } ],
 			type        => 'playlist',
 			favorites   => 0,
 		},
@@ -673,18 +683,18 @@ sub searchInfoMenu {
 	my ($client, $tags) = @_;
 
 	# For some reason the search string gets encoded
-	my $query = decode_utf8($tags->{'search'});
+	my $search = decode_utf8($tags->{search});
 
 	return {
 		name => cstring($client, 'PLUGIN_GOOGLEMUSIC'),
 		items => [{
 			name        => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_MUSIC'),
 			url         => \&search,
-			passthrough => [{ search => $query },],
+			passthrough => [ $search ],
 		},{
 			name        => cstring($client, 'PLUGIN_GOOGLEMUSIC_ALL_ACCESS'),
 			url         => \&search_all_access,
-			passthrough => [{ search => $query },],
+			passthrough => [ $search ],
 		}],
 	};
 }
