@@ -70,7 +70,7 @@ sub _artistMenu {
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
 			  type => 'playlist',
 			  url => \&Plugins::GoogleMusic::TrackMenu::menu,
-			  passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1 } ] },
+			  passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1, playall_uri => $artist->{uri} } ] },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
 			  type => 'link',
 			  url => \&menu,

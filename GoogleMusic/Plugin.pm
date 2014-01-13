@@ -215,6 +215,7 @@ sub _show_playlist {
 		name => $playlist->{'name'},
 		type => 'playlist',
 		url => \&Plugins::GoogleMusic::TrackMenu::menu,
+		# TODO: playall_uri
 		passthrough => [$playlist->{tracks}, { showArtist => 1, showAlbum => 1, playall => 1 }],
 	};
 

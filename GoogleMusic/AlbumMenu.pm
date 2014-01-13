@@ -57,7 +57,7 @@ sub _showAlbum {
 		type  => 'playlist',
 		url   => \&_albumTracks,
 		hasMetadata   => 'album',
-		passthrough => [ $album , { all_access => $opts->{all_access}, playall => 1, sortByTrack => 1 } ],
+		passthrough => [ $album , { all_access => $opts->{all_access}, playall => 1, playall_uri => $album->{uri}, sortByTrack => 1 } ],
 		albumData => [
 			{ type => 'link', label => 'ARTIST', name => $album->{artist}->{name}, url => 'anyurl',
 		  },

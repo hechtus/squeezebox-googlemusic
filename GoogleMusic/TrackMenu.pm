@@ -28,8 +28,9 @@ sub menu {
 		} @$tracks;
 	}
 
+	my $index = 0;
 	for my $track (@{$tracks}) {
-		push @items, _showTrack($client, $track, $opts);
+		push @items, _showTrack($client, $track, $index++, $opts);
 	}
 
 	if (!scalar @items) {
@@ -39,15 +40,42 @@ sub menu {
 		};
 	}
 
+	my %actions = (
+		commonVariables => [play_index => 'play_index', uri => 'url'],
+		play => {
+			command     => ['googlemusicplaylistcontrol'],
+			fixedParams => {cmd => 'load'},
+		},
+		add => {
+			command     => ['googlemusicplaylistcontrol'],
+			fixedParams => {cmd => 'add'},
+		},
+		insert => {
+			command     => ['googlemusicplaylistcontrol'],
+			fixedParams => {cmd => 'insert'},
+		},
+		playall => {
+			command     => ['googlemusicplaylistcontrol'],
+			fixedParams => {cmd => 'load'},
+			variables   => [play_index => 'play_index', uri => 'playall_uri'],
+		},
+		addall => {
+			command     => ['googlemusicplaylistcontrol'],
+			fixedParams => {cmd => 'add'},
+			variables   => [play_index => 'play_index', uri => 'playall_uri'],
+		},
+	);
+
 	$callback->({
 		items => \@items,
+		actions => \%actions,
 	});
 
 	return;
 }
 
 sub _showTrack {
-	my ($client, $track, $opts) = @_;
+	my ($client, $track, $index, $opts) = @_;
 
 	my $item = {
 		name     => $track->{title},
@@ -60,11 +88,13 @@ sub _showTrack {
 		genre    => $track->{genre},
 		type     => 'audio',
 		play     => $track->{uri},
+		play_index => $index,
 	};
 
 	# Play all tracks in a list. Useful for albums and playlists.
 	if ($opts->{playall}) {
 		$item->{playall} = 1;
+		$item->{playall_uri} = $opts->{playall_uri};
 	}
 
 	if ($opts->{showArtist}) {
