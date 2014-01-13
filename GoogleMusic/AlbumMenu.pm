@@ -50,6 +50,8 @@ sub menu {
 			fixedParams => {cmd => 'insert'},
 		},
 	);
+	$actions{playall} = $actions{play};
+	$actions{addall} = $actions{add};
 
 	$callback->({
 		items => \@items,
