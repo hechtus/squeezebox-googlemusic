@@ -35,8 +35,25 @@ sub menu {
 		}
 	}
 
+	my %actions = (
+		commonVariables => [uri => 'uri'],
+		play => {
+			command     => ['googlemusicplaylistcontrol'],
+			fixedParams => {cmd => 'load'},
+		},
+		add => {
+			command     => ['googlemusicplaylistcontrol'],
+			fixedParams => {cmd => 'add'},
+		},
+		insert => {
+			command     => ['googlemusicplaylistcontrol'],
+			fixedParams => {cmd => 'insert'},
+		},
+	);
+
 	$callback->({
 		items => \@items,
+		actions => \%actions,
 	});
 
 	return;
@@ -56,6 +73,7 @@ sub _showAlbum {
 		image => $album->{cover},
 		type  => 'playlist',
 		url   => \&_albumTracks,
+		uri   => $album->{uri},
 		hasMetadata   => 'album',
 		passthrough => [ $album , { all_access => $opts->{all_access}, playall => 1, playall_uri => $album->{uri}, sortByTrack => 1 } ],
 		albumData => [
