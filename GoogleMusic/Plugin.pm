@@ -572,6 +572,8 @@ sub playlistcontrolCommand {
 	$request->addResult('count', scalar(@objs));
 
 	$request->setStatusDone();
+
+	return;
 }
 
 1;

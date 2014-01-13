@@ -89,7 +89,6 @@ sub _artistMenu {
 			  type => 'playlist',
 			  url => \&Plugins::GoogleMusic::TrackMenu::menu,
 			  itemActions => \%actions,
-			  uri => $artist->{uri},
 			  passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1, playall_uri => $artist->{uri} } ] },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
 			  type => 'link',
