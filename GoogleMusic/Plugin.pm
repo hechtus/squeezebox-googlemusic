@@ -116,6 +116,8 @@ sub initPlugin {
 		func  => \&searchInfoMenu,
 	) );
 
+	Slim::Control::Request::addDispatch(['googlemusicplaylistcontrol'], [1, 0, 1, \&playlistcontrolCommand]);
+
 	return;
 }
 
@@ -444,6 +446,127 @@ sub searchInfoMenu {
 			passthrough => [ $search ],
 		}],
 	};
+}
+
+sub playlistcontrolCommand {
+	my $request = shift;
+
+	# check this is the correct command.
+	if ($request->isNotCommand([['googlemusicplaylistcontrol']])) {
+		$request->setStatusBadDispatch();
+		return;
+	}
+
+	# get the parameters
+	my $client = $request->client();
+	my $cmd = $request->getParam('cmd');
+	my $uri = $request->getParam('uri');
+	my $jumpIndex = $request->getParam('play_index');
+
+	if ($request->paramUndefinedOrNotOneOf($cmd, ['load', 'insert', 'add'])) {
+		$request->setStatusBadParams();
+		return;
+	}
+
+	my $load   = ($cmd eq 'load');
+	my $insert = ($cmd eq 'insert');
+	my $add    = ($cmd eq 'add');
+
+	# if loading, first stop & clear everything
+	if ($load) {
+		Slim::Player::Playlist::stopAndClear($client);
+	}
+
+	# find the songs
+	my @tracks = ();
+
+	# info line and artwork to display if successful
+	my $info;
+	my $artwork;
+
+	if ($uri =~ /^googlemusic:track/) {
+		my $track = Plugins::GoogleMusic::Library::get_track($uri);
+		if ($track) {
+			$info = $track->{title} . " " . cstring($client, 'BY') . " " . $track->{artist}->{name};
+			$artwork = $track->{cover};
+			push @tracks, $track;
+		}
+	} elsif ($uri =~ /^googlemusic:album/) {
+		my $album = Plugins::GoogleMusic::Library::get_album($uri);
+		if ($album) {
+			$info = $album->{name} . " " . cstring($client, 'BY') . " " . $album->{artist}->{name};
+			$artwork = $album->{cover};
+			push @tracks, @{$album->{tracks}};
+		}
+	} elsif ($uri =~ /^googlemusic:artist/) {
+		my $artist = Plugins::GoogleMusic::AllAccess::get_artist_info($uri);
+		if ($artist) {
+			$info = cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " " . cstring($client, 'BY') . " " . $artist->{name};
+			$artwork = $artist->{image};
+			push @tracks, @{$artist->{tracks}};
+		}
+	} else {
+		$request->setStatusBadParams();
+		return;
+	}
+
+	my @objs;
+
+	for my $track (@tracks) {
+		my $obj = Slim::Schema::RemoteTrack->updateOrCreate($track->{'uri'}, {
+			title   => $track->{'title'},
+			artist  => $track->{'artist'}->{'name'},
+			album   => $track->{'album'}->{'name'},
+			year    => $track->{'year'},
+			secs    => $track->{'secs'},
+			cover   => $track->{'cover'},
+			tracknum=> $track->{'trackNumber'},
+		});
+
+		push @objs, $obj;
+	}
+
+	# don't call Xtracks if we got no songs
+	if (@objs) {
+
+		if ($load || $add || $insert) {
+			my $token;
+			my $showBriefly = 1;
+			if ($add) {
+				$token = 'JIVE_POPUP_ADDING';
+			} elsif ($insert) {
+				$token = 'JIVE_POPUP_TO_PLAY_NEXT';
+			} else {
+				$token = 'JIVE_POPUP_NOW_PLAYING';
+				$showBriefly = undef;
+			}
+			# not to be shown for now playing, as we're pushing to now playing screen now and no need for showBriefly
+			if ($showBriefly) {
+				my $string = $client->string($token);
+				$client->showBriefly({ 
+					'jive' => { 
+						'type'    => 'mixed',
+						'style'   => 'add',
+						'text'    => [ $string, $info ],
+						'icon-id' => defined $artwork ? $artwork : '/html/images/cover.png',
+					}
+				});
+			}
+
+		}
+
+		$cmd .= "tracks";
+
+		$log->info("$cmd " . scalar @objs . " tracks" . ($jumpIndex ? " starting at $jumpIndex" : ""));
+
+		Slim::Control::Request::executeRequest(
+			$client, ['playlist', $cmd, 'listRef', \@objs, undef, $jumpIndex]
+		);
+	}
+
+	$request->addResult('count', scalar(@objs));
+
+	$request->setStatusDone();
 }
 
 1;
