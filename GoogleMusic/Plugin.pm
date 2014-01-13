@@ -215,7 +215,7 @@ sub _show_playlist {
 		name => $playlist->{'name'},
 		type => 'playlist',
 		url => \&Plugins::GoogleMusic::TrackMenu::menu,
-		# TODO: playall_uri
+		# TODO: playall_uri, actions for this playlist
 		passthrough => [$playlist->{tracks}, { showArtist => 1, showAlbum => 1, playall => 1 }],
 	};
 
@@ -269,6 +269,7 @@ sub search {
 		  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
 		  passthrough => [ $albums, { sortAlbums => 1 } ] },
 		{ name => cstring($client, "SONGS") . " (" . scalar @$tracks . ")",
+		  # TODO: actions for this playlist
 		  type => 'playlist',
 		  url => \&Plugins::GoogleMusic::TrackMenu::menu,
 		  passthrough => [ $tracks, { showArtist => 1, showAlbum => 1, sortTracks => 1 } ], },
@@ -316,6 +317,7 @@ sub search_all_access {
 		  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
 		  passthrough => [ $result->{albums}, { all_access => 1 } ], },
 		{ name => cstring($client, "SONGS") . " (" . scalar @{$result->{tracks}} . ")",
+		  # TODO: actions for this playlist
 		  type => 'playlist',
 		  url => \&Plugins::GoogleMusic::TrackMenu::menu,
 		  passthrough => [ $result->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
@@ -414,7 +416,7 @@ sub trackInfoMenu {
 			name        => cstring($client, 'TRACK') . ": " . $title,
 			url         => \&search_all_access,
 			passthrough => [ "$artist $title", { trackSearch => 1 } ],
-			type        => 'playlist',
+			type        => 'link',
 			favorites   => 0,
 		},
 	};

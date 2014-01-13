@@ -61,6 +61,24 @@ sub _artistMenu {
 	if ($opts->{all_access}) {
 		my $info = Plugins::GoogleMusic::AllAccess::get_artist_info($artist->{uri});
 
+		# TODO: we need to make this more generic.
+		my %actions = (
+			play => {
+				command     => ['googlemusicplaylistcontrol'],
+				fixedParams => {cmd => 'load', uri => $artist->{uri}},
+			},
+			add => {
+				command     => ['googlemusicplaylistcontrol'],
+				fixedParams => {cmd => 'add', uri => $artist->{uri}},
+			},
+			insert => {
+				command     => ['googlemusicplaylistcontrol'],
+				fixedParams => {cmd => 'insert', uri => $artist->{uri}},
+			},
+		);
+		$actions{playall} = $actions{play};
+		$actions{addall} = $actions{add};
+
 		# TODO Error handling
 		my @menu = (
 			{ name => cstring($client, "ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
@@ -70,6 +88,8 @@ sub _artistMenu {
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
 			  type => 'playlist',
 			  url => \&Plugins::GoogleMusic::TrackMenu::menu,
+			  itemActions => \%actions,
+			  uri => $artist->{uri},
 			  passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1, playall_uri => $artist->{uri} } ] },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
 			  type => 'link',
