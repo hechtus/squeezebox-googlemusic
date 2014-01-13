@@ -498,6 +498,7 @@ sub playlistcontrolCommand {
 			$artwork = $album->{cover};
 			push @tracks, @{$album->{tracks}};
 		}
+		# TODO: update recent albums AND recent artists
 	} elsif ($uri =~ /^googlemusic:artist/) {
 		my $artist = Plugins::GoogleMusic::AllAccess::get_artist_info($uri);
 		if ($artist) {
@@ -505,6 +506,7 @@ sub playlistcontrolCommand {
 			$artwork = $artist->{image};
 			push @tracks, @{$artist->{tracks}};
 		}
+		# TODO: update recent artists
 	} else {
 		$request->setStatusBadParams();
 		return;
