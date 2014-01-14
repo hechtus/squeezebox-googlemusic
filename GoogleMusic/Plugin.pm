@@ -472,8 +472,9 @@ sub itemQuery {
 			my $album = Plugins::GoogleMusic::Library::get_album($uri);
 			Plugins::GoogleMusic::AlbumMenu::_albumTracks($client, $callback, $args, $album, { playall => 1, playall_uri => $uri, sortByTrack => 1 });
 		} elsif ($uri =~ /^googlemusic:artist/) {
+			# TODO: This has to be fixed for My Library
 			my $artist = Plugins::GoogleMusic::AllAccess::get_artist_info($uri);
-			Plugins::GoogleMusic::ArtistMenu::_artistMenu($client, $callback, $args, $artist, {});
+			Plugins::GoogleMusic::ArtistMenu::_artistMenu($client, $callback, $args, $artist, { all_access => 1 });
 		}
 	};
 
@@ -534,6 +535,7 @@ sub playlistcontrolCommand {
 		}
 		# TODO: update recent albums AND recent artists
 	} elsif ($uri =~ /^googlemusic:artist/) {
+		# TODO: This has to be fixed for My Library
 		my $artist = Plugins::GoogleMusic::AllAccess::get_artist_info($uri);
 		if ($artist) {
 			$info = cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " " . cstring($client, 'BY') . " " . $artist->{name};

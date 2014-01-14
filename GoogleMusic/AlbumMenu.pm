@@ -81,8 +81,12 @@ sub _showAlbum {
 		uri   => $album->{uri},
 		hasMetadata   => 'album',
 		passthrough => [ $album , { all_access => $opts->{all_access}, playall => 1, playall_uri => $album->{uri}, sortByTrack => 1 } ],
+		# TODO: This can be fetched from AlbumInfo
+		# TODO: Only do this if args->{wantMetadata}
+		# TODO: Add albumInfo
 		albumData => [
 			{ type => 'link', label => 'ARTIST', name => $album->{artist}->{name}, url => 'anyurl',
+			  itemActions => { items => { command => ['googlemusicbrowse', 'items'], fixedParams => { uri => $album->{artist}->{uri} } } },
 		  },
 			{ type => 'link', label => 'ALBUM', name => $album->{name} },
 			{ type => 'link', label => 'YEAR', name => $album->{year} },
