@@ -37,6 +37,9 @@ sub menu {
 
 	my %actions = (
 		commonVariables => [uri => 'uri'],
+		items => {
+			command     => ['googlemusicbrowse', 'items'],
+		},
 		play => {
 			command     => ['googlemusicplaylistcontrol'],
 			fixedParams => {cmd => 'load'},

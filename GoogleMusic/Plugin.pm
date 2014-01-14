@@ -116,6 +116,7 @@ sub initPlugin {
 		func  => \&searchInfoMenu,
 	) );
 
+	Slim::Control::Request::addDispatch(['googlemusicbrowse', 'items', '_index', '_quantity' ], [0, 1, 1, \&itemQuery]);
 	Slim::Control::Request::addDispatch(['googlemusicplaylistcontrol'], [1, 0, 1, \&playlistcontrolCommand]);
 
 	return;
@@ -449,6 +450,36 @@ sub searchInfoMenu {
 			passthrough => [ $search ],
 		}],
 	};
+}
+
+sub itemQuery {
+	my $request = shift;
+
+	# check this is the correct command.
+	if ($request->isNotQuery([['googlemusicbrowse'], ['items']])) {
+		$request->setStatusBadDispatch();
+		return;
+	}
+
+	# get the parameters
+	my $client = $request->client();
+	my $uri = $request->getParam('uri');
+	my $command = $request->getRequest(0);
+
+	my $feed = sub {
+		my ($client, $callback, $args) = @_;
+		if ($uri =~ /^googlemusic:album/) {
+			my $album = Plugins::GoogleMusic::Library::get_album($uri);
+			Plugins::GoogleMusic::AlbumMenu::_albumTracks($client, $callback, $args, $album, { playall => 1, playall_uri => $uri, sortByTrack => 1 });
+		} elsif ($uri =~ /^googlemusic:artist/) {
+			my $artist = Plugins::GoogleMusic::AllAccess::get_artist_info($uri);
+			Plugins::GoogleMusic::ArtistMenu::_artistMenu($client, $callback, $args, $artist, {});
+		}
+	};
+
+	Slim::Control::XMLBrowser::cliQuery($command, $feed, $request);
+
+	return;
 }
 
 sub playlistcontrolCommand {
