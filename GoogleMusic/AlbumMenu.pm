@@ -7,6 +7,7 @@ use Slim::Utils::Log;
 use Slim::Utils::Strings qw(cstring);
 
 use Plugins::GoogleMusic::TrackMenu;
+use Plugins::GoogleMusic::AlbumInfo;
 
 
 my $log = logger('plugin.googlemusic');
@@ -25,7 +26,7 @@ sub menu {
 	}
 
 	for my $album (@{$albums}) {
-		push @items, _showAlbum($client, $album, $opts);
+		push @items, _showAlbum($client, $args, $album, $opts);
 	}
 
 	if (!scalar @items) {
@@ -37,6 +38,9 @@ sub menu {
 
 	my %actions = (
 		commonVariables => [uri => 'uri'],
+		info => {
+			command     => ['googlemusicalbuminfo', 'items'],
+		},
 		items => {
 			command     => ['googlemusicbrowse', 'items'],
 		},
@@ -65,7 +69,7 @@ sub menu {
 }
 
 sub _showAlbum {
-	my ($client, $album, $opts) = @_;
+	my ($client, $args, $album, $opts) = @_;
 
 	my $albumYear = $album->{year} || " ? ";
 
@@ -81,17 +85,18 @@ sub _showAlbum {
 		uri   => $album->{uri},
 		hasMetadata   => 'album',
 		passthrough => [ $album , { all_access => $opts->{all_access}, playall => 1, playall_uri => $album->{uri}, sortByTrack => 1 } ],
-		# TODO: This can be fetched from AlbumInfo
-		# TODO: Only do this if args->{wantMetadata}
-		# TODO: Add albumInfo
-		albumData => [
-			{ type => 'link', label => 'ARTIST', name => $album->{artist}->{name}, url => 'anyurl',
-			  itemActions => { items => { command => ['googlemusicbrowse', 'items'], fixedParams => { uri => $album->{artist}->{uri} } } },
-		  },
-			{ type => 'link', label => 'ALBUM', name => $album->{name} },
-			{ type => 'link', label => 'YEAR', name => $album->{year} },
-		],
 	};
+
+	if ($args->{wantMetadata}) {
+		my $feed = Plugins::GoogleMusic::AlbumInfo->menu($client, $album->{uri}, $album);
+		$item->{albumData} = $feed->{items} if $feed;
+		$item->{albumInfo} = {
+			info => {
+				command => ['googlemusicalbuminfo', 'items'], 
+				fixedParams => { uri => $album->{uri} }
+			},
+		};
+	}
 
 	return $item;
 }

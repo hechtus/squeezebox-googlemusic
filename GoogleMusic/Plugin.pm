@@ -30,6 +30,7 @@ use Plugins::GoogleMusic::Radio;
 use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumMenu;
 use Plugins::GoogleMusic::ArtistMenu;
+use Plugins::GoogleMusic::AlbumInfo;
 
 # TODO: move these constants to the configurable settings?
 # Note: these constants can't be passed to the python API
@@ -118,6 +119,8 @@ sub initPlugin {
 
 	Slim::Control::Request::addDispatch(['googlemusicbrowse', 'items', '_index', '_quantity' ], [0, 1, 1, \&itemQuery]);
 	Slim::Control::Request::addDispatch(['googlemusicplaylistcontrol'], [1, 0, 1, \&playlistcontrolCommand]);
+
+	Plugins::GoogleMusic::AlbumInfo->init();
 
 	return;
 }
