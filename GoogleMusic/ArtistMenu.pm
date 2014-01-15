@@ -80,7 +80,7 @@ sub _artistMenu {
 		$actions{addall} = $actions{add};
 
 		# TODO Error handling
-		my @menu = (
+		my @items = (
 			{ name => cstring($client, "ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
 			  type => 'link',
 			  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
@@ -95,8 +95,10 @@ sub _artistMenu {
 			  url => \&menu,
 			  passthrough => [ $info->{related}, $opts ] },
 		);
-
-		$callback->(\@menu);
+		$callback->({
+			items => \@items,
+			cover => $artist->{image},
+		});
 	} else {
 		my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({artist => $artist->{name}});
 

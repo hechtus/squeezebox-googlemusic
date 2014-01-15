@@ -60,6 +60,8 @@ sub menu {
 	$actions{playall} = $actions{play};
 	$actions{addall} = $actions{add};
 
+	# TODO: For googlemusicbrowse for artists we need to add the
+	#       artist image here.
 	$callback->({
 		items => \@items,
 		actions => \%actions,
