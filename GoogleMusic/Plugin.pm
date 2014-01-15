@@ -11,6 +11,8 @@ use base qw(Slim::Plugin::OPMLBased);
 
 use Encode qw(decode_utf8);
 
+use Data::Dumper;
+
 use Plugins::GoogleMusic::Settings;
 use Scalar::Util qw(blessed);
 use Slim::Control::Request;
@@ -30,6 +32,7 @@ use Plugins::GoogleMusic::Radio;
 use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumMenu;
 use Plugins::GoogleMusic::ArtistMenu;
+use Plugins::GoogleMusic::TrackInfo;
 use Plugins::GoogleMusic::AlbumInfo;
 
 # TODO: move these constants to the configurable settings?
@@ -120,6 +123,7 @@ sub initPlugin {
 	Slim::Control::Request::addDispatch(['googlemusicbrowse', 'items', '_index', '_quantity' ], [0, 1, 1, \&itemQuery]);
 	Slim::Control::Request::addDispatch(['googlemusicplaylistcontrol'], [1, 0, 1, \&playlistcontrolCommand]);
 
+	Plugins::GoogleMusic::TrackInfo->init();
 	Plugins::GoogleMusic::AlbumInfo->init();
 
 	return;
@@ -475,9 +479,8 @@ sub itemQuery {
 			my $album = Plugins::GoogleMusic::Library::get_album($uri);
 			Plugins::GoogleMusic::AlbumMenu::_albumTracks($client, $callback, $args, $album, { playall => 1, playall_uri => $uri, sortByTrack => 1 });
 		} elsif ($uri =~ /^googlemusic:artist/) {
-			# TODO: This has to be fixed for My Library
-			my $artist = Plugins::GoogleMusic::AllAccess::get_artist_info($uri);
-			Plugins::GoogleMusic::ArtistMenu::_artistMenu($client, $callback, $args, $artist, { all_access => 1 });
+			my $artist = Plugins::GoogleMusic::Library::get_artist($uri);
+			Plugins::GoogleMusic::ArtistMenu::_artistMenu($client, $callback, $args, $artist, {});
 		}
 	};
 

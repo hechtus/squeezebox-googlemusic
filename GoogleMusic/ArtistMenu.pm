@@ -58,7 +58,7 @@ sub _showArtist {
 sub _artistMenu {
 	my ($client, $callback, $args, $artist, $opts) = @_;
 
-	if ($opts->{all_access}) {
+	if ($opts->{all_access} || $artist->{uri} =~ '^googlemusic:artist:A') {
 		my $info = Plugins::GoogleMusic::AllAccess::get_artist_info($artist->{uri});
 
 		# TODO: we need to make this more generic.

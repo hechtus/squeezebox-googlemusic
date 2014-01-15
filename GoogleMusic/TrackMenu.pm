@@ -42,6 +42,9 @@ sub menu {
 
 	my %actions = (
 		commonVariables => [play_index => 'play_index', uri => 'url'],
+		info => {
+			command     => ['googlemusictrackinfo', 'items'],
+		},
 		play => {
 			command     => ['googlemusicplaylistcontrol'],
 			fixedParams => {cmd => 'load'},
@@ -66,6 +69,10 @@ sub menu {
 		},
 	);
 
+	# TODO: For googlemusicbrowse for albums we need to add albumData,
+	#       albumInfo, and cover here. For this purpose we could pass
+	#       wantMetadata and an album URI. A good starting point is
+	#       Slim::Menu::BrowseLibrary::_tracks()
 	$callback->({
 		items => \@items,
 		actions => \%actions,

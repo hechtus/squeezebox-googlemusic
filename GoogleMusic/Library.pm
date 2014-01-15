@@ -188,6 +188,16 @@ sub get_album {
 	}
 }
 
+sub get_artist {
+	my $uri = shift;
+
+	if ($uri =~ '^googlemusic:artist:A') {
+		return Plugins::GoogleMusic::AllAccess::get_artist_info($uri);
+	} else {
+		return $artists->{$uri};
+	}
+}
+
 # Convert a Google Music Song dictionary to a consistent
 # robust track representation
 sub to_slim_track {
