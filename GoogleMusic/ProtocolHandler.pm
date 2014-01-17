@@ -125,12 +125,6 @@ sub canDirectStreamSong {
 	return $class->SUPER::canDirectStream( $client, $song->streamUrl(), $class->getFormatForURL($song->track->url()) );
 }
 
-sub trackInfoURL {
-	my ( $class, $client, $url ) = @_;
-
-	return Plugins::GoogleMusic::TrackInfo->menu( $client, $url );
-}
-
 sub getMetadataFor {
 	my ($class, $client, $url) = @_; 
 
