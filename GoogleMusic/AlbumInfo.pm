@@ -171,10 +171,11 @@ sub menu {
 	}
 	
 	return {
-		name  => $album->{name} || Slim::Music::Info::getCurrentTitle( $client, $url, 1 ),
+		name  => $album->{name},
 		type  => 'opml',
 		items => $items,
 		cover => $album->{cover},
+		menuComplete => 1,
 	};
 }
 

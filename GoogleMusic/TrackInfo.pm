@@ -27,7 +27,7 @@ sub init {
 	
 	Slim::Control::Request::addDispatch(
 		[ 'googlemusictrackinfo', 'playlist', '_method' ],
-		[ 1, 1, 1, \&cliQuery ]
+		[ 1, 1, 1, \&cliPlaylistCmd ]
 	);
 }
 
@@ -35,6 +35,8 @@ sub name {
 	# It seems that this has to be a unique name.
 	return __PACKAGE__;
 }
+
+my $emptyItemList = [{ignore => 1}];
 
 ##
 # Register all the information providers that we provide.
@@ -97,7 +99,7 @@ sub registerDefaultInfoProviders {
 
 
 sub menu {
-	my ( $class, $client, $url, $track, $tags, $filter ) = @_;
+	my ( $class, $client, $url, $track, $tags ) = @_;
 	$tags ||= {};
 
 	# If we don't have an ordering, generate one.
@@ -125,19 +127,19 @@ sub menu {
 		
 		if ( defined $ref->{func} ) {
 			
-			my $item = eval { $ref->{func}->( $client, $url, $track, $remoteMeta, $tags, $filter ) };
+			# skip jive-only items for non-jive UIs
+			return if $ref->{menuMode} && !$tags->{menuMode};
+			
+			# TBD: show artwork item to jive only if artwork exists
+			return if $ref->{menuMode} && $tags->{menuMode} && $ref->{name} eq 'artwork' && !$track->coverArtExists;
+			
+			my $item = eval { $ref->{func}->( $client, $url, $track, $remoteMeta, $tags ) };
 			if ( $@ ) {
 				$log->error( 'Track menu item "' . $ref->{name} . '" failed: ' . $@ );
 				return;
 			}
 			
 			return unless defined $item;
-			
-			# skip jive-only items for non-jive UIs
-			return if $ref->{menuMode} && !$tags->{menuMode};
-			
-			# TBD: show artwork item to jive only if artwork exists
-			return if $ref->{menuMode} && $tags->{menuMode} && $ref->{name} eq 'artwork' && !$track->coverArtExists;
 			
 			if ( ref $item eq 'ARRAY' ) {
 				if ( scalar @{$item} ) {
@@ -182,10 +184,12 @@ sub menu {
 	}
 	
 	return {
-		name  => $track->{title} || Slim::Music::Info::getCurrentTitle( $client, $url, 1 ),
+		name  => $track->{title},
 		type  => 'opml',
 		items => $items,
+		play  => $track->{uri},
 		cover => $track->{cover},
+		menuComplete => 1,
 	};
 }
 
@@ -293,65 +297,175 @@ sub infoTitle {
 }
 
 sub playTrack {
-	my ( $client, $url, $track, $remoteMeta, $tags, $filter) = @_;
+	my ( $client, $url, $track, $remoteMeta, $tags ) = @_;
+	my $items = [];
+	my $jive;
+	
+	return $items if !blessed($client);
+	
+	my $play_string = cstring($client, 'PLAY');
 
-	return undef if !blessed($client);
-	
-	my $actions = {
-		items => {
-			command     => [ 'googlemusicplaylistcontrol' ],
-			fixedParams => {cmd => 'load', uri => $track->{uri} },
-		},
+	my $actions;
+
+	# "Play Song" in current playlist context is 'jump'
+	if ( $tags->{menuContext} eq 'playlist' ) {
+		
+		# do not add item if this is current track and already playing
+		return $emptyItemList if $tags->{playlistIndex} == Slim::Player::Source::playingSongIndex($client)
+					&& $client->isPlaying();
+		
+		$actions = {
+			go => {
+				player => 0,
+				cmd => [ 'playlist', 'jump', $tags->{playlistIndex} ],
+				nextWindow => 'parent',
+			},
+		};
+		# play, add and add-hold all have the same behavior for this item
+		$actions->{play} = $actions->{go};
+		$actions->{add} = $actions->{go};
+		$actions->{'add-hold'} = $actions->{go};
+
+	# typical "Play Song" item
+	} else {
+
+		$actions = {
+			go => {
+				player => 0,
+				cmd => [ 'googlemusicplaylistcontrol' ],
+				params => {
+					cmd => 'load',
+					uri => $track->{uri},
+				},
+				nextWindow => 'nowPlaying',
+			},
+		};
+		# play is go
+		$actions->{play} = $actions->{go};
+	}
+
+	$jive->{actions} = $actions;
+	$jive->{style} = 'itemplay';
+
+	push @{$items}, {
+		type => 'text',
+		name => $play_string,
+		jive => $jive, 
 	};
-	$actions->{'play'} = $actions->{'items'};
 	
-	return {
-		itemActions => $actions,
-		nextWindow  => 'nowPlaying',
-		type        => 'text',
-		playcontrol => 'play',
-		name        => cstring($client, 'PLAY'),
-		jive        => {style => 'itemplay'},
-	};
-}
-	
-sub addTrackEnd {
-	my ( $client, $url, $track, $remoteMeta, $tags, $filter ) = @_;
-	addTrack( $client, $url, $track, $remoteMeta, $tags, 'ADD_TO_END', 'add', $filter );
+	return $items;
 }
 
 sub addTrackNext {
-	my ( $client, $url, $track, $remoteMeta, $tags, $filter ) = @_;
-	addTrack( $client, $url, $track, $remoteMeta, $tags, 'PLAY_NEXT', 'insert', $filter );
+	my ( $client, $url, $track, $remoteMeta, $tags ) = @_;
+	my $string = cstring($client, 'PLAY_NEXT');
+	my $cmd = $tags->{menuContext} eq 'playlist' ? 'playlistnext' : 'insert';
+	
+	return addTrack( $client, $url, $track, $remoteMeta, $tags, $string, $cmd );
+}
+
+sub addTrackEnd {
+	my ( $client, $url, $track, $remoteMeta, $tags ) = @_;
+
+	my ($string, $cmd);
+
+	# "Add Song" in current playlist context is 'delete'
+	if ( $tags->{menuContext} eq 'playlist' ) {
+		$string = cstring($client, 'REMOVE_FROM_PLAYLIST');
+		$cmd    = 'delete';
+	} else {
+		$string = cstring($client, 'ADD_TO_END');
+		$cmd    = 'add';
+	}
+	
+	return addTrack( $client, $url, $track, $remoteMeta, $tags, $string, $cmd );
 }
 
 sub addTrack {
-	my ( $client, $url, $track, $remoteMeta, $tags, $add_string, $cmd, $filter ) = @_;
+	my ( $client, $url, $track, $remoteMeta, $tags , $string, $cmd ) = @_;
 
-	return undef if !blessed($client);
+	my $items = [];
+	my $jive;
 
-	my $actions = {
-		items => {
-			command     => [ 'googlemusicplaylistcontrol' ],
-			fixedParams => {cmd => $cmd, uri => $track->{uri} },
-		},
-	};
-	$actions->{'play'} = $actions->{'items'};
-	$actions->{'add'}  = $actions->{'items'};
+	return $items if !blessed($client);
 	
-	return {
-		itemActions => $actions,
-		nextWindow  => 'parent',
-		type        => 'text',
-		playcontrol => $cmd,
-		name        => cstring($client, $add_string),
+	my $actions;
+	# remove from playlist
+	if ( $cmd eq 'delete' ) {
+		
+		# Do not add this item if only one item in playlist
+		return $emptyItemList if Slim::Player::Playlist::count($client) < 2;
+
+		$actions = {
+			go => {
+				player     => 0,
+				cmd        => [ 'playlist', 'delete', $tags->{playlistIndex} ],
+				nextWindow => 'parent',
+			},
+		};
+		# play, add and add-hold all have the same behavior for this item
+		$actions->{play} = $actions->{go};
+		$actions->{add} = $actions->{go};
+		$actions->{'add-hold'} = $actions->{go};
+
+	# play next in the playlist context
+	} elsif ( $cmd eq 'playlistnext' ) {
+		
+		# Do not add this item if only one item in playlist
+		return $emptyItemList if Slim::Player::Playlist::count($client) < 2;
+
+		my $moveTo = Slim::Player::Source::playingSongIndex($client) || 0;
+		
+		# do not add item if this is current track or already the next track
+		return $emptyItemList if $tags->{playlistIndex} == $moveTo || $tags->{playlistIndex} == $moveTo+1;
+		
+		if ( $tags->{playlistIndex} > $moveTo ) {
+			$moveTo = $moveTo + 1;
+		}
+		$actions = {
+			go => {
+				player     => 0,
+				cmd        => [ 'playlist', 'move', $tags->{playlistIndex}, $moveTo ],
+				nextWindow => 'parent',
+			},
+		};
+		# play, add and add-hold all have the same behavior for this item
+		$actions->{play} = $actions->{go};
+		$actions->{add} = $actions->{go};
+		$actions->{'add-hold'} = $actions->{go};
+
+
+	# typical "Add Song" item
+	} else {
+
+		$actions = {
+			add => {
+				player => 0,
+				cmd => [ 'googlemusicplaylistcontrol' ],
+				params => {
+					cmd => $cmd,
+					uri => $track->{uri},
+				},
+				nextWindow => 'parent',
+			},
+		};
+		# play and go have same behavior as go here
+		$actions->{play} = $actions->{add};
+		$actions->{go} = $actions->{add};
+	}
+
+	$jive->{actions} = $actions;
+
+	push @{$items}, {
+		type => 'text',
+		name => $string,
+		jive => $jive, 
 	};
+	
+	return $items;
 }
 
-
-# keep a very small cache of feeds to allow browsing into a artist info feed
-# we will be called again without $url or $albumId when browsing into the feed
-tie my %cachedFeed, 'Tie::Cache::LRU', 2;
+my $cachedFeed;
 
 sub cliQuery {
 	my $request = shift;
@@ -372,21 +486,13 @@ sub cliQuery {
 		$quantity = 200;
 		$request->addParam('_quantity', $quantity);
 	}
-	
+
 	my $client         = $request->client;
 	my $uri            = $request->getParam('uri');
 	my $menuMode       = $request->getParam('menu') || 0;
 	my $menuContext    = $request->getParam('context') || 'normal';
 	my $playlist_index = defined( $request->getParam('playlist_index') ) ?  $request->getParam('playlist_index') : undef;
-	my $connectionId   = $request->connectionID;
 	
-	my %filter;
-	foreach (qw(artist_id genre_id year)) {
-		if (my $arg = $request->getParam($_)) {
-			$filter{$_} = $arg;
-		}
-	}	
-
 	my $tags = {
 		menuMode      => $menuMode,
 		menuContext   => $menuContext,
@@ -397,20 +503,30 @@ sub cliQuery {
 	
 	# Default menu
 	if ( $uri ) {
-		$feed = Plugins::GoogleMusic::TrackInfo->menu( $client, $uri, undef, $tags, \%filter );
-	}
-	elsif ( $cachedFeed{ $connectionId } ) {
-		$feed = $cachedFeed{ $connectionId };
-	}
-	else {
+		$feed = Plugins::GoogleMusic::TrackInfo->menu( $client, $uri, undef, $tags );
+	} else {
+		$log->error("Didn't get a valid track uri.");
 		$request->setStatusBadParams();
 		return;
 	}
 
-	# TBD: This doesn't work with the webclient
-	# $cachedFeed{ $connectionId } = $feed if $feed;
+	$cachedFeed = $feed if $feed;
 	
 	Slim::Control::XMLBrowser::cliQuery( 'googlemusictrackinfo', $feed, $request );
+}
+
+sub cliPlaylistCmd {
+	my $request = shift;
+	
+	my $client  = $request->client;
+	my $method  = $request->getParam('_method');
+
+	unless ($client && $method && $cachedFeed) {
+		$request->setStatusBadParams();
+		return;
+	}
+	
+	return 	Slim::Control::XMLBrowser::cliQuery( 'googlemusictrackinfo', $cachedFeed, $request );
 }
 
 1;
