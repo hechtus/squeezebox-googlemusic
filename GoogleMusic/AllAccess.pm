@@ -307,9 +307,11 @@ sub get_album_info {
 sub album_to_slim_album {
 	my $googleAlbum = shift;
 
-	# TODO!
+	# TODO: Sometimes the array has multiple entries.  It seems that
+	#       for various artists albums the first ID is an empty
+	#       string.
 	my $artist = {
-		uri => 'googlemusic:artist:' . $googleAlbum->{artistId}[0],
+		uri => 'googlemusic:artist:' . (($googleAlbum->{artistId}[0]) ?  $googleAlbum->{artistId}[0] : 'unknown'),
 		name => $googleAlbum->{artist},
 	};
 

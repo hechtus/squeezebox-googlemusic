@@ -184,17 +184,26 @@ sub infoArtist {
 	my $item;
 	
 	if ( my $artist = $album->{artist}->{name} ) {
-		$item = {
-			type  => 'text',
-			label => 'ARTIST',
-			name  => $artist,
-			itemActions => {
-				items => {
-					command => ['googlemusicbrowse', 'items'],
-					fixedParams => { uri => $album->{artist}->{uri} }
+		if ($album->{artist}->{uri} =~ 'unknown') {
+			$item = {
+				type  => 'text',
+				label => 'ARTIST',
+				name  => $artist,
+			};
+		} else {
+			$item = {
+				type  => 'link',
+				url   => 'anyurl',
+				label => 'ARTIST',
+				name  => $artist,
+				itemActions => {
+					items => {
+						command => ['googlemusicbrowse', 'items'],
+						fixedParams => { uri => $album->{artist}->{uri} }
+					},
 				},
-			}
-		};
+			};
+		}
 	}
 	
 	return $item;
