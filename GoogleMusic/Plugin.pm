@@ -459,15 +459,6 @@ sub searchInfoMenu {
 	};
 }
 
-# cli handler for browsing into items from web context menus
-#
-# The crazy part of this function is taken from the Triode's Spotify
-# Plugin. It is required to browse from context menus into items. It
-# seems that we are called without an URI when coming from a menu that
-# was opened through a context menu.
-# TODO: Find a better solution for this.
-my $itemCommandSess = 0;
-tie my %itemURICache, 'Tie::Cache::LRU', 10;
 sub itemQuery {
 	my $request = shift;
 
@@ -480,23 +471,8 @@ sub itemQuery {
 	# get the parameters
 	my $client = $request->client();
 	my $uri = $request->getParam('uri');
-	my $item_id= $request->getParam('item_id');
+	my $mode = $request->getParam('mode');
 	my $command = $request->getRequest(0);
-	my $connectionId = $request->connectionID;
-	my $sess;
-
-	# command xmlbrowser needs the session to be cached, add a session param so we can recurse into items
-	if ($uri && $connectionId && !defined $item_id) {
-		$itemCommandSess = ($itemCommandSess + 1) % 10;
-		$sess = $itemCommandSess;
-		$request->addParam('item_id', $sess);
-		$itemURICache{ "$connectionId-$sess" } = $uri;
-	}
-
-	if (!$uri && $connectionId && $item_id) {
-		($sess) = $item_id =~ /(\d+)\./;
-		$uri = $itemURICache{ "$connectionId-$sess" };
-	}
 
 	my $feed = sub {
 		my ($client, $callback, $args) = @_;
@@ -505,19 +481,11 @@ sub itemQuery {
 			Plugins::GoogleMusic::AlbumMenu::_albumTracks($client, $callback, $args, $album, { playall => 1, playall_uri => $uri, sortByTrack => 1 });
 		} elsif ($uri =~ /^googlemusic:artist/) {
 			my $artist = Plugins::GoogleMusic::Library::get_artist($uri);
-			Plugins::GoogleMusic::ArtistMenu::_artistMenu($client, $callback, $args, $artist, {});
+			Plugins::GoogleMusic::ArtistMenu::_artistMenu($client, $callback, $args, $artist, { mode => $mode });
 		}
 	};
 
-	# wrap feed in another level if we have added the $sess value in the item_id
-	my $wrapper = defined $sess ? sub {
-		my ($client, $callback, $args) = @_;
-		my $array = [];
-		$array->[$sess] = { url => $feed, type => 'link' };
-		$callback->($array);
-	} : undef;
-
-	Slim::Control::XMLBrowser::cliQuery($command, $wrapper || $feed, $request);
+	Slim::Control::XMLBrowser::cliQuery($command, $feed, $request);
 
 	return;
 }

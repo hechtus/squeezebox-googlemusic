@@ -49,6 +49,13 @@ sub _showArtist {
 		type => 'link',
 		url => \&_artistMenu,
 		passthrough => [ $artist, $opts ],
+		itemActions => {
+			allAvailableActionsDefined => 1,
+			items => {
+				command     => ['googlemusicbrowse', 'items'],
+				fixedParams => { uri => $artist->{uri} },
+			},
+		},
 	};
 
 	return $item;
@@ -59,45 +66,67 @@ sub _artistMenu {
 	my ($client, $callback, $args, $artist, $opts) = @_;
 
 	if ($opts->{all_access} || $artist->{uri} =~ '^googlemusic:artist:A') {
+		# TODO Error handling
 		my $info = Plugins::GoogleMusic::AllAccess::get_artist_info($artist->{uri});
 
-		# TODO: we need to make this more generic.
-		my %actions = (
-			play => {
-				command     => ['googlemusicplaylistcontrol'],
-				fixedParams => {cmd => 'load', uri => $artist->{uri}},
-			},
-			add => {
-				command     => ['googlemusicplaylistcontrol'],
-				fixedParams => {cmd => 'add', uri => $artist->{uri}},
-			},
-			insert => {
-				command     => ['googlemusicplaylistcontrol'],
-				fixedParams => {cmd => 'insert', uri => $artist->{uri}},
-			},
-		);
-		$actions{playall} = $actions{play};
-		$actions{addall} = $actions{add};
+		if ($opts->{mode}) {
+			if ($opts->{mode} eq 'albums') {
+				Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $info->{albums}, $opts);
+				return;
+			} elsif ($opts->{mode} eq 'tracks') {
+				Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1, playall_uri => $artist->{uri} });
+				return;
+			} elsif ($opts->{mode} eq 'artists') {
+				Plugins::GoogleMusic::ArtistMenu::menu($client, $callback, $args, $info->{related}, { } );
+				return;
+			}
+		}
 
-		# TODO Error handling
-		my @items = (
-			{ name => cstring($client, "ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
-			  type => 'link',
-			  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
-			  passthrough => [ $info->{albums}, $opts ] },
-			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
-			  type => 'playlist',
-			  url => \&Plugins::GoogleMusic::TrackMenu::menu,
-			  itemActions => \%actions,
-			  passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1, playall_uri => $artist->{uri} } ] },
-			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
-			  type => 'link',
-			  url => \&menu,
-			  passthrough => [ $info->{related}, $opts ] },
-		);
+		my @items = ( {
+			name => cstring($client, "ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
+			type => 'link',
+			url => \&Plugins::GoogleMusic::AlbumMenu::menu,
+			itemActions => {
+				items => {
+					command     => ['googlemusicbrowse', 'items'],
+					fixedParams => { mode => 'albums', uri => $artist->{uri} },
+				},
+			},
+			passthrough => [ $info->{albums}, $opts ],
+		}, {
+			name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
+			type => 'playlist',
+			url => \&Plugins::GoogleMusic::TrackMenu::menu,
+			itemActions => {
+				items => {
+					command     => ['googlemusicbrowse', 'items'],
+					fixedParams => { mode => 'tracks', uri => $artist->{uri} },
+				},
+			},
+			passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1, playall_uri => $artist->{uri} } ],
+		}, {
+			name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
+			type => 'link',
+			url => \&menu,
+			itemActions => {
+				allAvailableActionsDefined => 1,
+				items => {
+					command     => ['googlemusicbrowse', 'items'],
+					fixedParams => { mode => 'artists', uri => $artist->{uri} },
+				},
+			},
+			passthrough => [ $info->{related}, $opts ],
+		} );
 		$callback->({
 			items => \@items,
 			cover => $artist->{image},
+			actions => {
+				allAvailableActionsDefined => 1,
+				items => {
+					command     => ['googlemusicbrowse', 'items'],
+					fixedParams => { mode => 'tracks', uri => $artist->{uri} },
+				},
+			},
 		});
 	} else {
 		my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({artist => $artist->{name}});
