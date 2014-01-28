@@ -43,8 +43,8 @@ Installation
    running:
 
          sudo cpan App::cpanminus
-         sudo cpanm Inline
-         sudo cpanm Inline::Python
+         sudo cpanm --notest Inline
+         sudo cpanm --notest Inline::Python
 
 1. To install the plugin, add this repository URL
    http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml
