@@ -17,7 +17,7 @@ Installation
    your library. If you want to use Google Music All Access features
    you will need a subscription to this service.
 
-2. Install Python and the [Unofficial Google Play Music
+1. Install Python and the [Unofficial Google Play Music
    API](https://github.com/simon-weber/Unofficial-Google-Music-API>) by
    running:
 
@@ -26,7 +26,18 @@ Installation
    **Note**: For 'All Access' functionality you need at least version
    3.0.0 of gmusicapi.
 
-3. Install the Perl CPAN [Inline](http://search.cpan.org/~ingy/Inline/)
+1. To be able to build the Inline::Python package (see below) you will
+   need the python developer package. The name of the package and the
+   way how to install it depends on your Linux distribution. On
+   **Debian** based systems you will have to do:
+
+         sudo apt-get install python-dev
+
+   On **redhat** systems do:
+
+         sudo yum install python-devel
+
+1. Install the Perl CPAN [Inline](http://search.cpan.org/~ingy/Inline/)
    package and
    [Inline::Python](http://search.cpan.org/~nine/Inline-Python/) by
    running:
@@ -35,7 +46,7 @@ Installation
          sudo cpanm Inline
          sudo cpanm Inline::Python
 
-4. To install the plugin, add this repository URL
+1. To install the plugin, add this repository URL
    http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml
    to your squeezebox plugin settings page.
 
