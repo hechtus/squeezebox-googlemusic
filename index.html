@@ -69,14 +69,28 @@ running:</p>
 3.0.0 of gmusicapi.</p>
 </li>
 <li>
+<p>To be able to build the Inline::Python package (see below) you will
+need the python developer package. The name of the package and the
+way how to install it depends on your Linux distribution. On
+<strong>Debian</strong> based systems you will have to do:</p>
+
+<pre><code> sudo apt-get install python-dev
+</code></pre>
+
+<p>On <strong>redhat</strong> systems do:</p>
+
+<pre><code> sudo yum install python-devel
+</code></pre>
+</li>
+<li>
 <p>Install the Perl CPAN <a href="http://search.cpan.org/%7Eingy/Inline/">Inline</a>
 package and
 <a href="http://search.cpan.org/%7Enine/Inline-Python/">Inline::Python</a> by
 running:</p>
 
 <pre><code> sudo cpan App::cpanminus
- sudo cpanm Inline
- sudo cpanm Inline::Python
+ sudo cpanm --notest Inline
+ sudo cpanm --notest Inline::Python
 </code></pre>
 </li>
 <li><p>To install the plugin, add this repository URL
