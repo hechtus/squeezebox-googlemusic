@@ -21,8 +21,8 @@ my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 $prefs->init({
-	my_music_album_sort_method => '2artistyearalbum',
-	all_access_album_sort_method => '0none',
+	my_music_album_sort_method => 'artistyearalbum',
+	all_access_album_sort_method => 'none',
 	max_search_items => 100,
 	max_artist_tracks => 25,
 	max_related_artists => 10,
@@ -82,6 +82,14 @@ sub handler {
 	for my $param(qw(username password device_id my_music_album_sort_method all_access_enabled all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
 		$params->{'prefs'}->{$param} = $prefs->get($param);
 	}
+
+	$params->{'album_sort_methods'} = {
+		'none'            => cstring($client, 'NONE'),
+		'artistalbum'     => cstring($client, 'SORT_ARTISTALBUM'),
+		'artistyearalbum' => cstring($client, 'SORT_ARTISTYEARALBUM'),
+		'yearalbum'       => cstring($client, 'SORT_YEARALBUM'),
+		'yearartistalbum' => cstring($client, 'SORT_YEARARTISTALBUM'),
+	};
 
 	return $class->SUPER::handler($client, $params);
 }

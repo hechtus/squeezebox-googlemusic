@@ -24,20 +24,17 @@
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MY_MUSIC" desc="" %]
 			<br/>
 		[% END %]
+
 		[% WRAPPER settingGroup title="ALBUMS_SORT_METHOD" desc="ALBUMS_SORT_METHOD" %]
 			<select class="stdedit" name="my_music_album_sort_method" id="my_music_album_sort_method">
 
-				[% FOREACH option = {
-					'0none'            => 'NONE',
-					'1artistalbum'     => 'SORT_ARTISTALBUM',
-					'2artistyearalbum' => 'SORT_ARTISTYEARALBUM',
-					'3yearalbum'       => 'SORT_YEARALBUM',
-					'4yearartistalbum' => 'SORT_YEARARTISTALBUM',
-				} %]
-				<option [% IF prefs.my_music_album_sort_method == option.key %]selected [% END %]value="[% option.key %]">[% option.value | string %]</option>
-				[%- END -%]
+			[% FOREACH option = album_sort_methods.keys %]
+				<option [% IF prefs.my_music_album_sort_method == option %]selected [% END %]value="[% option %]">[% album_sort_methods.$option %]</option>
+			[%- END -%]
+
 			</select>
 		[% END %]
+
 	[% END %]
 
 	<p><hr></p>
@@ -54,15 +51,10 @@
 		[% WRAPPER settingGroup title="ALBUMS_SORT_METHOD" desc="ALBUMS_SORT_METHOD" %]
 			<select class="stdedit" name="all_access_album_sort_method" id="all_access_album_sort_method">
 
-				[% FOREACH option = {
-					'0none'            => 'NONE',
-					'1artistalbum'     => 'SORT_ARTISTALBUM',
-					'2artistyearalbum' => 'SORT_ARTISTYEARALBUM',
-					'3yearalbum'       => 'SORT_YEARALBUM',
-					'4yearartistalbum' => 'SORT_YEARARTISTALBUM',
-				} %]
-				<option [% IF prefs.all_access_album_sort_method == option.key %]selected [% END %]value="[% option.key %]">[% option.value | string %]</option>
-				[%- END -%]
+			[% FOREACH option = album_sort_methods.keys %]
+				<option [% IF prefs.all_access_album_sort_method == option %]selected [% END %]value="[% option %]">[% album_sort_methods.$option %]</option>
+			[%- END -%]
+
 			</select>
 		[% END %]
 
