@@ -21,6 +21,8 @@ my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 $prefs->init({
+	my_music_album_sort_method => '2artistyearalbum',
+	all_access_album_sort_method => '0none',
 	max_search_items => 100,
 	max_artist_tracks => 25,
 	max_related_artists => 10,
@@ -69,7 +71,7 @@ sub handler {
 
 	if ($params->{'saveSettings'}) {
 		$prefs->set('all_access_enabled',  $params->{'all_access_enabled'} ? 1 : 0);
-		for my $param(qw(max_search_items max_artist_tracks max_related_artists)) {
+		for my $param(qw(my_music_album_sort_method all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
 			if ($params->{ $param } ne $prefs->get( $param )) {
 				$prefs->set($param, $params->{ $param });
 			}
@@ -77,7 +79,7 @@ sub handler {
 	}
 
 	# To avoid showing the password remove it from the list
-	for my $param(qw(username password device_id all_access_enabled max_search_items max_artist_tracks max_related_artists)) {
+	for my $param(qw(username password device_id my_music_album_sort_method all_access_enabled all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
 		$params->{'prefs'}->{$param} = $prefs->get($param);
 	}
 
