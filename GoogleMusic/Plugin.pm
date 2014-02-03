@@ -28,6 +28,7 @@ use Plugins::GoogleMusic::AllAccess;
 use Plugins::GoogleMusic::Playlists;
 use Plugins::GoogleMusic::Radio;
 use Plugins::GoogleMusic::TrackMenu;
+use Plugins::GoogleMusic::AlbumMenu;
 
 # TODO: move these constants to the configurable settings?
 # Note: these constants can't be passed to the python API
@@ -261,7 +262,7 @@ sub search {
 		  passthrough => [ $artists, { sortArtists => 1, sortAlbums => 1 } ] },
 		{ name => cstring($client, "ALBUMS") . " (" . scalar @$albums . ")",
 		  type => 'link',
-		  url => \&_albums,
+		  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
 		  passthrough => [ $albums, { sortAlbums => 1 } ] },
 		{ name => cstring($client, "SONGS") . " (" . scalar @$tracks . ")",
 		  type => 'playlist',
@@ -289,7 +290,8 @@ sub search_all_access {
 		return _artists($client, $callback, $args, $result->{artists}, { all_access => 1 });
 	}
 	if ($opts->{albumSearch}) {
-		return _albums($client, $callback, $args, $result->{albums}, { all_access => 1 });
+		return Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $result->{albums},
+													 { all_access => 1 });
 	}
 	if ($opts->{trackSearch}) {
 		return Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $result->{tracks},
@@ -306,7 +308,7 @@ sub search_all_access {
 		  passthrough => [ $result->{artists}, { all_access => 1 } ], },
 		{ name => cstring($client, "ALBUMS") . " (" . scalar @{$result->{albums}} . ")",
 		  type => 'link',
-		  url => \&_albums,
+		  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
 		  passthrough => [ $result->{albums}, { all_access => 1 } ], },
 		{ name => cstring($client, "SONGS") . " (" . scalar @{$result->{tracks}} . ")",
 		  type => 'playlist',
@@ -369,95 +371,12 @@ sub recent_searches {
 	return;
 }
 
-sub _tracks_for_album {
-	my ($client, $callback, $args, $album, $opts) = @_;
-
-	my $all_access = $opts->{'all_access'};
-	my $tracks;
-
-	# All Access or All Access album?
-	if ($all_access || $album->{uri} =~ '^googlemusic:album:B') {
-		my $info = Plugins::GoogleMusic::AllAccess::get_album_info($album->{uri});
-		if ($info) {
-			$tracks = $info->{tracks};
-		} else {
-			$tracks = [];
-		}
-	} else {
-		$tracks = $album->{tracks};
-	}
-
-	Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $tracks, $opts);
-
-	return;
-}
-
-sub _show_album {
-	my ($client, $album, $opts) = @_;
-
-	my $all_access = $opts->{'all_access'};
-
-    my $albumYear = $album->{'year'} || " ? ";
-
-	my $menu = {
-		'name'  => $album->{'name'} . " (" . $albumYear . ")",
-		'name2'  => $album->{'artist'}->{'name'},
-		'line1' => $album->{'name'} . " (" . $albumYear . ")",
-		'line2' => $album->{'artist'}->{'name'},
-		'cover' => $album->{'cover'},
-		'image' => $album->{'cover'},
-		'type'  => 'playlist',
-		'url'   => \&_tracks_for_album,
-		'hasMetadata'   => 'album',
-		'passthrough' => [ $album , { all_access => $all_access, playall => 1, sortByTrack => 1 } ],
-		'albumData' => [
-			{ type => 'link', label => 'ARTIST', name => $album->{'artist'}->{'name'}, url => 'anyurl',
-		  },
-			{ type => 'link', label => 'ALBUM', name => $album->{'name'} },
-			{ type => 'link', label => 'YEAR', name => $album->{'year'} },
-		],
-	};
-
-	return $menu;
-}
-
-sub _albums {
-	my ($client, $callback, $args, $albums, $opts) = @_;
-	my $sortAlbums = $opts->{sortAlbums};
-
-	my @menu;
-
-	if ($sortAlbums) {
-		@$albums = sort { lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-						 ($b->{year} || -1) <=> ($a->{year} || -1) or
-						  lc($a->{name}) cmp lc($b->{name})
-		} @$albums;
-	}
-
-	for my $album (@{$albums}) {
-		push @menu, _show_album($client, $album, $opts);
-	}
-
-	if (!scalar @menu) {
-		push @menu, {
-			'name' => cstring($client, 'EMPTY'),
-			'type' => 'text',
-		}
-	}
-
-	$callback->(\@menu);
-
-	return;
-}
-
 sub _show_menu_for_artist {
 	my ($client, $callback, $args, $artist, $opts) = @_;
 	my $sortAlbums = $opts->{sortAlbums};
 	my $all_access = $opts->{all_access};
 
 	my @menu;
-
-	my $albums;
 
 	if ($all_access) {
 		my $artistId = $artist->{uri};
@@ -467,7 +386,7 @@ sub _show_menu_for_artist {
 		@menu = (
 			{ name => cstring($client, "ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
 			  type => 'link',
-			  url => \&_albums,
+			  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
 			  passthrough => [ $info->{albums}, $opts ], },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
 			  type => 'playlist',
@@ -480,19 +399,11 @@ sub _show_menu_for_artist {
 		);
 
 	} else {
-		my ($tracks, $artists);
-		($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({'artist' => $artist->{'name'}});
+		my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({'artist' => $artist->{'name'}});
 
-		if ($sortAlbums) {
-			@$albums = sort { lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-							 ($b->{year} || -1) <=> ($a->{year} || -1) or
-							  lc($a->{name}) cmp lc($b->{name})
-			} @$albums;
-		}
+		Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $albums, $opts);
 
-		for my $album (@{$albums}) {
-			push @menu, _show_album($client, $album, $opts);
-		}
+		return;
 	}
 
 

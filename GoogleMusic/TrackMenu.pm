@@ -47,7 +47,6 @@ sub menu {
 }
 
 sub _showTrack {
-
 	my ($client, $track, $opts) = @_;
 
 	my $item = {
