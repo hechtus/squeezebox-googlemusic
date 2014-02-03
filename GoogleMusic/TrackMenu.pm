@@ -33,15 +33,15 @@ sub menu {
 	}
 
 	if (!scalar @items) {
-		$callback->({
+		push @items, {
 			name => cstring($client, 'EMPTY'),
 			type => 'text',
-		});
-	} else {
-		$callback->({
-			items => \@items,
-		});
+		};
 	}
+
+	$callback->({
+		items => \@items,
+	});
 
 	return;
 }
