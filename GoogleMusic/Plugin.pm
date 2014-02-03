@@ -27,6 +27,7 @@ use Plugins::GoogleMusic::Library;
 use Plugins::GoogleMusic::AllAccess;
 use Plugins::GoogleMusic::Playlists;
 use Plugins::GoogleMusic::Radio;
+use Plugins::GoogleMusic::TrackMenu;
 
 # TODO: move these constants to the configurable settings?
 # Note: these constants can't be passed to the python API
@@ -209,7 +210,7 @@ sub _show_playlist {
 	$menu = {
 		name => $playlist->{'name'},
 		type => 'playlist',
-		url => \&_tracks,
+		url => \&Plugins::GoogleMusic::TrackMenu::menu,
 		passthrough => [$playlist->{tracks}, { showArtist => 1, showAlbum => 1, playall => 1 }],
 	};
 
@@ -264,7 +265,7 @@ sub search {
 		  passthrough => [ $albums, { sortAlbums => 1 } ] },
 		{ name => cstring($client, "SONGS") . " (" . scalar @$tracks . ")",
 		  type => 'playlist',
-		  url => \&_tracks,
+		  url => \&Plugins::GoogleMusic::TrackMenu::menu,
 		  passthrough => [ $tracks, { showArtist => 1, showAlbum => 1, sortTracks => 1 } ], },
 	);
 
@@ -291,7 +292,8 @@ sub search_all_access {
 		return _albums($client, $callback, $args, $result->{albums}, { all_access => 1 });
 	}
 	if ($opts->{trackSearch}) {
-		return _tracks($client, $callback, $args, $result->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1 });
+		return Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $result->{tracks},
+													 { all_access => 1, showArtist => 1, showAlbum => 1 });
 	}
 
 	# Do not add to recent searches when we are doing artist/album/track search
@@ -308,7 +310,7 @@ sub search_all_access {
 		  passthrough => [ $result->{albums}, { all_access => 1 } ], },
 		{ name => cstring($client, "SONGS") . " (" . scalar @{$result->{tracks}} . ")",
 		  type => 'playlist',
-		  url => \&_tracks,
+		  url => \&Plugins::GoogleMusic::TrackMenu::menu,
 		  passthrough => [ $result->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
 	);
 
@@ -367,84 +369,6 @@ sub recent_searches {
 	return;
 }
 
-sub _show_track {
-
-	my ($client, $track, $opts) = @_;
-
-	# Show artist and/or album in name and line2
-	my $showArtist = $opts->{'showArtist'};
-	my $showAlbum = $opts->{'showAlbum'};
-
-	# Play all tracks in a list or not when selecting. Useful for albums and playlists.
-	my $playall = $opts->{'playall'};
-
-	my $menu = {
-		'name'     => $track->{title},
-		'line1'    => $track->{title},
-		'url'      => $track->{uri},
-		'image'    => $track->{cover},
-		'secs'     => $track->{secs},
-		'duration' => $track->{secs},
-		'bitrate'  => $track->{bitrate},
-		'genre'    => $track->{genre},
-		'type'     => 'audio',
-		'play'     => $track->{uri},
-		'playall'  => $playall,
-	};
-
-	if ($showArtist) {
-		$menu->{'name'} .= " " . cstring($client, 'BY') . " " . $track->{artist}->{name};
-		$menu->{'line2'} = $track->{artist}->{name};
-	}
-
-	if ($showAlbum) {
-		$menu->{'name'} .= " \x{2022} " . $track->{album}->{name};
-		if ($menu->{'line2'}) {
-			$menu->{'line2'} .= " \x{2022} " . $track->{album}->{name};
-		} else {
-			$menu->{'line2'} = $track->{album}->{name};
-		}
-	}
-
-	return $menu;
-}
-
-sub _tracks {
-	my ($client, $callback, $args, $tracks, $opts) = @_;
-	my $sortByTrack = $opts->{sortByTrack};
-	my $sortTracks = $opts->{sortTracks};
-
-	my @menu;
-
-	if ($sortByTrack) {
-		@$tracks = sort { ($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
-						  ($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1)
-		} @$tracks;
-	} elsif ($sortTracks) {
-		@$tracks = sort { lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-						 ($b->{year} || -1)  <=> ($a->{year} || -1) or
-						 lc(($a->{name} || '')) cmp lc(($b->{name} || ''))  or
-						 ($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
-						 ($a->{trackNumber} || -1)  <=> ($b->{trackNumber} || -1)
-		} @$tracks;
-	}
-
-	for my $track (@{$tracks}) {
-		push @menu, _show_track($client, $track, $opts);
-	}
-
-	if (!scalar @menu) {
-		push @menu, {
-			'name' => cstring($client, 'EMPTY'),
-			'type' => 'text',
-		}
-	}
-
-	$callback->(\@menu);
-
-	return;
-}
-
 sub _tracks_for_album {
 	my ($client, $callback, $args, $album, $opts) = @_;
 
@@ -463,7 +387,7 @@ sub _tracks_for_album {
 		$tracks = $album->{tracks};
 	}
 
-	_tracks($client, $callback, $args, $tracks, $opts);
+	Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $tracks, $opts);
 
 	return;
 }
@@ -547,7 +471,7 @@ sub _show_menu_for_artist {
 			  passthrough => [ $info->{albums}, $opts ], },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
 			  type => 'playlist',
-			  url => \&_tracks,
+			  url => \&Plugins::GoogleMusic::TrackMenu::menu,
 			  passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1 } ], },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
 			  type => 'link',
