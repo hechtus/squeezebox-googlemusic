@@ -29,6 +29,7 @@ use Plugins::GoogleMusic::Playlists;
 use Plugins::GoogleMusic::Radio;
 use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumMenu;
+use Plugins::GoogleMusic::ArtistMenu;
 
 # TODO: move these constants to the configurable settings?
 # Note: these constants can't be passed to the python API
@@ -258,7 +259,7 @@ sub search {
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @$artists . ")",
 		  type => 'link',
-		  url => \&_artists,
+		  url => \&Plugins::GoogleMusic::ArtistMenu::menu,
 		  passthrough => [ $artists, { sortArtists => 1, sortAlbums => 1 } ] },
 		{ name => cstring($client, "ALBUMS") . " (" . scalar @$albums . ")",
 		  type => 'link',
@@ -287,7 +288,8 @@ sub search_all_access {
 
 	# Pass to artist/album/track menu when doing artist/album/track search
 	if ($opts->{artistSearch}) {
-		return _artists($client, $callback, $args, $result->{artists}, { all_access => 1 });
+		return Plugins::GoogleMusic::ArtistMenu::menu($client, $callback, $args, $result->{artists},
+													  { all_access => 1 });
 	}
 	if ($opts->{albumSearch}) {
 		return Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $result->{albums},
@@ -304,7 +306,7 @@ sub search_all_access {
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @{$result->{artists}} . ")",
 		  type => 'link',
-		  url => \&_artists,
+		  url => \&Plugins::GoogleMusic::ArtistMenu::menu,
 		  passthrough => [ $result->{artists}, { all_access => 1 } ], },
 		{ name => cstring($client, "ALBUMS") . " (" . scalar @{$result->{albums}} . ")",
 		  type => 'link',
@@ -367,96 +369,6 @@ sub recent_searches {
 	$callback->({
 		items => $items
 	});
-
-	return;
-}
-
-sub _show_menu_for_artist {
-	my ($client, $callback, $args, $artist, $opts) = @_;
-	my $sortAlbums = $opts->{sortAlbums};
-	my $all_access = $opts->{all_access};
-
-	my @menu;
-
-	if ($all_access) {
-		my $artistId = $artist->{uri};
-		my $info = Plugins::GoogleMusic::AllAccess::get_artist_info($artist->{uri});
-
-		# TODO Error handling
-		@menu = (
-			{ name => cstring($client, "ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
-			  type => 'link',
-			  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
-			  passthrough => [ $info->{albums}, $opts ], },
-			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
-			  type => 'playlist',
-			  url => \&Plugins::GoogleMusic::TrackMenu::menu,
-			  passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1 } ], },
-			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
-			  type => 'link',
-			  url => \&_artists,
-			  passthrough => [ $info->{related}, $opts ], },
-		);
-
-	} else {
-		my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({'artist' => $artist->{'name'}});
-
-		Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $albums, $opts);
-
-		return;
-	}
-
-
-	if (!scalar @menu) {
-		push @menu, {
-			'name' => cstring($client, 'EMPTY'),
-			'type' => 'text',
-		}
-	}
-
-	$callback->(\@menu);
-
-	return;
-}
-
-sub _show_artist {
-	my ($client, $artist, $opts) = @_;
-
-	my $menu;
-
-	$menu = {
-		name => $artist->{'name'},
-		image => $artist->{'image'},
-		type => 'link',
-		url => \&_show_menu_for_artist,
-		passthrough => [ $artist, $opts ],
-	};
-
-	return $menu;
-}
-
-sub _artists {
-	my ($client, $callback, $args, $artists, $opts) = @_;
-	my $sortArtists = $opts->{sortArtists};
-
-	my @menu;
-
-	if ($sortArtists) {
-		@$artists = sort { lc($a->{name}) cmp lc($b->{name}) } @$artists;
-	}
-
-	for my $artist (@{$artists}) {
-		push @menu, _show_artist($client, $artist, $opts);
-	}
-
-	if (!scalar @menu) {
-		push @menu, {
-			'name' => cstring($client, 'EMPTY'),
-			'type' => 'text',
-		}
-	}
-
-	$callback->(\@menu);
 
 	return;
 }
