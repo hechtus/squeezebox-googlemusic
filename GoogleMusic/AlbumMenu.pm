@@ -45,7 +45,7 @@ sub menu {
 sub _showAlbum {
 	my ($client, $album, $opts) = @_;
 
-    my $albumYear = $album->{year} || " ? ";
+	my $albumYear = $album->{year} || " ? ";
 
 	my $item = {
 		name  => $album->{name} . " (" . $albumYear . ")",
