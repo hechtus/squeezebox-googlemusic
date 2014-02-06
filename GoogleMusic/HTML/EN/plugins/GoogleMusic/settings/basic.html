@@ -16,6 +16,10 @@
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_DEVICE_ID" desc="PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC" %]
 			<input type="text" class="stdedit" name="device_id" id="device_id" value="[% prefs.device_id %]" size="20" />
 		[% END %]
+
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_DISABLE_SSL" desc="PLUGIN_GOOGLEMUSIC_DISABLE_SSL_DESC" %]
+			<input type="checkbox" name="disable_ssl" [% IF prefs.disable_ssl %] checked [% END %]>
+		[% END %]
 	[% END %]
 	
 	<p><hr></p>

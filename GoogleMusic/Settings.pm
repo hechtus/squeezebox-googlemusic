@@ -13,14 +13,17 @@ use Slim::Utils::Log;
 use Slim::Utils::Misc;
 use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Prefs;
+use Slim::Utils::OSDetect;
 
 use Plugins::GoogleMusic::GoogleAPI;
 
+my $os = Slim::Utils::OSDetect->getOS();
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 $prefs->init({
+	disable_ssl => 0,
 	my_music_album_sort_method => 'artistyearalbum',
 	all_access_album_sort_method => 'none',
 	max_search_items => 100,
@@ -78,8 +81,17 @@ sub handler {
 		}
 	}
 
+	if ($params->{'saveSettings'}) {
+		my $disable_ssl = $params->{'disable_ssl'} ? 1 : 0;
+		if ($disable_ssl != $prefs->get('disable_ssl')) {
+			$prefs->set('disable_ssl',  $disable_ssl);
+			$params = $class->getRestartMessage($params, cstring($client, 'SETUP_GROUP_PLUGINS_NEEDS_RESTART'));
+			$params = $class->restartServer($params, 1);
+		}
+	}		
+
 	# To avoid showing the password remove it from the list
-	for my $param(qw(username password device_id my_music_album_sort_method all_access_enabled all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
+	for my $param(qw(username password device_id disable_ssl my_music_album_sort_method all_access_enabled all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
 		$params->{'prefs'}->{$param} = $prefs->get($param);
 	}
 
@@ -93,6 +105,52 @@ sub handler {
 	};
 
 	return $class->SUPER::handler($client, $params);
+}
+
+sub getRestartMessage {
+	my ($class, $paramRef, $noRestartMsg) = @_;
+	
+	# show a link/button to restart SC if this is supported by this platform
+	if ($os->canRestartServer()) {
+				
+		$paramRef->{'restartUrl'} = $paramRef->{webroot} . $paramRef->{path} . '?restart=1';
+		$paramRef->{'restartUrl'} .= '&rand=' . $paramRef->{'rand'} if $paramRef->{'rand'};
+
+		$paramRef->{'warning'} = '<span id="restartWarning">'
+			. Slim::Utils::Strings::string('PLUGINS_CHANGED_NEED_RESTART', $paramRef->{'restartUrl'})
+			. '</span>';
+
+	} else {
+	
+		$paramRef->{'warning'} .= '<span id="popupWarning">'
+			. $noRestartMsg
+			. '</span>';
+		
+	}
+	
+	return $paramRef;	
+}
+
+sub restartServer {
+	my ($class, $paramRef, $needsRestart) = @_;
+	
+	if ($needsRestart && $os->canRestartServer()) {
+		
+		$paramRef->{'warning'} = '<span id="popupWarning">'
+			. Slim::Utils::Strings::string('RESTARTING_PLEASE_WAIT')
+			. '</span>';
+		
+		# delay the restart a few seconds to return the page to the client first
+		Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 2, \&_restartServer);
+	}
+	
+	return $paramRef;
+}
+
+sub _restartServer {
+
+	$os->restartServer();
+
 }
 
 1;

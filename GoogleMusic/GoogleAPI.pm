@@ -3,9 +3,15 @@ package Plugins::GoogleMusic::GoogleAPI;
 use strict;
 use warnings;
 use File::Spec::Functions;
+use Slim::Utils::Prefs;
+
+my $prefs = preferences('plugin.googlemusic');
 
 my $inlineDir;
-my $googleapi = Plugins::GoogleMusic::GoogleAPI::Mobileclient->new(0, 0);
+my $googleapi = Plugins::GoogleMusic::GoogleAPI::Mobileclient->new(
+	$Inline::Python::Boolean::false,
+	$Inline::Python::Boolean::false,
+	$prefs->get('disable_ssl') ? $Inline::Python::Boolean::false : $Inline::Python::Boolean::true);
 
 sub get {
 	return $googleapi;
@@ -16,7 +22,11 @@ sub get_device_id {
 
 	my $id;
 
-	my $webapi = Plugins::GoogleMusic::GoogleAPI::Webclient->new(0, 0);
+	my $webapi = Plugins::GoogleMusic::GoogleAPI::Webclient->new(
+		$Inline::Python::Boolean::false,
+		$Inline::Python::Boolean::false,
+		$prefs->get('disable_ssl') ? $Inline::Python::Boolean::false : $Inline::Python::Boolean::true);
+
 	if (!$webapi->login($username, $password)) {
 		return;
 	}
