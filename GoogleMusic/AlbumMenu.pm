@@ -77,6 +77,17 @@ sub _showAlbum {
 		],
 	};
 
+	# If the albums are sorted by name add a text key to easily jump
+	# to albums on squeezeboxes
+	if ($opts->{sortAlbums}) {
+		my $sortMethod = $opts->{all_access} ?
+			$prefs->get('all_access_album_sort_method') :
+			$prefs->get('my_music_album_sort_method');
+		if ($sortMethod eq 'album') {
+			$item->{textkey} = substr($album->{name}, 0, 1);
+		}
+	}
+
 	return $item;
 }
 
