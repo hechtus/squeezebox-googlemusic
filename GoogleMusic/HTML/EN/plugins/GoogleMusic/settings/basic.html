@@ -25,7 +25,7 @@
 			<br/>
 		[% END %]
 
-		[% WRAPPER settingGroup title="ALBUMS_SORT_METHOD" desc="ALBUMS_SORT_METHOD" %]
+		[% WRAPPER settingGroup title="ALBUMS_SORT_METHOD" desc="ALBUMS_SORT_METHOD_DESC" %]
 			<select class="stdedit" name="my_music_album_sort_method" id="my_music_album_sort_method">
 
 			[% FOREACH option = album_sort_methods.keys %]
@@ -48,7 +48,7 @@
 			<input type="checkbox" name="all_access_enabled" [% IF prefs.all_access_enabled %] checked [% END %]>
 		[% END %]
 
-		[% WRAPPER settingGroup title="ALBUMS_SORT_METHOD" desc="ALBUMS_SORT_METHOD" %]
+		[% WRAPPER settingGroup title="ARTIST_ALBUMS_SORT_METHOD" desc="ARTIST_ALBUMS_SORT_METHOD_DESC" %]
 			<select class="stdedit" name="all_access_album_sort_method" id="all_access_album_sort_method">
 
 			[% FOREACH option = album_sort_methods.keys %]
