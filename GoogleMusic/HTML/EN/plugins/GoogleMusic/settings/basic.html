@@ -16,9 +16,46 @@
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_DEVICE_ID" desc="PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC" %]
 			<input type="text" class="stdedit" name="device_id" id="device_id" value="[% prefs.device_id %]" size="20" />
 		[% END %]
+	[% END %]
 	
+	<p><hr></p>
+
+	[% WRAPPER settingSection %]
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MY_MUSIC" desc="" %]
+			<br/>
+		[% END %]
+
+		[% WRAPPER settingGroup title="ALBUMS_SORT_METHOD" desc="ALBUMS_SORT_METHOD_DESC" %]
+			<select class="stdedit" name="my_music_album_sort_method" id="my_music_album_sort_method">
+
+			[% FOREACH option = album_sort_methods.keys %]
+				<option [% IF prefs.my_music_album_sort_method == option %]selected [% END %]value="[% option %]">[% album_sort_methods.$option %]</option>
+			[%- END -%]
+
+			</select>
+		[% END %]
+
+	[% END %]
+
+	<p><hr></p>
+
+	[% WRAPPER settingSection %]
+		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_ALL_ACCESS" desc="" %]
+			<br/>
+		[% END %]
+
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED" desc="PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED_DESC" %]
 			<input type="checkbox" name="all_access_enabled" [% IF prefs.all_access_enabled %] checked [% END %]>
+		[% END %]
+
+		[% WRAPPER settingGroup title="ARTIST_ALBUMS_SORT_METHOD" desc="ARTIST_ALBUMS_SORT_METHOD_DESC" %]
+			<select class="stdedit" name="all_access_album_sort_method" id="all_access_album_sort_method">
+
+			[% FOREACH option = album_sort_methods.keys %]
+				<option [% IF prefs.all_access_album_sort_method == option %]selected [% END %]value="[% option %]">[% album_sort_methods.$option %]</option>
+			[%- END -%]
+
+			</select>
 		[% END %]
 
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS" desc="PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS_DESC" %]
@@ -32,7 +69,6 @@
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS" desc="PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS_DESC" %]
 			<input type="text" class="stdedit" name="max_related_artists" id="max_related_artists" value="[% prefs.max_related_artists %]" size="20" />
 		[% END %]
-
 	[% END %]
 
 [% PROCESS settings/footer.html %]

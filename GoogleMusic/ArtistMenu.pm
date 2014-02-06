@@ -71,7 +71,7 @@ sub _artistMenu {
 
 		if ($opts->{mode}) {
 			if ($opts->{mode} eq 'albums') {
-				Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $info->{albums}, $opts);
+				Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $info->{albums}, { all_access => 1, sortAlbums => 1 } );
 				return;
 			} elsif ($opts->{mode} eq 'tracks') {
 				Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1, playall_uri => $artist->{uri} });
@@ -92,7 +92,7 @@ sub _artistMenu {
 					fixedParams => { mode => 'albums', uri => $artist->{uri} },
 				},
 			},
-			passthrough => [ $info->{albums}, $opts ],
+			passthrough => [ $info->{albums}, { all_access => 1, sortAlbums => 1 } ],
 		}, {
 			name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
 			type => 'playlist',

@@ -5,13 +5,22 @@ use warnings;
 
 use Slim::Utils::Log;
 use Slim::Utils::Strings qw(cstring);
+use Slim::Utils::Prefs;
 
 use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumInfo;
 
 
 my $log = logger('plugin.googlemusic');
+my $prefs = preferences('plugin.googlemusic');
 
+my %sortMap = (
+	'album' => \&_sortAlbum,
+	'artistalbum' => \&_sortArtistAlbum,
+	'artistyearalbum' => \&_sortArtistYearAlbum,
+	'yearalbum' => \&_sortYearAlbum,
+	'yearartistalbum' => \&_sortYearArtistAlbum,
+);
 
 sub menu {
 	my ($client, $callback, $args, $albums, $opts) = @_;
@@ -19,10 +28,12 @@ sub menu {
 	my @items;
 
 	if ($opts->{sortAlbums}) {
-		@$albums = sort { lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-						 ($b->{year} || -1) <=> ($a->{year} || -1) or
-						  lc($a->{name}) cmp lc($b->{name})
-		} @$albums;
+		my $sortMethod = $opts->{all_access} ?
+			$prefs->get('all_access_album_sort_method') :
+			$prefs->get('my_music_album_sort_method');
+		if (exists $sortMap{$sortMethod}) {
+			@$albums = sort {$sortMap{$sortMethod}->()} @$albums;
+		}
 	}
 
 	for my $album (@{$albums}) {
@@ -123,6 +134,32 @@ sub _albumTracks {
 	Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $tracks, $opts);
 
 	return;
+}
+
+sub _sortAlbum {
+	lc($a->{name}) cmp lc($b->{name});
+}
+
+sub _sortArtistAlbum {
+	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+		lc($a->{name}) cmp lc($b->{name});
+}
+
+sub _sortArtistYearAlbum {
+	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+		($b->{year} || -1) <=> ($a->{year} || -1) or
+		lc($a->{name}) cmp lc($b->{name});
+}
+
+sub _sortYearAlbum {
+	($b->{year} || -1) <=> ($a->{year} || -1) or
+		lc($a->{name}) cmp lc($b->{name});
+}
+
+sub _sortYearArtistAlbum {
+	($b->{year} || -1) <=> ($a->{year} || -1) or
+		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+		lc($a->{name}) cmp lc($b->{name});
 }
 
 1;

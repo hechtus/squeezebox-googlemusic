@@ -169,3 +169,15 @@ PLUGIN_GOOGLEMUSIC_ON_GOOGLEMUSIC
 	PL	W usłudze Google Music
 	RU	На Google Music
 	SV	På Google Music
+
+ARTIST_ALBUMS_SORT_METHOD
+	DE	Sortierverfahren für Alben eines Interpreten
+	EN	Artist Albums Sort Method
+
+ARTIST_ALBUMS_SORT_METHOD_DESC
+	DE	Verfahren nach dem die Alben eines Interpreten sortiert werden sollen. Dies gilt nicht für Suchergebnisse sondern nur für die Albem eines Interpreten.
+	EN	Method of how albums of one artist are sorted. This does not apply to search results but only to albums of a certain artist.
+
+ALBUMS_SORT_METHOD_DESC
+	DE	Verfahren nach dem Alben sortiert werden sollen.
+	EN	Method of how albums are sorted.

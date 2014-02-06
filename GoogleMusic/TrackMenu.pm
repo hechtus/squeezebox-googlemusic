@@ -5,10 +5,19 @@ use warnings;
 
 use Slim::Utils::Log;
 use Slim::Utils::Strings qw(cstring);
+use Slim::Utils::Prefs;
 
 
 my $log = logger('plugin.googlemusic');
+my $prefs = preferences('plugin.googlemusic');
 
+my %sortMap = (
+	'album' => \&_sortAlbum,
+	'artistalbum' => \&_sortArtistAlbum,
+	'artistyearalbum' => \&_sortArtistYearAlbum,
+	'yearalbum' => \&_sortYearAlbum,
+	'yearartistalbum' => \&_sortYearArtistAlbum,
+);
 
 sub menu {
 	my ($client, $callback, $args, $tracks, $opts) = @_;
@@ -16,16 +25,14 @@ sub menu {
 	my @items;
 
 	if ($opts->{sortByTrack}) {
-		@$tracks = sort { ($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
-						  ($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1)
-		} @$tracks;
+		@$tracks = sort _sortTrack @$tracks;
 	} elsif ($opts->{sortTracks}) {
-		@$tracks = sort { lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-						 ($b->{year} || -1)  <=> ($a->{year} || -1) or
-						 lc(($a->{name} || '')) cmp lc(($b->{name} || ''))  or
-						 ($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
-						 ($a->{trackNumber} || -1)  <=> ($b->{trackNumber} || -1)
-		} @$tracks;
+		my $sortMethod = $opts->{all_access} ?
+			$prefs->get('all_access_album_sort_method') :
+			$prefs->get('my_music_album_sort_method');
+		if (exists $sortMap{$sortMethod}) {
+			@$tracks = sort {$sortMap{$sortMethod}->()} @$tracks;
+		}
 	}
 
 	my $index = 0;
@@ -119,6 +126,47 @@ sub _showTrack {
 	}
 
 	return $item;
+}
+
+sub _sortTrack {
+	($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
+}
+
+sub _sortAlbum {
+	lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
+}
+
+sub _sortArtistAlbum {
+	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
+}
+
+sub _sortArtistYearAlbum {
+	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+		($b->{year} || -1) <=> ($a->{year} || -1) or
+		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
+}
+
+sub _sortYearAlbum {
+	($b->{year} || -1) <=> ($a->{year} || -1) or
+		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
+}
+
+sub _sortYearArtistAlbum {
+	($b->{year} || -1) <=> ($a->{year} || -1) or
+		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
 }
 
 1;
