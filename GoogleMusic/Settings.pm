@@ -85,6 +85,7 @@ sub handler {
 
 	$params->{'album_sort_methods'} = {
 		'none'            => cstring($client, 'NONE'),
+		'album'           => cstring($client, 'ALBUM'),
 		'artistalbum'     => cstring($client, 'SORT_ARTISTALBUM'),
 		'artistyearalbum' => cstring($client, 'SORT_ARTISTYEARALBUM'),
 		'yearalbum'       => cstring($client, 'SORT_YEARALBUM'),

@@ -14,6 +14,7 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 
 my %sortMap = (
+	'album' => \&_sortAlbum,
 	'artistalbum' => \&_sortArtistAlbum,
 	'artistyearalbum' => \&_sortArtistYearAlbum,
 	'yearalbum' => \&_sortYearAlbum,
@@ -101,26 +102,30 @@ sub _albumTracks {
 	return;
 }
 
+sub _sortAlbum {
+	lc($a->{name}) cmp lc($b->{name});
+}
+
 sub _sortArtistAlbum {
 	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-		lc($b->{name}) cmp lc($a->{name});
+		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortArtistYearAlbum {
 	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 		($b->{year} || -1) <=> ($a->{year} || -1) or
-		lc($b->{name}) cmp lc($a->{name});
+		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortYearAlbum {
 	($b->{year} || -1) <=> ($a->{year} || -1) or
-		lc($b->{name}) cmp lc($a->{name});
+		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortYearArtistAlbum {
 	($b->{year} || -1) <=> ($a->{year} || -1) or
 		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-		lc($b->{name}) cmp lc($a->{name});
+		lc($a->{name}) cmp lc($b->{name});
 }
 
 1;
