@@ -4,16 +4,22 @@ use strict;
 use warnings;
 use File::Spec::Functions;
 use Slim::Utils::Prefs;
+use Scalar::Util qw(blessed);
 
 my $prefs = preferences('plugin.googlemusic');
 
 my $inlineDir;
-my $googleapi = Plugins::GoogleMusic::GoogleAPI::Mobileclient->new(
-	$Inline::Python::Boolean::false,
-	$Inline::Python::Boolean::false,
-	$prefs->get('disable_ssl') ? $Inline::Python::Boolean::false : $Inline::Python::Boolean::true);
+my $googleapi;
 
 sub get {
+	if (!blessed($googleapi)) {
+		eval {
+			$googleapi = Plugins::GoogleMusic::GoogleAPI::Mobileclient->new(
+				$Inline::Python::Boolean::false,
+				$Inline::Python::Boolean::false,
+				$prefs->get('disable_ssl') ? $Inline::Python::Boolean::false : $Inline::Python::Boolean::true);
+		};
+	}
 	return $googleapi;
 }
 
@@ -21,11 +27,18 @@ sub get_device_id {
 	my ($username, $password) = @_;
 
 	my $id;
+	my $webapi;
 
-	my $webapi = Plugins::GoogleMusic::GoogleAPI::Webclient->new(
-		$Inline::Python::Boolean::false,
-		$Inline::Python::Boolean::false,
-		$prefs->get('disable_ssl') ? $Inline::Python::Boolean::false : $Inline::Python::Boolean::true);
+	eval {
+		$webapi = Plugins::GoogleMusic::GoogleAPI::Webclient->new(
+			$Inline::Python::Boolean::false,
+			$Inline::Python::Boolean::false,
+			$prefs->get('disable_ssl') ? $Inline::Python::Boolean::false : $Inline::Python::Boolean::true);
+	};
+
+	if (!blessed($webapi)) {
+		return;
+	}
 
 	if (!$webapi->login($username, $password)) {
 		return;
