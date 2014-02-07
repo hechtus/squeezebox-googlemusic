@@ -114,27 +114,27 @@ sub _albumTracks {
 }
 
 sub _sortAlbum {
-	lc($a->{name}) cmp lc($b->{name});
+	return lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortArtistAlbum {
-	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortArtistYearAlbum {
-	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 		($b->{year} || -1) <=> ($a->{year} || -1) or
 		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortYearAlbum {
-	($b->{year} || -1) <=> ($a->{year} || -1) or
+	return ($b->{year} || -1) <=> ($a->{year} || -1) or
 		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortYearArtistAlbum {
-	($b->{year} || -1) <=> ($a->{year} || -1) or
+	return ($b->{year} || -1) <=> ($a->{year} || -1) or
 		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 		lc($a->{name}) cmp lc($b->{name});
 }

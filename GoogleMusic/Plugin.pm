@@ -63,7 +63,7 @@ sub initPlugin {
 	my $class = shift;
 
 	# Chech version of gmusicapi first
-	if (!blessed($googleapi) or Plugins::GoogleMusic::GoogleAPI::get_version() lt '3.1.0') {
+	if (!blessed($googleapi) || (Plugins::GoogleMusic::GoogleAPI::get_version() lt '3.1.0')) {
 		$class->SUPER::initPlugin(
 			tag    => 'googlemusic',
 			feed   => \&badVersion,
