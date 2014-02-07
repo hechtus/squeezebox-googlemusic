@@ -86,7 +86,6 @@ sub handler {
 		if ($disable_ssl != $prefs->get('disable_ssl')) {
 			$prefs->set('disable_ssl',  $disable_ssl);
 			$params = $class->getRestartMessage($params, cstring($client, 'SETUP_GROUP_PLUGINS_NEEDS_RESTART'));
-			$params = $class->restartServer($params, 1);
 		}
 	}		
 
@@ -103,6 +102,8 @@ sub handler {
 		'yearalbum'       => cstring($client, 'SORT_YEARALBUM'),
 		'yearartistalbum' => cstring($client, 'SORT_YEARARTISTALBUM'),
 	};
+
+	$params = $class->restartServer($params, 1);
 
 	return $class->SUPER::handler($client, $params);
 }
@@ -134,7 +135,7 @@ sub getRestartMessage {
 sub restartServer {
 	my ($class, $paramRef, $needsRestart) = @_;
 	
-	if ($needsRestart && $os->canRestartServer()) {
+	if ($needsRestart && $paramRef->{restart} && $os->canRestartServer()) {
 		
 		$paramRef->{'warning'} = '<span id="popupWarning">'
 			. Slim::Utils::Strings::string('RESTARTING_PLEASE_WAIT')
@@ -149,7 +150,7 @@ sub restartServer {
 
 sub _restartServer {
 
-	$os->restartServer();
+	return $os->restartServer();
 
 }
 
