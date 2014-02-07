@@ -301,7 +301,7 @@ sub search_all_access {
 	}
 
 	# Do not add to recent searches when we are doing artist/album/track search
-	add_recent_search($search) if $args->{search};
+	add_recent_search($args->{search}) if $args->{search};
 
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @{$result->{artists}} . ")",
