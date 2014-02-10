@@ -178,6 +178,16 @@ sub get_track_by_id {
 	}
 }
 
+sub get_album {
+	my $uri = shift;
+
+	if ($uri =~ '^googlemusic:album:B') {
+		return Plugins::GoogleMusic::AllAccess::get_album_info($uri);
+	} else {
+		return $albums->{$uri};
+	}
+}
+
 # Convert a Google Music Song dictionary to a consistent
 # robust track representation
 sub to_slim_track {

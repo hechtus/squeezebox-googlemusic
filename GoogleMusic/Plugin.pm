@@ -27,20 +27,11 @@ use Plugins::GoogleMusic::Library;
 use Plugins::GoogleMusic::AllAccess;
 use Plugins::GoogleMusic::Playlists;
 use Plugins::GoogleMusic::Radio;
+use Plugins::GoogleMusic::Recent;
 use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumMenu;
 use Plugins::GoogleMusic::ArtistMenu;
 
-# TODO: move these constants to the configurable settings?
-# Note: these constants can't be passed to the python API
-use Readonly;
-Readonly my $MAX_RECENT_ITEMS => 50;
-Readonly my $RECENT_CACHE_TTL => 'never';
-
-my %recent_searches;
-tie %recent_searches, 'Tie::Cache::LRU', $MAX_RECENT_ITEMS;
-
-my $cache = Slim::Utils::Cache->new('googlemusic', 3);
 
 my $log;
 my $prefs = preferences('plugin.googlemusic');
@@ -87,16 +78,7 @@ sub initPlugin {
 	# Initialize submodules
 	Plugins::GoogleMusic::Image::init();
 	Plugins::GoogleMusic::Radio::init();
-
-	# initialize recent searches: need to add them to the LRU cache ordered by timestamp
-	my $recent_searches = $cache->get('recent_searches');
-	map {
-		$recent_searches{$_} = $recent_searches->{$_};
-	} sort {
-		$recent_searches->{$a}->{ts} <=> $recent_searches->{$a}->{ts}
-	} keys %$recent_searches;
-
-
+	Plugins::GoogleMusic::Recent::init();
 
 	if (!$googleapi->login($prefs->get('username'),
 						   $prefs->get('password'))) {
@@ -165,7 +147,9 @@ sub my_music {
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_BROWSE'), type => 'link', url => \&search },
 		{ name => cstring($client, 'PLAYLISTS'), type => 'link', url => \&_playlists },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search },
-		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 0 },] },
+		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesMenu, passthrough => [ { "all_access" => 0 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentAlbumsMenu, passthrough => [ { "all_access" => 0 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentArtistsMenu, passthrough => [ { "all_access" => 0 } ] },
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RELOAD_LIBRARY'), type => 'func', url => \&reload_library },
 	);
 
@@ -196,7 +180,9 @@ sub all_access {
 	my @menu = (
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search_all_access },
-		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 1 },] },
+		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesMenu, passthrough => [ { "all_access" => 1 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentAlbumsMenu, passthrough => [ { "all_access" => 1 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentArtistsMenu, passthrough => [ { "all_access" => 1 } ] },
 	);
 
 	$callback->(\@menu);
@@ -252,7 +238,7 @@ sub search {
 	$args->{search} ||= '';
 	my @query = split(' ', $args->{search});
 
-	add_recent_search($args->{search}) if scalar @query;
+	Plugins::GoogleMusic::Recent::recentSearchesAdd($args->{search}) if scalar @query;
 
 	my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::search({'any' => \@query});
 
@@ -301,7 +287,7 @@ sub search_all_access {
 	}
 
 	# Do not add to recent searches when we are doing artist/album/track search
-	add_recent_search($args->{search}) if $args->{search};
+	Plugins::GoogleMusic::Recent::recentSearchesAdd($args->{search}) if $args->{search};
 
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @{$result->{artists}} . ")",
@@ -319,56 +305,6 @@ sub search_all_access {
 	);
 
 	$callback->(\@menu);
-
-	return;
-}
-
-
-sub add_recent_search {
-	my $search = shift;
-
-	return unless $search;
-
-	$recent_searches{$search} = {
-		ts => time(),
-	};
-
-	$cache->set('recent_searches', \%recent_searches, $RECENT_CACHE_TTL);
-
-	return;
-}
-
-sub recent_searches {
-	my ($client, $callback, $args, $opts) = @_;
-
-	my $all_access = $opts->{'all_access'};
-
-	my $recent = [
-		sort { lc($a) cmp lc($b) }
-		grep { $recent_searches{$_} }
-		keys %recent_searches
-	];
-
-	my $search_func = $all_access ? \&search_all_access : \&search;
-	my $items = [];
-
-	foreach (@$recent) {
-		push @$items, {
-			type => 'link',
-			name => $_,
-			url  => $search_func,
-			passthrough => [ $_ ],
-		}
-	}
-
-	$items = [ {
-		name => cstring($client, 'EMPTY'),
-		type => 'text',
-	} ] if !scalar @$items;
-
-	$callback->({
-		items => $items
-	});
 
 	return;
 }

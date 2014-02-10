@@ -14,6 +14,7 @@ use Plugins::GoogleMusic::Plugin;
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::Image;
 use Plugins::GoogleMusic::Library;
+use Plugins::GoogleMusic::Recent;
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
@@ -61,6 +62,10 @@ sub scanStream {
 	my $cb = $args->{cb} || sub {};
  
 	my $googleTrack = Plugins::GoogleMusic::Library::get_track($url);
+
+	# Add track to recent albums and artists
+	Plugins::GoogleMusic::Recent::recentAlbumsAdd($googleTrack->{album});
+	Plugins::GoogleMusic::Recent::recentArtistsAdd($googleTrack->{artist});
 
 	# To support seeking set duration and bitrate
 	$track->secs($googleTrack->{'secs'});

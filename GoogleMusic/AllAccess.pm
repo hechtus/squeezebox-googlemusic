@@ -268,6 +268,43 @@ sub get_artist_info {
 	return $artist;
 }
 
+sub get_artist_image {
+	my $uri = shift;
+
+	my ($id) = $uri =~ m{^googlemusic:artist:(.*)$}x;
+
+	my $imageuri = 'googlemusic:artistimage:' . $id;
+
+	if ($cache{$imageuri} && (time() - $cache{$imageuri}->{time}) < $CACHE_TIME) {
+		return $cache{$imageuri}->{data};
+	}
+
+	my $googleArtist;
+
+	if ($prefs->get('all_access_enabled')) {
+		eval {
+			$googleArtist = $googleapi->get_artist_info($id, $Inline::Python::Boolean::false, 0, 0);
+			1;
+		} or do {
+ 			$log->error("Not able to get the artist image for artist ID $id");
+			return;
+		};
+	}
+
+	my $image = '/html/images/artists.png';
+	if (exists $googleArtist->{artistArtRef}) {
+		$image = $googleArtist->{artistArtRef};
+	}
+
+	# Add to the cache
+	$cache{$imageuri} = {
+		data => $image,
+		time => time(),
+	};
+
+	return $image;
+}
+
 # Get information for an album
 sub get_album_info {
 	my $uri = shift;
