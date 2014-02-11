@@ -115,6 +115,7 @@ sub badVersion {
 	push @menu, {
 		name => cstring($client, 'PLUGIN_GOOGLEMUSIC_BAD_VERSION'),
 		type => 'text',
+		wrap => 1,
 	};
 
 	$callback->(\@menu);
