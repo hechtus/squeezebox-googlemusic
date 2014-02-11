@@ -95,8 +95,8 @@ PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID
 	NL	Geen mobiel apparaat (telefoon of tablet) geregistreerd voor Google Play Muziek. Het is niet mogelijk om automatisch het mobiele apparaat ID te verkrijgen.
 
 PLUGIN_GOOGLEMUSIC_BAD_VERSION
-	EN	A more recent version of the Python package "gmusicapi" is required. Please install at least version 3.0.0 and restart Logitech Media Server.
-	DE	Eine neuere Version des Python Pakets "gmusicapi" ist nötig. Bitte installiere mindestens Version 3.0.0 und starte den Logitech Media Server neu.
+	EN	A more recent version of the Python package "gmusicapi" is required. Please install at least version 3.1.0 and restart Logitech Media Server.
+	DE	Eine neuere Version des Python Pakets "gmusicapi" ist nötig. Bitte installiere mindestens Version 3.1.0 und starte den Logitech Media Server neu.
 
 PLUGIN_GOOGLEMUSIC_MY_MUSIC
 	EN	My Music
@@ -179,5 +179,13 @@ ARTIST_ALBUMS_SORT_METHOD_DESC
 	EN	Method of how albums of one artist are sorted. This does not apply to search results but only to albums of a certain artist.
 
 ALBUMS_SORT_METHOD_DESC
-	DE	Verfahren nach dem Alben sortiert werden sollen.
-	EN	Method of how albums are sorted.
+	DE	Verfahren nach dem Alben sortiert werden sollen. Das gewählte Verfahren bestimmt auch die Reihenfolge von Tracks.
+	EN	Method of how albums are sorted. This method also is also used for track sorting.
+
+PLUGIN_GOOGLEMUSIC_DISABLE_SSL
+	DE	Keine SSL Verification
+	EN	Disable SSL verification
+
+PLUGIN_GOOGLEMUSIC_DISABLE_SSL_DESC
+	DE	Fehler bei der Verifikation von SSL Zertifikation werden ignoriert. Änderung tritt nach Neustart in Kraft. Schalte diese Option ein, wenn Du Probleme bei der Verifikation von Google SSL Zertifikaten auf Deinem Rechner hast. Es ist aber besser, den Fehler anderweitig zu beheben.
+	EN	Ignore problems when verifying SSL certificates. Change requires restart to take effect. Turn this option on if you are having problems when verifying SSL certificates on your machine. Be wary of using this option. It’s almost always better to fix the machine’s SSL configuration than to ignore errors.

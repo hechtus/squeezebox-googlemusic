@@ -100,6 +100,17 @@ sub _showAlbum {
 		passthrough => [ $album , { all_access => $opts->{all_access}, playall => 1, playall_uri => $album->{uri}, sortByTrack => 1 } ],
 	};
 
+	# If the albums are sorted by name add a text key to easily jump
+	# to albums on squeezeboxes
+	if ($opts->{sortAlbums}) {
+		my $sortMethod = $opts->{all_access} ?
+			$prefs->get('all_access_album_sort_method') :
+			$prefs->get('my_music_album_sort_method');
+		if ($sortMethod eq 'album') {
+			$item->{textkey} = substr($album->{name}, 0, 1);
+		}
+	}
+
 	if ($args->{wantMetadata}) {
 		my $feed = Plugins::GoogleMusic::AlbumInfo->menu($client, $album->{uri}, $album);
 		$item->{albumData} = $feed->{items} if $feed;
@@ -137,27 +148,27 @@ sub _albumTracks {
 }
 
 sub _sortAlbum {
-	lc($a->{name}) cmp lc($b->{name});
+	return lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortArtistAlbum {
-	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortArtistYearAlbum {
-	lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 		($b->{year} || -1) <=> ($a->{year} || -1) or
 		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortYearAlbum {
-	($b->{year} || -1) <=> ($a->{year} || -1) or
+	return ($b->{year} || -1) <=> ($a->{year} || -1) or
 		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortYearArtistAlbum {
-	($b->{year} || -1) <=> ($a->{year} || -1) or
+	return ($b->{year} || -1) <=> ($a->{year} || -1) or
 		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
 		lc($a->{name}) cmp lc($b->{name});
 }

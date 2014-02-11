@@ -67,7 +67,7 @@ sub initPlugin {
 	my $class = shift;
 
 	# Chech version of gmusicapi first
-	if (Plugins::GoogleMusic::GoogleAPI::get_version() lt '3.0.0') {
+	if (!blessed($googleapi) || (Plugins::GoogleMusic::GoogleAPI::get_version() lt '3.1.0')) {
 		$class->SUPER::initPlugin(
 			tag    => 'googlemusic',
 			feed   => \&badVersion,
@@ -313,7 +313,7 @@ sub search_all_access {
 	}
 
 	# Do not add to recent searches when we are doing artist/album/track search
-	add_recent_search($search) if $args->{search};
+	add_recent_search($args->{search}) if $args->{search};
 
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @{$result->{artists}} . ")",

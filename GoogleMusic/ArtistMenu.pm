@@ -58,6 +58,12 @@ sub _showArtist {
 		},
 	};
 
+	# If the artists are sorted by name add a text key to easily jump
+	# to artists on squeezeboxes
+	if ($opts->{sortArtists}) {
+		$item->{textkey} = substr($artist->{name}, 0, 1);
+	}
+
 	return $item;
 }
 
