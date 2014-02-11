@@ -3,6 +3,8 @@ package Plugins::GoogleMusic::Recent;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(cstring);
 
@@ -122,9 +124,11 @@ my %recentAlbumsCache;
 sub recentAlbumsFeed {
 	my ($client, $callback, $args, $opts) = @_;
 
+	my $clientId = $client ? $client->id() : '0';
+
 	if (defined $args->{'quantity'} && $args->{'quantity'} == 1 &&
-		exists $recentAlbumsCache{$client->id()}) {
-		return $callback->($recentAlbumsCache{$client->id()});
+		exists $recentAlbumsCache{$clientId}) {
+		return $callback->($recentAlbumsCache{$clientId});
 	}
 
 	my @albums =
@@ -134,7 +138,7 @@ sub recentAlbumsFeed {
 
 	my $menu = Plugins::GoogleMusic::AlbumMenu::menu($client, $args, \@albums, $opts);
 
-	$recentAlbumsCache{$client->id()} = $menu;
+	$recentAlbumsCache{$clientId} = $menu;
 
 	return $callback->($menu);
 }
@@ -168,9 +172,11 @@ my %recentArtistsCache;
 sub recentArtistsFeed {
 	my ($client, $callback, $args, $opts) = @_;
 
+	my $clientId = $client ? $client->id() : '0';
+
 	if (defined $args->{'quantity'} && $args->{'quantity'} == 1 &&
-		exists $recentArtistsCache{$client->id()}) {
-		return $callback->($recentArtistsCache{$client->id()});
+		exists $recentArtistsCache{$clientId}) {
+		return $callback->($recentArtistsCache{$clientId});
 	}
 
 	my @artists = 
@@ -180,7 +186,7 @@ sub recentArtistsFeed {
 
 	my $menu = Plugins::GoogleMusic::ArtistMenu::menu($client, $args, \@artists, $opts);
 
-	$recentArtistsCache{$client->id()} = $menu;
+	$recentArtistsCache{$clientId} = $menu;
 
 	return $callback->($menu);
 }
