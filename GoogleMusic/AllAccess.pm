@@ -425,6 +425,10 @@ sub artist_to_slim_artist {
 		}
 	}
 
+	if (exists $googleArtist->{artistBio}) {
+		$artist->{artistBio} = $googleArtist->{artistBio};
+	}
+
 	return $artist;
 }
 

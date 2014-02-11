@@ -87,6 +87,14 @@ sub _artistMenu {
 			  passthrough => [ $info->{related}, $opts ] },
 		);
 
+		if (exists $info->{artistBio}) {
+			push @menu, {
+				name => cstring($client, "PLUGIN_GOOGLEMUSIC_BIOGRAPHY"),
+				type => 'link',
+				items => [ { name => $info->{artistBio}, type => 'text', wrap => 1 } ],
+			}
+		}
+
 		$callback->(\@menu);
 	} else {
 		my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({artist => $artist->{name}});

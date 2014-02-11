@@ -197,3 +197,7 @@ PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS
 PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS
 	DE	Kürzlich gespielte Interpreten
 	EN	Artists Recently Played
+
+PLUGIN_GOOGLEMUSIC_BIOGRAPHY
+	DE	Biographie
+	EN	Biography
