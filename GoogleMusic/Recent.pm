@@ -10,6 +10,7 @@ use Plugins::GoogleMusic::Plugin;
 use Plugins::GoogleMusic::AlbumMenu;
 use Plugins::GoogleMusic::ArtistMenu;
 
+
 tie my %recentSearches, 'Tie::Cache::LRU', 50;
 tie my %recentAlbums, 'Tie::Cache::LRU', 50;
 tie my %recentArtists, 'Tie::Cache::LRU', 50;
@@ -60,7 +61,7 @@ sub recentSearchesAdd {
 	return;
 }
 
-sub recentSearchesMenu {
+sub recentSearchesFeed {
 	my ($client, $callback, $args, $opts) = @_;
 
 	my $recent = [
@@ -115,15 +116,27 @@ sub recentAlbumsAdd {
 	return;
 }
 
-sub recentAlbumsMenu {
+# Cache the menu because it may change when browsing into it. At least
+# this works on a per client base.
+my %recentAlbumsCache;
+sub recentAlbumsFeed {
 	my ($client, $callback, $args, $opts) = @_;
+
+	if (defined $args->{'quantity'} && $args->{'quantity'} == 1 &&
+		exists $recentAlbumsCache{$client->id()}) {
+		return $callback->($recentAlbumsCache{$client->id()});
+	}
 
 	my @albums =
 		sort { $b->{ts} <=> $a->{ts} or $a->{uri} cmp $b->{uri} }
 		grep { $opts->{all_access} ? $_->{uri} =~ '^googlemusic:album:B' : $_->{uri} !~ '^googlemusic:album:B' }
 		values %recentAlbums;
 
-	return Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, \@albums, $opts);
+	my $menu = Plugins::GoogleMusic::AlbumMenu::menu($client, $args, \@albums, $opts);
+
+	$recentAlbumsCache{$client->id()} = $menu;
+
+	return $callback->($menu);
 }
 
 sub recentArtistsAdd {
@@ -135,7 +148,6 @@ sub recentArtistsAdd {
 
 	if ($image =~ '^/html/images/' && $artist->{uri} =~ '^googlemusic:artist:A') {
 		$image = Plugins::GoogleMusic::AllAccess::get_artist_image($artist->{uri});
-		$image = Plugins::GoogleMusic::Image->uri($image);
 	}
 
 	$recentArtists{$artist->{uri}} = {
@@ -150,15 +162,27 @@ sub recentArtistsAdd {
 	return;
 }
 
-sub recentArtistsMenu {
+# Cache the menu because it may change when browsing into it. At least
+# this works on a per client base.
+my %recentArtistsCache;
+sub recentArtistsFeed {
 	my ($client, $callback, $args, $opts) = @_;
+
+	if (defined $args->{'quantity'} && $args->{'quantity'} == 1 &&
+		exists $recentArtistsCache{$client->id()}) {
+		return $callback->($recentArtistsCache{$client->id()});
+	}
 
 	my @artists = 
 		sort { $b->{ts} <=> $a->{ts} or $a->{uri} cmp $b->{uri} } 
 		grep { $opts->{all_access} ? $_->{uri} =~ '^googlemusic:artist:A' : $_->{uri} !~ '^googlemusic:artist:A' }
 		values %recentArtists;
 
-	return Plugins::GoogleMusic::ArtistMenu::menu($client, $callback, $args, \@artists, $opts);
+	my $menu = Plugins::GoogleMusic::ArtistMenu::menu($client, $args, \@artists, $opts);
+
+	$recentArtistsCache{$client->id()} = $menu;
+
+	return $callback->($menu);
 }
 
 

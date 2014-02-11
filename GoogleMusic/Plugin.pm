@@ -147,9 +147,9 @@ sub my_music {
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_BROWSE'), type => 'link', url => \&search },
 		{ name => cstring($client, 'PLAYLISTS'), type => 'link', url => \&_playlists },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search },
-		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesMenu, passthrough => [ { "all_access" => 0 } ] },
-		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentAlbumsMenu, passthrough => [ { "all_access" => 0 } ] },
-		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentArtistsMenu, passthrough => [ { "all_access" => 0 } ] },
+		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesFeed, passthrough => [ { "all_access" => 0 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentAlbumsFeed, passthrough => [ { "all_access" => 0 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentArtistsFeed, passthrough => [ { "all_access" => 0 } ] },
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RELOAD_LIBRARY'), type => 'func', url => \&reload_library },
 	);
 
@@ -180,9 +180,9 @@ sub all_access {
 	my @menu = (
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search_all_access },
-		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesMenu, passthrough => [ { "all_access" => 1 } ] },
-		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentAlbumsMenu, passthrough => [ { "all_access" => 1 } ] },
-		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentArtistsMenu, passthrough => [ { "all_access" => 1 } ] },
+		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesFeed, passthrough => [ { "all_access" => 1 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentAlbumsFeed, passthrough => [ { "all_access" => 1 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentArtistsFeed, passthrough => [ { "all_access" => 1 } ] },
 	);
 
 	$callback->(\@menu);
@@ -198,7 +198,7 @@ sub _show_playlist {
 	$menu = {
 		name => $playlist->{'name'},
 		type => 'playlist',
-		url => \&Plugins::GoogleMusic::TrackMenu::menu,
+		url => \&Plugins::GoogleMusic::TrackMenu::feed,
 		passthrough => [$playlist->{tracks}, { showArtist => 1, showAlbum => 1, playall => 1 }],
 	};
 
@@ -245,15 +245,15 @@ sub search {
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @$artists . ")",
 		  type => 'link',
-		  url => \&Plugins::GoogleMusic::ArtistMenu::menu,
+		  url => \&Plugins::GoogleMusic::ArtistMenu::feed,
 		  passthrough => [ $artists, { sortArtists => 1, sortAlbums => 1 } ] },
 		{ name => cstring($client, "ALBUMS") . " (" . scalar @$albums . ")",
 		  type => 'link',
-		  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
+		  url => \&Plugins::GoogleMusic::AlbumMenu::feed,
 		  passthrough => [ $albums, { sortAlbums => 1 } ] },
 		{ name => cstring($client, "SONGS") . " (" . scalar @$tracks . ")",
 		  type => 'playlist',
-		  url => \&Plugins::GoogleMusic::TrackMenu::menu,
+		  url => \&Plugins::GoogleMusic::TrackMenu::feed,
 		  passthrough => [ $tracks, { showArtist => 1, showAlbum => 1, sortTracks => 1 } ], },
 	);
 
@@ -274,15 +274,15 @@ sub search_all_access {
 
 	# Pass to artist/album/track menu when doing artist/album/track search
 	if ($opts->{artistSearch}) {
-		return Plugins::GoogleMusic::ArtistMenu::menu($client, $callback, $args, $result->{artists},
+		return Plugins::GoogleMusic::ArtistMenu::feed($client, $callback, $args, $result->{artists},
 													  { all_access => 1 });
 	}
 	if ($opts->{albumSearch}) {
-		return Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $result->{albums},
+		return Plugins::GoogleMusic::AlbumMenu::feed($client, $callback, $args, $result->{albums},
 													 { all_access => 1 });
 	}
 	if ($opts->{trackSearch}) {
-		return Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $result->{tracks},
+		return Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $result->{tracks},
 													 { all_access => 1, showArtist => 1, showAlbum => 1 });
 	}
 
@@ -292,15 +292,15 @@ sub search_all_access {
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @{$result->{artists}} . ")",
 		  type => 'link',
-		  url => \&Plugins::GoogleMusic::ArtistMenu::menu,
+		  url => \&Plugins::GoogleMusic::ArtistMenu::feed,
 		  passthrough => [ $result->{artists}, { all_access => 1 } ], },
 		{ name => cstring($client, "ALBUMS") . " (" . scalar @{$result->{albums}} . ")",
 		  type => 'link',
-		  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
+		  url => \&Plugins::GoogleMusic::AlbumMenu::feed,
 		  passthrough => [ $result->{albums}, { all_access => 1 } ], },
 		{ name => cstring($client, "SONGS") . " (" . scalar @{$result->{tracks}} . ")",
 		  type => 'playlist',
-		  url => \&Plugins::GoogleMusic::TrackMenu::menu,
+		  url => \&Plugins::GoogleMusic::TrackMenu::feed,
 		  passthrough => [ $result->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
 	);
 

@@ -19,8 +19,14 @@ my %sortMap = (
 	'yearartistalbum' => \&_sortYearArtistAlbum,
 );
 
-sub menu {
+sub feed {
 	my ($client, $callback, $args, $tracks, $opts) = @_;
+
+	return $callback->(menu($client, $args, $tracks, $opts));
+}
+
+sub menu {
+	my ($client, $args, $tracks, $opts) = @_;
 
 	my @items;
 
@@ -46,11 +52,9 @@ sub menu {
 		};
 	}
 
-	$callback->({
+	return {
 		items => \@items,
-	});
-
-	return;
+	};
 }
 
 sub _showTrack {

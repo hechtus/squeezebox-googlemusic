@@ -21,8 +21,14 @@ my %sortMap = (
 	'yearartistalbum' => \&_sortYearArtistAlbum,
 );
 
-sub menu {
+sub feed {
 	my ($client, $callback, $args, $albums, $opts) = @_;
+
+	return $callback->(menu($client, $args, $albums, $opts));
+}
+
+sub menu {
+	my ($client, $args, $albums, $opts) = @_;
 
 	my @items;
 
@@ -46,11 +52,9 @@ sub menu {
 		}
 	}
 
-	$callback->({
+	return {
 		items => \@items,
-	});
-
-	return;
+	};
 }
 
 sub _showAlbum {
@@ -103,7 +107,7 @@ sub _albumTracks {
 		$tracks = [];
 	}
 
-	Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $tracks, $opts);
+	Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $tracks, $opts);
 
 	return;
 }

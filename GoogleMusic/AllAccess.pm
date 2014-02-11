@@ -271,6 +271,11 @@ sub get_artist_info {
 sub get_artist_image {
 	my $uri = shift;
 
+	# First try to get the image from the artist cache
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
+		return $cache{$uri}->{data}->{image};
+	}
+
 	my ($id) = $uri =~ m{^googlemusic:artist:(.*)$}x;
 
 	my $imageuri = 'googlemusic:artistimage:' . $id;
@@ -294,6 +299,7 @@ sub get_artist_image {
 	my $image = '/html/images/artists.png';
 	if (exists $googleArtist->{artistArtRef}) {
 		$image = $googleArtist->{artistArtRef};
+		$image = Plugins::GoogleMusic::Image->uri($image);
 	}
 
 	# Add to the cache

@@ -13,8 +13,14 @@ use Plugins::GoogleMusic::AlbumMenu;
 my $log = logger('plugin.googlemusic');
 
 
-sub menu {
+sub feed {
 	my ($client, $callback, $args, $artists, $opts) = @_;
+
+	return $callback->(menu($client, $args, $artists, $opts));
+}
+
+sub menu {
+	my ($client, $args, $artists, $opts) = @_;
 
 	my @items;
 
@@ -33,11 +39,9 @@ sub menu {
 		}
 	}
 
-	$callback->({
+	return {
 		items => \@items,
-	});
-
-	return;
+	};
 }
 
 sub _showArtist {
@@ -71,15 +75,15 @@ sub _artistMenu {
 		my @menu = (
 			{ name => cstring($client, "ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
 			  type => 'link',
-			  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
+			  url => \&Plugins::GoogleMusic::AlbumMenu::feed,
 			  passthrough => [ $info->{albums}, { all_access => 1, sortAlbums => 1 } ] },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " (" . scalar @{$info->{tracks}} . ")",
 			  type => 'playlist',
-			  url => \&Plugins::GoogleMusic::TrackMenu::menu,
+			  url => \&Plugins::GoogleMusic::TrackMenu::feed,
 			  passthrough => [ $info->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1, playall => 1 } ] },
 			{ name => cstring($client, "PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS") . " (" . scalar @{$info->{related}} . ")",
 			  type => 'link',
-			  url => \&menu,
+			  url => \&feed,
 			  passthrough => [ $info->{related}, $opts ] },
 		);
 
@@ -87,7 +91,7 @@ sub _artistMenu {
 	} else {
 		my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::find_exact({artist => $artist->{name}});
 
-		Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $albums, $opts);
+		Plugins::GoogleMusic::AlbumMenu::feed($client, $callback, $args, $albums, $opts);
 	}
 
 	return;
