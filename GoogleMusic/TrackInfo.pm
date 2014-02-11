@@ -29,6 +29,8 @@ sub init {
 		[ 'googlemusictrackinfo', 'playlist', '_method' ],
 		[ 1, 1, 1, \&cliPlaylistCmd ]
 	);
+
+	return;
 }
 
 sub name {
@@ -95,6 +97,7 @@ sub registerDefaultInfoProviders {
 
 	# TODO: Add track num, disc/disc number, genre, url, content type ...
 
+	return;
 }
 
 
@@ -512,7 +515,7 @@ sub cliQuery {
 
 	$cachedFeed = $feed if $feed;
 	
-	Slim::Control::XMLBrowser::cliQuery( 'googlemusictrackinfo', $feed, $request );
+	return Slim::Control::XMLBrowser::cliQuery( 'googlemusictrackinfo', $feed, $request );
 }
 
 sub cliPlaylistCmd {
@@ -526,7 +529,7 @@ sub cliPlaylistCmd {
 		return;
 	}
 	
-	return 	Slim::Control::XMLBrowser::cliQuery( 'googlemusictrackinfo', $cachedFeed, $request );
+	return Slim::Control::XMLBrowser::cliQuery( 'googlemusictrackinfo', $cachedFeed, $request );
 }
 
 1;

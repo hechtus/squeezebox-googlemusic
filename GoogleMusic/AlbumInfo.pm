@@ -29,6 +29,8 @@ sub init {
 		[ 'googlemusicalbuminfo', 'playlist', '_method' ],
 		[ 1, 1, 1, \&cliQuery ]
 	);
+
+	return;
 }
 
 sub name {
@@ -82,6 +84,7 @@ sub registerDefaultInfoProviders {
 		) );
 	}
 
+	return;
 }
 
 
@@ -245,7 +248,7 @@ sub infoYear {
 sub playAlbum {
 	my ( $client, $url, $album, $remoteMeta, $tags, $filter) = @_;
 
-	return undef if !blessed($client);
+	return unless blessed($client);
 	
 	my $actions = {
 		items => {
@@ -267,18 +270,18 @@ sub playAlbum {
 	
 sub addAlbumEnd {
 	my ( $client, $url, $album, $remoteMeta, $tags, $filter ) = @_;
-	addAlbum( $client, $url, $album, $remoteMeta, $tags, 'ADD_TO_END', 'add', $filter );
+	return addAlbum( $client, $url, $album, $remoteMeta, $tags, 'ADD_TO_END', 'add', $filter );
 }
 
 sub addAlbumNext {
 	my ( $client, $url, $album, $remoteMeta, $tags, $filter ) = @_;
-	addAlbum( $client, $url, $album, $remoteMeta, $tags, 'PLAY_NEXT', 'insert', $filter );
+	return addAlbum( $client, $url, $album, $remoteMeta, $tags, 'PLAY_NEXT', 'insert', $filter );
 }
 
 sub addAlbum {
 	my ( $client, $url, $album, $remoteMeta, $tags, $add_string, $cmd, $filter ) = @_;
 
-	return undef if !blessed($client);
+	return unless blessed($client);
 
 	my $actions = {
 		items => {
@@ -361,6 +364,8 @@ sub cliQuery {
 	# $cachedFeed{ $connectionId } = $feed if $feed;
 	
 	Slim::Control::XMLBrowser::cliQuery( 'googlemusicalbuminfo', $feed, $request );
+
+	return;
 }
 
 1;
