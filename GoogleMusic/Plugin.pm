@@ -80,7 +80,8 @@ sub initPlugin {
 	Plugins::GoogleMusic::Radio::init();
 	Plugins::GoogleMusic::Recent::init();
 
-	# Try to login
+	# Try to login. If SSL verification fails, login() raises an
+	# exception. Catch it to allow the plugin to be started.
 	eval {
 		$googleapi->login($prefs->get('username'),
 						  $prefs->get('password'));
