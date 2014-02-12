@@ -189,3 +189,15 @@ PLUGIN_GOOGLEMUSIC_DISABLE_SSL
 PLUGIN_GOOGLEMUSIC_DISABLE_SSL_DESC
 	DE	Fehler bei der Verifikation von SSL Zertifikation werden ignoriert. Änderung tritt nach Neustart in Kraft. Schalte diese Option ein, wenn Du Probleme bei der Verifikation von Google SSL Zertifikaten auf Deinem Rechner hast. Es ist aber besser, den Fehler anderweitig zu beheben.
 	EN	Ignore problems when verifying SSL certificates. Change requires restart to take effect. Turn this option on if you are having problems when verifying SSL certificates on your machine. Be wary of using this option. It’s almost always better to fix the machine’s SSL configuration than to ignore errors.
+
+PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS
+	DE	Kürzlich gespielte Alben
+	EN	Albums Recently Played
+
+PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS
+	DE	Kürzlich gespielte Interpreten
+	EN	Artists Recently Played
+
+PLUGIN_GOOGLEMUSIC_BIOGRAPHY
+	DE	Biographie
+	EN	Biography

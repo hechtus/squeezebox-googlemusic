@@ -19,8 +19,14 @@ my %sortMap = (
 	'yearartistalbum' => \&_sortYearArtistAlbum,
 );
 
-sub menu {
+sub feed {
 	my ($client, $callback, $args, $tracks, $opts) = @_;
+
+	return $callback->(menu($client, $args, $tracks, $opts));
+}
+
+sub menu {
+	my ($client, $args, $tracks, $opts) = @_;
 
 	my @items;
 
@@ -80,12 +86,10 @@ sub menu {
 	#       albumInfo, and cover here. For this purpose we could pass
 	#       wantMetadata and an album URI. A good starting point is
 	#       Slim::Menu::BrowseLibrary::_tracks()
-	$callback->({
+	return {
 		items => \@items,
 		actions => \%actions,
-	});
-
-	return;
+	};
 }
 
 sub _showTrack {

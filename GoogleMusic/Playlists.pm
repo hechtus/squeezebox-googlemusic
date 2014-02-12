@@ -6,17 +6,56 @@ use warnings;
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
-use Slim::Utils::Strings qw(string);
+use Slim::Utils::Strings qw(cstring);
 
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::Library;
 use Plugins::GoogleMusic::AllAccess;
+use Plugins::GoogleMusic::TrackMenu;
+
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 my $playlists = {};
+
+sub feed {
+	my ($client, $callback, $args) = @_;
+
+	my @items;
+
+	foreach (sort {lc($a->{name}) cmp lc($b->{name})} values %$playlists) {
+		push @items, _showPlaylist($client, $_);
+	}
+
+	if (!scalar @items) {
+		push @items, {
+			'name' => cstring($client, 'EMPTY'),
+			'type' => 'text',
+		}
+
+	}
+
+	$callback->({
+		items => \@items,
+	});
+
+	return;
+}
+
+sub _showPlaylist {
+	my ($client, $playlist) = @_;
+
+	my $item = {
+		name => $playlist->{'name'},
+		type => 'playlist',
+		url => \&Plugins::GoogleMusic::TrackMenu::feed,
+		passthrough => [$playlist->{tracks}, { showArtist => 1, showAlbum => 1, playall => 1 }],
+	};
+
+	return $item;
+}
 
 # Reload and reparse all playlists
 sub refresh {
@@ -82,9 +121,5 @@ sub to_slim_playlist_tracks {
 	return $tracks;
 }
 
-
-sub get {
-	return [sort {lc($a->{name}) cmp lc($b->{name})} values %$playlists];
-}
 
 1;

@@ -268,6 +268,49 @@ sub get_artist_info {
 	return $artist;
 }
 
+sub get_artist_image {
+	my $uri = shift;
+
+	# First try to get the image from the artist cache
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
+		return $cache{$uri}->{data}->{image};
+	}
+
+	my ($id) = $uri =~ m{^googlemusic:artist:(.*)$}x;
+
+	my $imageuri = 'googlemusic:artistimage:' . $id;
+
+	if ($cache{$imageuri} && (time() - $cache{$imageuri}->{time}) < $CACHE_TIME) {
+		return $cache{$imageuri}->{data};
+	}
+
+	my $googleArtist;
+
+	if ($prefs->get('all_access_enabled')) {
+		eval {
+			$googleArtist = $googleapi->get_artist_info($id, $Inline::Python::Boolean::false, 0, 0);
+			1;
+		} or do {
+ 			$log->error("Not able to get the artist image for artist ID $id");
+			return;
+		};
+	}
+
+	my $image = '/html/images/artists.png';
+	if (exists $googleArtist->{artistArtRef}) {
+		$image = $googleArtist->{artistArtRef};
+		$image = Plugins::GoogleMusic::Image->uri($image);
+	}
+
+	# Add to the cache
+	$cache{$imageuri} = {
+		data => $image,
+		time => time(),
+	};
+
+	return $image;
+}
+
 # Get information for an album
 sub get_album_info {
 	my $uri = shift;
@@ -382,6 +425,10 @@ sub artist_to_slim_artist {
 		for my $related (@{$googleArtist->{related_artists}}) {
 			push @{$artist->{related}}, artist_to_slim_artist($related);
 		}
+	}
+
+	if (exists $googleArtist->{artistBio}) {
+		$artist->{artistBio} = $googleArtist->{artistBio};
 	}
 
 	return $artist;

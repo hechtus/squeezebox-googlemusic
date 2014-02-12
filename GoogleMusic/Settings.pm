@@ -52,8 +52,20 @@ sub handler {
 
 		# Logout from Google
 		$googleapi->logout();
-		# Now try to login with new username/password
-		if(!$googleapi->login($params->{'username'}, $params->{'password'})) {
+
+		# Now try to login with new username/password. If SSL
+		# verification fails, login() raises an exception. Catch it to
+		# be able to show the settings page correctly, so that the
+		# user is able to disable SSL verification.
+		eval {
+			$googleapi->login($prefs->get('username'),
+							  $prefs->get('password'));
+		};
+		if ($@) {
+			$log->error("Not able to login to Google Play Music: $@");
+		}
+
+		if(!$googleapi->is_authenticated()) {
 			$params->{'warning'} = cstring($client, 'PLUGIN_GOOGLEMUSIC_LOGIN_FAILED');
 		} else {
 			$params->{'warning'} = cstring($client, 'PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS');

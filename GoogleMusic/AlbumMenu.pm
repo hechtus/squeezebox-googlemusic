@@ -22,8 +22,14 @@ my %sortMap = (
 	'yearartistalbum' => \&_sortYearArtistAlbum,
 );
 
-sub menu {
+sub feed {
 	my ($client, $callback, $args, $albums, $opts) = @_;
+
+	return $callback->(menu($client, $args, $albums, $opts));
+}
+
+sub menu {
+	my ($client, $args, $albums, $opts) = @_;
 
 	my @items;
 
@@ -73,12 +79,10 @@ sub menu {
 
 	# TODO: For googlemusicbrowse for artists we need to add the
 	#       artist image here.
-	$callback->({
+	return {
 		items => \@items,
 		actions => \%actions,
-	});
-
-	return;
+	};
 }
 
 sub _showAlbum {
@@ -130,19 +134,14 @@ sub _albumTracks {
 
 	my $tracks;
 
-	# All Access or All Access album?
-	if ($opts->{all_access} || $album->{uri} =~ '^googlemusic:album:B') {
-		my $info = Plugins::GoogleMusic::AllAccess::get_album_info($album->{uri});
-		if ($info) {
-			$tracks = $info->{tracks};
-		} else {
-			$tracks = [];
-		}
+	my $info = Plugins::GoogleMusic::Library::get_album($album->{uri});
+	if ($info) {
+		$tracks = $info->{tracks};
 	} else {
-		$tracks = $album->{tracks};
+		$tracks = [];
 	}
 
-	Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $tracks, $opts);
+	Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $tracks, $opts);
 
 	return;
 }

@@ -29,22 +29,13 @@ use Plugins::GoogleMusic::Library;
 use Plugins::GoogleMusic::AllAccess;
 use Plugins::GoogleMusic::Playlists;
 use Plugins::GoogleMusic::Radio;
+use Plugins::GoogleMusic::Recent;
 use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumMenu;
 use Plugins::GoogleMusic::ArtistMenu;
 use Plugins::GoogleMusic::TrackInfo;
 use Plugins::GoogleMusic::AlbumInfo;
 
-# TODO: move these constants to the configurable settings?
-# Note: these constants can't be passed to the python API
-use Readonly;
-Readonly my $MAX_RECENT_ITEMS => 50;
-Readonly my $RECENT_CACHE_TTL => 'never';
-
-my %recent_searches;
-tie %recent_searches, 'Tie::Cache::LRU', $MAX_RECENT_ITEMS;
-
-my $cache = Slim::Utils::Cache->new('googlemusic', 3);
 
 my $log;
 my $prefs = preferences('plugin.googlemusic');
@@ -91,19 +82,20 @@ sub initPlugin {
 	# Initialize submodules
 	Plugins::GoogleMusic::Image::init();
 	Plugins::GoogleMusic::Radio::init();
+	Plugins::GoogleMusic::Recent::init();
 
-	# initialize recent searches: need to add them to the LRU cache ordered by timestamp
-	my $recent_searches = $cache->get('recent_searches');
-	map {
-		$recent_searches{$_} = $recent_searches->{$_};
-	} sort {
-		$recent_searches->{$a}->{ts} <=> $recent_searches->{$a}->{ts}
-	} keys %$recent_searches;
+	# Try to login. If SSL verification fails, login() raises an
+	# exception. Catch it to allow the plugin to be started.
+	eval {
+		$googleapi->login($prefs->get('username'),
+						  $prefs->get('password'));
+	};
+	if ($@) {
+		$log->error("Not able to login to Google Play Music: $@");
+	}
 
-
-
-	if (!$googleapi->login($prefs->get('username'),
-						   $prefs->get('password'))) {
+	# Refresh My Library and Playlists
+	if (!$googleapi->is_authenticated()) {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
 	} else {
 		Plugins::GoogleMusic::Library::refresh();
@@ -143,6 +135,7 @@ sub badVersion {
 	push @menu, {
 		name => cstring($client, 'PLUGIN_GOOGLEMUSIC_BAD_VERSION'),
 		type => 'text',
+		wrap => 1,
 	};
 
 	$callback->(\@menu);
@@ -173,9 +166,11 @@ sub my_music {
 	my ($client, $callback, $args) = @_;
 	my @menu = (
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_BROWSE'), type => 'link', url => \&search },
-		{ name => cstring($client, 'PLAYLISTS'), type => 'link', url => \&_playlists },
+		{ name => cstring($client, 'PLAYLISTS'), type => 'link', url => \&Plugins::GoogleMusic::Playlists::feed },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search },
-		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 0 },] },
+		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesFeed, passthrough => [ { "all_access" => 0 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentAlbumsFeed, passthrough => [ { "all_access" => 0 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentArtistsFeed, passthrough => [ { "all_access" => 0 } ] },
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RELOAD_LIBRARY'), type => 'func', url => \&reload_library },
 	);
 
@@ -206,48 +201,10 @@ sub all_access {
 	my @menu = (
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search_all_access },
-		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&recent_searches, passthrough => [{ "all_access" => 1 },] },
+		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesFeed, passthrough => [ { "all_access" => 1 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentAlbumsFeed, passthrough => [ { "all_access" => 1 } ] },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentArtistsFeed, passthrough => [ { "all_access" => 1 } ] },
 	);
-
-	$callback->(\@menu);
-
-	return;
-}
-
-sub _show_playlist {
-	my ($client, $playlist) = @_;
-
-	my $menu;
-
-	$menu = {
-		name => $playlist->{'name'},
-		type => 'playlist',
-		url => \&Plugins::GoogleMusic::TrackMenu::menu,
-		# TODO: playall_uri, actions for this playlist
-		passthrough => [$playlist->{tracks}, { showArtist => 1, showAlbum => 1, playall => 1 }],
-	};
-
-	return $menu;
-}
-
-sub _playlists {
-	my ($client, $callback, $args) = @_;
-
-	my @menu;
-
-	my $playlists = Plugins::GoogleMusic::Playlists->get();
-
-	for my $playlist (@{$playlists}) {
-		push @menu, _show_playlist($client, $playlist);
-	}
-
-	if (!scalar @menu) {
-		push @menu, {
-			'name' => cstring($client, 'EMPTY'),
-			'type' => 'text',
-		}
-
-	}
 
 	$callback->(\@menu);
 
@@ -263,23 +220,23 @@ sub search {
 	$args->{search} ||= '';
 	my @query = split(' ', $args->{search});
 
-	add_recent_search($args->{search}) if scalar @query;
+	Plugins::GoogleMusic::Recent::recentSearchesAdd($args->{search}) if scalar @query;
 
 	my ($tracks, $albums, $artists) = Plugins::GoogleMusic::Library::search({'any' => \@query});
 
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @$artists . ")",
 		  type => 'link',
-		  url => \&Plugins::GoogleMusic::ArtistMenu::menu,
+		  url => \&Plugins::GoogleMusic::ArtistMenu::feed,
 		  passthrough => [ $artists, { sortArtists => 1, sortAlbums => 1 } ] },
 		{ name => cstring($client, "ALBUMS") . " (" . scalar @$albums . ")",
 		  type => 'link',
-		  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
+		  url => \&Plugins::GoogleMusic::AlbumMenu::feed,
 		  passthrough => [ $albums, { sortAlbums => 1 } ] },
 		{ name => cstring($client, "SONGS") . " (" . scalar @$tracks . ")",
 		  # TODO: actions for this playlist
 		  type => 'playlist',
-		  url => \&Plugins::GoogleMusic::TrackMenu::menu,
+		  url => \&Plugins::GoogleMusic::TrackMenu::feed,
 		  passthrough => [ $tracks, { showArtist => 1, showAlbum => 1, sortTracks => 1 } ], },
 	);
 
@@ -300,88 +257,38 @@ sub search_all_access {
 
 	# Pass to artist/album/track menu when doing artist/album/track search
 	if ($opts->{artistSearch}) {
-		return Plugins::GoogleMusic::ArtistMenu::menu($client, $callback, $args, $result->{artists},
+		return Plugins::GoogleMusic::ArtistMenu::feed($client, $callback, $args, $result->{artists},
 													  { all_access => 1 });
 	}
 	if ($opts->{albumSearch}) {
-		return Plugins::GoogleMusic::AlbumMenu::menu($client, $callback, $args, $result->{albums},
+		return Plugins::GoogleMusic::AlbumMenu::feed($client, $callback, $args, $result->{albums},
 													 { all_access => 1 });
 	}
 	if ($opts->{trackSearch}) {
-		return Plugins::GoogleMusic::TrackMenu::menu($client, $callback, $args, $result->{tracks},
+		return Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $result->{tracks},
 													 { all_access => 1, showArtist => 1, showAlbum => 1 });
 	}
 
 	# Do not add to recent searches when we are doing artist/album/track search
-	add_recent_search($args->{search}) if $args->{search};
+	Plugins::GoogleMusic::Recent::recentSearchesAdd($args->{search}) if $args->{search};
 
 	my @menu = (
 		{ name => cstring($client, "ARTISTS") . " (" . scalar @{$result->{artists}} . ")",
 		  type => 'link',
-		  url => \&Plugins::GoogleMusic::ArtistMenu::menu,
+		  url => \&Plugins::GoogleMusic::ArtistMenu::feed,
 		  passthrough => [ $result->{artists}, { all_access => 1 } ], },
 		{ name => cstring($client, "ALBUMS") . " (" . scalar @{$result->{albums}} . ")",
 		  type => 'link',
-		  url => \&Plugins::GoogleMusic::AlbumMenu::menu,
+		  url => \&Plugins::GoogleMusic::AlbumMenu::feed,
 		  passthrough => [ $result->{albums}, { all_access => 1 } ], },
 		{ name => cstring($client, "SONGS") . " (" . scalar @{$result->{tracks}} . ")",
 		  # TODO: actions for this playlist
 		  type => 'playlist',
-		  url => \&Plugins::GoogleMusic::TrackMenu::menu,
+		  url => \&Plugins::GoogleMusic::TrackMenu::feed,
 		  passthrough => [ $result->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
 	);
 
 	$callback->(\@menu);
-
-	return;
-}
-
-
-sub add_recent_search {
-	my $search = shift;
-
-	return unless $search;
-
-	$recent_searches{$search} = {
-		ts => time(),
-	};
-
-	$cache->set('recent_searches', \%recent_searches, $RECENT_CACHE_TTL);
-
-	return;
-}
-
-sub recent_searches {
-	my ($client, $callback, $args, $opts) = @_;
-
-	my $all_access = $opts->{'all_access'};
-
-	my $recent = [
-		sort { lc($a) cmp lc($b) }
-		grep { $recent_searches{$_} }
-		keys %recent_searches
-	];
-
-	my $search_func = $all_access ? \&search_all_access : \&search;
-	my $items = [];
-
-	foreach (@$recent) {
-		push @$items, {
-			type => 'link',
-			name => $_,
-			url  => $search_func,
-			passthrough => [ $_ ],
-		}
-	}
-
-	$items = [ {
-		name => cstring($client, 'EMPTY'),
-		type => 'text',
-	} ] if !scalar @$items;
-
-	$callback->({
-		items => $items
-	});
 
 	return;
 }
