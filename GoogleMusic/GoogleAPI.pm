@@ -40,7 +40,11 @@ sub get_device_id {
 		return;
 	}
 
-	if (!$webapi->login($username, $password)) {
+	eval {
+		$webapi->login($username, $password);
+	};
+
+	if (!$webapi->is_authenticated()) {
 		return;
 	}
 
