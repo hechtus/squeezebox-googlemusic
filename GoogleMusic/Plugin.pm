@@ -80,8 +80,17 @@ sub initPlugin {
 	Plugins::GoogleMusic::Radio::init();
 	Plugins::GoogleMusic::Recent::init();
 
-	if (!$googleapi->login($prefs->get('username'),
-						   $prefs->get('password'))) {
+	# Try to login
+	eval {
+		$googleapi->login($prefs->get('username'),
+						  $prefs->get('password'));
+	};
+	if ($@) {
+		$log->error("Not able to login to Google Play Music: $@");
+	}
+
+	# Refresh My Library and Playlists
+	if (!$googleapi->is_authenticated()) {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
 	} else {
 		Plugins::GoogleMusic::Library::refresh();
