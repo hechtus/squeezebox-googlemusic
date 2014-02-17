@@ -92,12 +92,17 @@ Project resources
 ToDo
 ----
 
-There are still lots of things to do. This project just
-started. Feel free to
+I'm looking forward to your help. Feel free to
 [contribute](https://help.github.com/articles/fork-a-repo) or to
 [report
-bugs](https://github.com/hechtus/squeezebox-googlemusic/issues) to
-help for the first release. Here are some open issues you may help on:
+bugs](https://github.com/hechtus/squeezebox-googlemusic/issues). Here
+are some things you may help on:
 
+* Get this plugin running on non-Linux systems
+* Add or improve
+  [translations](https://github.com/hechtus/squeezebox-googlemusic/blob/master/GoogleMusic/strings.txt)
+  to other languages
+* Test the plugin with various Android or iOS Apps. Is it working with
+  iPeng?
+* Support for creating and deleting radio stations
 * Improve Track and Album Info
-* Public Playlist Support
