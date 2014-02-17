@@ -212,7 +212,7 @@ sub search {
 			1;
 		} or do {
  			$log->error("Not able to search All Access for: $query");
-			return ([], [], []);
+			return $result;
 		};
 		for my $hit (@{$googleResult->{song_hits}}) {
 			push @{$result->{tracks}}, to_slim_track($hit->{track});
