@@ -5,30 +5,36 @@ squeezebox-googlemusic
 
 This is a [Squeezebox](http://www.mysqueezebox.com/) (Logitech Media
 Server) Plug-in for playing music from your [Google Play
-Music](https://play.google.com/music/) library. It is based on the
-Python [Unofficial Google Play Music
+Music](https://play.google.com/music/) library and All Access. It is
+based on the Python [Unofficial Google Play Music
 API](http://unofficial-google-music-api.readthedocs.org/) and the
 ability of inlining Python in Perl programs.
 
 Installation
 ------------
 
+This installation procedure will only work on Linux based systems. At
+the moment I do not know if this will ever work on Windows or Mac
+OS. Please let me know if you found a way to get this plugin running
+on non-Linux systems to extend this How-to.
+
 1. You will need a Google account and some music and/or playlists in
    your library. If you want to use Google Music All Access features
    you will need a subscription to this service.
 
-1. Install Python and the [Unofficial Google Play Music
-   API](https://github.com/simon-weber/Unofficial-Google-Music-API>) by
-   running:
+1. Install Python and [Python pip](http://www.pip-installer.org).
+
+1. Install the [Unofficial Google Play Music
+   API](https://github.com/simon-weber/Unofficial-Google-Music-API>)
+   by running:
 
          sudo pip install gmusicapi
          
-   **Note**: For 'All Access' functionality you need at least version
-   3.0.0 of gmusicapi.
+   **Note**: You will need at least version 3.1.0 of gmusicapi.
 
-1. To be able to build the Inline::Python package (see below) you will
-   need the python developer package. The name of the package and the
-   way how to install it depends on your Linux distribution. On
+1. To be able to build the Perl package Inline::Python (see below) you
+   will need the Python developer package. The name of the package and
+   the way how to install it depends on your Linux distribution. On
    **Debian** based systems you will have to do:
 
          sudo apt-get install python-dev
@@ -37,8 +43,8 @@ Installation
 
          sudo yum install python-devel
 
-1. Install the Perl CPAN [Inline](http://search.cpan.org/~ingy/Inline/)
-   package and
+1. Install the Perl CPAN package
+   [Inline](http://search.cpan.org/~ingy/Inline/) and
    [Inline::Python](http://search.cpan.org/~nine/Inline-Python/) by
    running:
 
@@ -46,7 +52,7 @@ Installation
          sudo cpanm --notest Inline
          sudo cpanm --notest Inline::Python
 
-1. To install the plugin, add this repository URL
+1. To install the plugin, add the repository URL
    http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml
    to your squeezebox plugin settings page.
 
@@ -56,20 +62,24 @@ Usage
 1. Go to the plug-in settings page and set your Google username and
    password for the Google Music plug-in.
 
-2. The mobile device ID is a 16-digit hexadecimal string (without the
-   '0x' prefix) identifying the Android device you must already have
-   registered for Google Play Music. You can obtain this ID by dialing
-   `*#*#8255#*#*` on your phone (see the aid) or using this
+1. The mobile device ID is a 16-digit hexadecimal string (without the
+   '0x' prefix) identifying the Android or iOS device you must already
+   have registered for Google Play Music. On Android you can obtain
+   this ID by dialing `*#*#8255#*#*` on your phone (see the aid) or
+   using this
    [App](https://play.google.com/store/apps/details?id=com.evozi.deviceid)
    (see the Google Service Framework ID Key). You may also use the
    script `mobile_devices.py` to list all registered devices. If your
-   Android device is already registered, you should leave the field
-   `Mobile Device ID` empty. It will be filled in automatically after
-   setting the username and password.
+   Android or iOS device is already registered, you may leave the
+   field `Mobile Device ID` empty. It will be filled in automatically
+   after setting the username and password.
 
-3. Enable All Access if you want.
+   **Note**: A registered PC MAC address will not work as a mobile
+     device ID.
 
-4. You will find the plug-in in the 'My Apps' section of the
+1. Enable All Access if you have an All Access subscription.
+
+1. You will find the plug-in in the 'My Apps' section of the
    squeezebox menu.
  
 Project resources
