@@ -112,7 +112,9 @@ sub initPlugin {
 }
 
 sub shutdownPlugin {
-	$googleapi->logout();
+	if (blessed($googleapi)) {
+		$googleapi->logout();
+	}
 
 	return;
 }
