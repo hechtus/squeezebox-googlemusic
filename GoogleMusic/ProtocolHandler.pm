@@ -97,10 +97,10 @@ sub getNextTrack {
 
 	eval {
 		$trackURL = $googleapi->get_stream_url($id, $prefs->get('device_id'));
-		1;
-	} or do {
+	};
+	if ($@) {
 		# We didn't get the next track to play
-		$log->error("Looking up stream url for url $url failed.");
+		$log->error("Looking up stream url for url $url failed: $@");
 
 		my $error = ( $client->isPlaying(1) && $client->playingSong()->track()->url =~ /^googlemusic:track:/ )
 					? 'PLUGIN_GOOGLEMUSIC_NO_NEXT_TRACK'
@@ -113,7 +113,7 @@ sub getNextTrack {
 		Slim::Music::Info::setCurrentTitle( $url, $client->string('PLUGIN_GOOGLEMUSIC_NO_TRACK') );
 			
 		return;
-	};
+	}
 
 	$song->streamUrl($trackURL);
 

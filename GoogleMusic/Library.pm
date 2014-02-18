@@ -9,7 +9,6 @@ use Encode qw(encode_utf8);
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
-use Slim::Utils::Strings qw(string);
 
 use Plugins::GoogleMusic::GoogleAPI;
 
