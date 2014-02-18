@@ -122,7 +122,9 @@ sub initPlugin {
 }
 
 sub shutdownPlugin {
-	$googleapi->logout();
+	if (blessed($googleapi)) {
+		$googleapi->logout();
+	}
 
 	return;
 }
@@ -255,6 +257,11 @@ sub search_all_access {
 
 	my $result = Plugins::GoogleMusic::AllAccess::search($args->{search});
 
+	if (!$result) {
+		$callback->(errorMenu($client));
+		return;
+	}
+
 	# Pass to artist/album/track menu when doing artist/album/track search
 	if ($opts->{artistSearch}) {
 		return Plugins::GoogleMusic::ArtistMenu::feed($client, $callback, $args, $result->{artists},
@@ -352,20 +359,29 @@ sub searchInfoMenu {
 	# For some reason the search string gets encoded
 	my $search = decode_utf8($tags->{search});
 
-	return {
-		name => cstring($client, 'PLUGIN_GOOGLEMUSIC'),
-		items => [{
-			name        => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_MUSIC'),
-			url         => \&search,
-			passthrough => [ $search ],
-		},{
+	# Always search in my music
+	my @items = ({
+		name        => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_MUSIC'),
+		url         => \&search,
+		passthrough => [ $search ],
+	});
+
+	# All Access is optional
+	if ($prefs->get('all_access_enabled')) {
+		push @items, {
 			name        => cstring($client, 'PLUGIN_GOOGLEMUSIC_ALL_ACCESS'),
 			url         => \&search_all_access,
 			passthrough => [ $search ],
-		}],
+		};
+	}
+
+	return {
+		name => cstring($client, 'PLUGIN_GOOGLEMUSIC'),
+		items => \@items,
 	};
 }
 
+<<<<<<< HEAD
 sub itemQuery {
 	my $request = shift;
 
@@ -521,6 +537,16 @@ sub playlistcontrolCommand {
 	$request->setStatusDone();
 
 	return;
+}
+
+sub errorMenu {
+	my ($client) = @_;
+
+	return [{
+		name => cstring($client, 'PLUGIN_GOOGLEMUSIC_ERROR'),
+		type => 'text',
+	}];
+
 }
 
 1;

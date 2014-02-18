@@ -201,3 +201,7 @@ PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS
 PLUGIN_GOOGLEMUSIC_BIOGRAPHY
 	DE	Biographie
 	EN	Biography
+
+PLUGIN_GOOGLEMUSIC_ERROR
+	DE	Ein unerwarteter Fehler ist aufgetreten.
+	EN	An unexpected error occurred.

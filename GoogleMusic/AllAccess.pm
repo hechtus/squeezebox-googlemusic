@@ -3,14 +3,11 @@ package Plugins::GoogleMusic::AllAccess;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tie::Cache::LRU;
 
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
-use Slim::Utils::Strings qw(string);
 
 use Plugins::GoogleMusic::GoogleAPI;
 
@@ -164,6 +161,8 @@ sub to_slim_album_artist {
 sub get_track {
 	my $uri = shift;
 
+	return unless $prefs->get('all_access_enabled');
+
 	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		return $cache{$uri}->{data};
 	}
@@ -171,14 +170,12 @@ sub get_track {
 	my ($id) = $uri =~ m{^googlemusic:track:(.*)$}x;
 	my $song;
 
-	if ($prefs->get('all_access_enabled')) {
-		eval {
-			$song = $googleapi->get_track_info($id);
-			1;
-		} or do {
- 			$log->error("Not able to get the track info for track ID $id");
-			return;
-		};
+	eval {
+		$song = $googleapi->get_track_info($id);
+	};
+	if ($@) {
+		$log->error("Not able to get the track info for track ID $id: $@");
+		return;
 	}
 
 	return to_slim_track($song);
@@ -194,6 +191,8 @@ sub get_track_by_id {
 sub search {
 	my $query = shift;
 
+	return unless $prefs->get('all_access_enabled');
+
 	my $uri = 'googlemusic:search:' . $query;
 	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		return $cache{$uri}->{data};
@@ -206,23 +205,21 @@ sub search {
 		artists => [],
 	};		  
 
-	if ($prefs->get('all_access_enabled')) {
-		eval {
-			$googleResult = $googleapi->search_all_access($query, $prefs->get('max_search_items'));
-			1;
-		} or do {
- 			$log->error("Not able to search All Access for: $query");
-			return ([], [], []);
-		};
-		for my $hit (@{$googleResult->{song_hits}}) {
-			push @{$result->{tracks}}, to_slim_track($hit->{track});
-		}
-		for my $hit (@{$googleResult->{album_hits}}) {
-			push @{$result->{albums}}, album_to_slim_album($hit->{album});
-		}
-		for my $hit (@{$googleResult->{artist_hits}}) {
-			push @{$result->{artists}}, artist_to_slim_artist($hit->{artist});
-		}
+	eval {
+		$googleResult = $googleapi->search_all_access($query, $prefs->get('max_search_items'));
+	};
+	if ($@) {
+		$log->error("Not able to search All Access for \"$query\": $@");
+		return;
+	}
+	for my $hit (@{$googleResult->{song_hits}}) {
+		push @{$result->{tracks}}, to_slim_track($hit->{track});
+	}
+	for my $hit (@{$googleResult->{album_hits}}) {
+		push @{$result->{albums}}, album_to_slim_album($hit->{album});
+	}
+	for my $hit (@{$googleResult->{artist_hits}}) {
+		push @{$result->{artists}}, artist_to_slim_artist($hit->{artist});
 	}
 
 	# Add to the cache
@@ -238,6 +235,8 @@ sub search {
 sub get_artist_info {
 	my $uri = shift;
 
+	return unless $prefs->get('all_access_enabled');
+
 	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		return $cache{$uri}->{data};
 	}
@@ -247,14 +246,12 @@ sub get_artist_info {
 	my $googleArtist;
 	my $artist;
 
-	if ($prefs->get('all_access_enabled')) {
-		eval {
-			$googleArtist = $googleapi->get_artist_info($id, $Inline::Python::Boolean::true, $prefs->get('max_artist_tracks'), $prefs->get('max_related_artists'));
-			1;
-		} or do {
- 			$log->error("Not able to get the artist info for artist ID $id");
-			return;
-		};
+	eval {
+		$googleArtist = $googleapi->get_artist_info($id, $Inline::Python::Boolean::true, $prefs->get('max_artist_tracks'), $prefs->get('max_related_artists'));
+	};
+	if ($@) {
+		$log->error("Not able to get the artist info for artist ID $id: $@");
+		return;
 	}
 	
 	$artist = artist_to_slim_artist($googleArtist);
@@ -271,6 +268,8 @@ sub get_artist_info {
 sub get_artist_image {
 	my $uri = shift;
 
+	return unless $prefs->get('all_access_enabled');
+
 	# First try to get the image from the artist cache
 	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		return $cache{$uri}->{data}->{image};
@@ -286,14 +285,12 @@ sub get_artist_image {
 
 	my $googleArtist;
 
-	if ($prefs->get('all_access_enabled')) {
-		eval {
-			$googleArtist = $googleapi->get_artist_info($id, $Inline::Python::Boolean::false, 0, 0);
-			1;
-		} or do {
- 			$log->error("Not able to get the artist image for artist ID $id");
-			return;
-		};
+	eval {
+		$googleArtist = $googleapi->get_artist_info($id, $Inline::Python::Boolean::false, 0, 0);
+	};
+	if ($@) {
+		$log->error("Not able to get the artist image for artist ID $id: $@");
+		return;
 	}
 
 	my $image = '/html/images/artists.png';
@@ -315,6 +312,8 @@ sub get_artist_image {
 sub get_album_info {
 	my $uri = shift;
 
+	return unless $prefs->get('all_access_enabled');
+
 	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		return $cache{$uri}->{data};
 	}
@@ -324,14 +323,12 @@ sub get_album_info {
 	my $googleAlbum;
 	my $album;
 
-	if ($prefs->get('all_access_enabled')) {
-		eval {
-			$googleAlbum = $googleapi->get_album_info($id);
-			1;
-		} or do {
- 			$log->error("Not able to get the album info for album ID $id");
-			return;
-		};
+	eval {
+		$googleAlbum = $googleapi->get_album_info($id);
+	};
+	if ($@) {
+		$log->error("Not able to get the album info for album ID $id: $@");
+		return;
 	}
 
 	$album = album_to_slim_album($googleAlbum);
