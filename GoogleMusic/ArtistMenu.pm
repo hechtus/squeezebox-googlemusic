@@ -6,6 +6,7 @@ use warnings;
 use Slim::Utils::Log;
 use Slim::Utils::Strings qw(cstring);
 
+use Plugins::GoogleMusic::Plugin;
 use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumMenu;
 
@@ -71,7 +72,11 @@ sub _artistMenu {
 	if ($opts->{all_access}) {
 		my $info = Plugins::GoogleMusic::AllAccess::get_artist_info($artist->{uri});
 
-		# TODO Error handling
+		if (!$info) {
+			$callback->(Plugins::GoogleMusic::Plugin::errorMenu($client));
+			return;
+		}
+
 		my @menu = (
 			{ name => cstring($client, "ALBUMS") . " (" . scalar @{$info->{albums}} . ")",
 			  type => 'link',
