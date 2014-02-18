@@ -381,7 +381,6 @@ sub searchInfoMenu {
 	};
 }
 
-<<<<<<< HEAD
 sub itemQuery {
 	my $request = shift;
 
