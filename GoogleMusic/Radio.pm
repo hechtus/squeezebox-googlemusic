@@ -48,12 +48,13 @@ sub menu {
 	};
 
 	# Build the Menu
-	for my $station (@{$stations}) {
+	for my $station (sort { $a->{name} cmp $b->{name} } @{$stations}) {
 		push @menu, {
 			name => $station->{name},
 			type => 'audio',
 			url => "googlemusicradio:station:$station->{id}",
 			image => Plugins::GoogleMusic::Image->uri($station->{imageUrl}),
+			textkey => substr($station->{name}, 0, 1),
 		};
 	}
 
@@ -92,6 +93,22 @@ sub cliRequest {
 
 		$log->info("Playing Google Music radio station: $station");
 		_playRadio($client, { station => $station });
+	} elsif ($type eq 'artist') {
+		my $station;
+		my $artistID = $request->getParam('_p2');
+		my $artist = Plugins::GoogleMusic::AllAccess::get_artist_info("googlemusic:artist:$artistID");
+
+		$log->info("Creating Google Music radio station for artist ID $artistID");
+
+		eval {
+			$station = $googleapi->create_station($artist->{name}, $Inline::Python::Boolean::False, $artistID, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False);
+		};
+		if ($@) {
+			$log->error("Not able to create artist radio station for artist ID $artistID: $@");
+		} else {
+			$log->info("Playing Google Music radio station: $station");
+			_playRadio($client, { station => $station });
+		}
 	}
 
 	$request->setStatusDone();

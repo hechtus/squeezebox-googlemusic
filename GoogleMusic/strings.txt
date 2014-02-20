@@ -202,6 +202,10 @@ PLUGIN_GOOGLEMUSIC_BIOGRAPHY
 	DE	Biographie
 	EN	Biography
 
+PLUGIN_GOOGLEMUSIC_START_RADIO
+	DE	Radio starten
+	EN	Start radio
+
 PLUGIN_GOOGLEMUSIC_ERROR
 	DE	Ein unerwarteter Fehler ist aufgetreten.
 	EN	An unexpected error occurred.
