@@ -45,33 +45,38 @@
 
 <p>This is a <a href="http://www.mysqueezebox.com/">Squeezebox</a> (Logitech Media
 Server) Plug-in for playing music from your <a href="https://play.google.com/music/">Google Play
-Music</a> library. It is based on the
-Python <a href="http://unofficial-google-music-api.readthedocs.org/">Unofficial Google Play Music
+Music</a> library and All Access. It is
+based on the Python <a href="http://unofficial-google-music-api.readthedocs.org/">Unofficial Google Play Music
 API</a> and the
 ability of inlining Python in Perl programs.</p>
 
 <h2>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
 
+<p>This installation procedure will only work on Linux based systems. At
+the moment I do not know if this will ever work on Windows or Mac
+OS. Please let me know if you found a way to get this plugin running
+on non-Linux systems to extend this How-to.</p>
+
 <ol>
 <li><p>You will need a Google account and some music and/or playlists in
 your library. If you want to use Google Music All Access features
 you will need a subscription to this service.</p></li>
+<li><p>Install Python and <a href="http://www.pip-installer.org">Python pip</a>.</p></li>
 <li>
-<p>Install Python and the <a href="https://github.com/simon-weber/Unofficial-Google-Music-API">Unofficial Google Play Music
-API</a> by
-running:</p>
+<p>Install the <a href="https://github.com/simon-weber/Unofficial-Google-Music-API">Unofficial Google Play Music
+API</a>
+by running:</p>
 
 <pre><code> sudo pip install gmusicapi
 </code></pre>
 
-<p><strong>Note</strong>: For 'All Access' functionality you need at least version
-3.0.0 of gmusicapi.</p>
+<p><strong>Note</strong>: You will need at least version 3.1.0 of gmusicapi.</p>
 </li>
 <li>
-<p>To be able to build the Inline::Python package (see below) you will
-need the python developer package. The name of the package and the
-way how to install it depends on your Linux distribution. On
+<p>To be able to build the Perl package Inline::Python (see below) you
+will need the Python developer package. The name of the package and
+the way how to install it depends on your Linux distribution. On
 <strong>Debian</strong> based systems you will have to do:</p>
 
 <pre><code> sudo apt-get install python-dev
@@ -83,8 +88,8 @@ way how to install it depends on your Linux distribution. On
 </code></pre>
 </li>
 <li>
-<p>Install the Perl CPAN <a href="http://search.cpan.org/%7Eingy/Inline/">Inline</a>
-package and
+<p>Install the Perl CPAN package
+<a href="http://search.cpan.org/%7Eingy/Inline/">Inline</a> and
 <a href="http://search.cpan.org/%7Enine/Inline-Python/">Inline::Python</a> by
 running:</p>
 
@@ -93,7 +98,7 @@ running:</p>
  sudo cpanm --notest Inline::Python
 </code></pre>
 </li>
-<li><p>To install the plugin, add this repository URL
+<li><p>To install the plugin, add the repository URL
 <a href="http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml">http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml</a>
 to your squeezebox plugin settings page.</p></li>
 </ol><h2>
@@ -102,17 +107,23 @@ to your squeezebox plugin settings page.</p></li>
 <ol>
 <li><p>Go to the plug-in settings page and set your Google username and
 password for the Google Music plug-in.</p></li>
-<li><p>The mobile device ID is a 16-digit hexadecimal string (without the
-'0x' prefix) identifying the Android device you must already have
-registered for Google Play Music. You can obtain this ID by dialing
-<code>*#*#8255#*#*</code> on your phone (see the aid) or using this
+<li>
+<p>The mobile device ID is a 16-digit hexadecimal string (without the
+'0x' prefix) identifying the Android or iOS device you must already
+have registered for Google Play Music. On Android you can obtain
+this ID by dialing <code>*#*#8255#*#*</code> on your phone (see the aid) or
+using this
 <a href="https://play.google.com/store/apps/details?id=com.evozi.deviceid">App</a>
 (see the Google Service Framework ID Key). You may also use the
 script <code>mobile_devices.py</code> to list all registered devices. If your
-Android device is already registered, you should leave the field
-<code>Mobile Device ID</code> empty. It will be filled in automatically after
-setting the username and password.</p></li>
-<li><p>Enable All Access if you want.</p></li>
+Android or iOS device is already registered, you may leave the
+field <code>Mobile Device ID</code> empty. It will be filled in automatically
+after setting the username and password.</p>
+
+<p><strong>Note</strong>: A registered PC MAC address will not work as a mobile
+ device ID.</p>
+</li>
+<li><p>Enable All Access if you have an All Access subscription.</p></li>
 <li><p>You will find the plug-in in the 'My Apps' section of the
 squeezebox menu.</p></li>
 </ol><h2>
@@ -125,16 +136,21 @@ squeezebox menu.</p></li>
 </ul><h2>
 <a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>ToDo</h2>
 
-<p>There are still lots of things to do. This project just
-started. Feel free to
+<p>I'm looking forward to your help. Feel free to
 <a href="https://help.github.com/articles/fork-a-repo">contribute</a> or to
 <a href="https://github.com/hechtus/squeezebox-googlemusic/issues">report
-bugs</a> to
-help for the first release. Here are some open issues you may help on:</p>
+bugs</a>. Here
+are some things you may help on:</p>
 
 <ul>
+<li>Get this plugin running on non-Linux systems</li>
+<li>Add or improve
+<a href="https://github.com/hechtus/squeezebox-googlemusic/blob/master/GoogleMusic/strings.txt">translations</a>
+to other languages</li>
+<li>Test the plugin with various Android or iOS Apps. Is it working with
+iPeng?</li>
+<li>Support for creating and deleting radio stations</li>
 <li>Improve Track and Album Info</li>
-<li>Public Playlist Support</li>
 </ul>
       </section>
 
