@@ -325,7 +325,7 @@ sub to_slim_album_artist {
 	# artists. The Google Music webinterface also shows a 'Various
 	# artists' in my library instead of all seperate artists.. which
 	# should justify this functionality
-	my $various = index(lc($song->{artist}), lc($song->{albumArtist} || '')) == -1;
+	my $various = (index(lc($song->{artist}), lc($song->{albumArtist} || '')) == -1) ? 1 : 0;
 	if (exists $song->{artistArtRef} and not $various) {
 		$image = $song->{artistArtRef}[0]{url};
 		$image = Plugins::GoogleMusic::Image->uri($image);
@@ -334,6 +334,7 @@ sub to_slim_album_artist {
 	my $artist = {
 		uri => $uri,
 		name => $name,
+		various => $various,
 		image => $image,
 	};
 

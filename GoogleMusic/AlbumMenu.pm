@@ -106,6 +106,7 @@ sub _albumTracks {
 	my $info = Plugins::GoogleMusic::Library::get_album($album->{uri});
 	if ($info) {
 		$tracks = $info->{tracks};
+		$opts->{showArtist} = $info->{artist}->{various};
 	} else {
 		$tracks = [];
 	}
