@@ -41,11 +41,11 @@ sub menu {
 	# Get all user created stations
 	eval {
 		$stations = $googleapi->get_all_stations();
-		1;
-	} or do {
-		$log->error("Not able to get user created radio stations");
-		$stations = [];
 	};
+	if ($@) {
+		$log->error("Not able to get user created radio stations: $@");
+		$stations = [];
+	}
 
 	# Build the Menu
 	for my $station (sort { $a->{name} cmp $b->{name} } @{$stations}) {
@@ -233,11 +233,11 @@ sub fetchStationTracks {
 	# Get new tracks for the station
 	eval {
 		$googleTracks = $googleapi->get_station_tracks($station, $PLAYLIST_MAXLENGTH);
-		1;
-	} or do {
-		$log->error("Not able to get tracks for station $station");
-		$googleTracks = [];
 	};
+	if ($@) {
+		$log->error("Not able to get tracks for station $station: $@");
+		$googleTracks = [];
+	}
 
 	# Convert to slim format and add to the list of tracks
 	for my $googleTrack (@{$googleTracks}) {
