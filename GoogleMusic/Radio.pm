@@ -49,11 +49,16 @@ sub menu {
 
 	# Build the Menu
 	for my $station (sort { $a->{name} cmp $b->{name} } @{$stations}) {
+		my $image = '/html/images/radio.png';
+		if (exists $station->{imageUrl}) {
+			$image = $station->{imageUrl};
+			$image = Plugins::GoogleMusic::Image->uri($image);
+		}
 		push @menu, {
 			name => $station->{name},
 			type => 'audio',
 			url => "googlemusicradio:station:$station->{id}",
-			image => Plugins::GoogleMusic::Image->uri($station->{imageUrl}),
+			image => $image,
 			textkey => substr($station->{name}, 0, 1),
 		};
 	}
