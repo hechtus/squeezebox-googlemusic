@@ -55,8 +55,8 @@ sub get_device_id {
 			$id = substr($device->{id}, 2);
 			last;
 		} elsif ($device->{type} eq 'IOS' and $device->{id} =~ /^ios:/) {
-			# Omit the 'ios:' prefix
-			$id = substr($device->{id}, 4);
+			# The 'ios:' prefix is required
+			$id = $device->{id};
 			last;
 		}
 	}
