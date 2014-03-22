@@ -291,11 +291,10 @@ sub get_artist_image {
 	};
 	if ($@) {
 		$log->error("Not able to get the artist image for artist ID $id: $@");
-		return;
 	}
 
 	my $image = '/html/images/artists.png';
-	if (exists $googleArtist->{artistArtRef}) {
+	if ($googleArtist && exists $googleArtist->{artistArtRef}) {
 		$image = $googleArtist->{artistArtRef};
 		$image = Plugins::GoogleMusic::Image->uri($image);
 	}
