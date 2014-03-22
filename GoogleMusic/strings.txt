@@ -108,6 +108,10 @@ PLUGIN_GOOGLEMUSIC_ALL_ACCESS
 	DE	All-Inclusive
 	NL	All Access
 
+PLUGIN_GOOGLEMUSIC_IFL_RADIO
+	EN	I'm Feeling Lucky Radio
+	DE	Radio auf gut Glück
+
 PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS
 	EN	My Radio Stations
 	DE	Meine Radio Sender

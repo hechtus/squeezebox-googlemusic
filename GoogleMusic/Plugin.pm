@@ -191,6 +191,7 @@ sub reload_library {
 sub all_access {
 	my ($client, $callback, $args) = @_;
 	my @menu = (
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_IFL_RADIO'), type => 'audio', url => "googlemusicradio:station:IFL" },
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search_all_access },
 		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesFeed, passthrough => [ { "all_access" => 1 } ] },
