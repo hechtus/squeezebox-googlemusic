@@ -60,7 +60,10 @@ Usage
 -----
 
 1. Go to the plug-in settings page and set your Google username and
-   password for the Google Music plug-in.
+   password for the Google Music plug-in. You can also use
+   application-specific passwords also known as 2-Step Verification as
+   described on this [support
+   page](https://support.google.com/accounts/answer/185833).
 
 1. The mobile device ID is a 16-digit hexadecimal string (without the
    '0x' prefix) identifying the Android or iOS device you must already
