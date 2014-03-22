@@ -65,11 +65,12 @@ Usage
    described on this [support
    page](https://support.google.com/accounts/answer/185833).
 
-1. The mobile device ID is a 16-digit hexadecimal string (without the
-   '0x' prefix) identifying the Android or iOS device you must already
-   have registered for Google Play Music. On Android you can obtain
-   this ID by dialing `*#*#8255#*#*` on your phone (see the aid) or
-   using this
+1. The mobile device ID is a 16-digit hexadecimal string (without a
+   '0x' prefix) identifying an Android device or a string of the form
+   `ios:01234567-0123-0123-0123-0123456789AB` (including the `ios:`
+   prefix) identifying an iOS device you must already have registered
+   for Google Play Music. On Android you can obtain this ID by dialing
+   `*#*#8255#*#*` on your phone (see the aid) or using this
    [App](https://play.google.com/store/apps/details?id=com.evozi.deviceid)
    (see the Google Service Framework ID Key). You may also use the
    script `mobile_devices.py` to list all registered devices. If your
