@@ -30,7 +30,7 @@ on non-Linux systems to extend this How-to.
 
          sudo pip install gmusicapi
          
-   **Note**: You will need at least version 3.1.0 of gmusicapi.
+   **Note**: You will need at least version 3.1.1 of gmusicapi.
 
 1. To be able to build the Perl package Inline::Python (see below) you
    will need the Python developer package. The name of the package and
