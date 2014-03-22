@@ -88,12 +88,10 @@ sub menu {
 sub _showAlbum {
 	my ($client, $args, $album, $opts) = @_;
 
-	my $albumYear = $album->{year} || " ? ";
-
 	my $item = {
-		name  => $album->{name} . " (" . $albumYear . ")",
+		name  => $album->{name},
 		name2  => $album->{artist}->{name},
-		line1 => $album->{name} . " (" . $albumYear . ")",
+		line1 => $album->{name},
 		line2 => $album->{artist}->{name},
 		cover => $album->{cover},
 		image => $album->{cover},
@@ -103,6 +101,12 @@ sub _showAlbum {
 		hasMetadata   => 'album',
 		passthrough => [ $album , { all_access => $opts->{all_access}, playall => 1, playall_uri => $album->{uri}, sortByTrack => 1 } ],
 	};
+
+	# Show the album year only if available
+	if ($album->{year}) {
+		$item->{name} .= " (" . $album->{year} . ")";
+		$item->{line1} .= " (" . $album->{year} . ")";
+	}
 
 	# If the albums are sorted by name add a text key to easily jump
 	# to albums on squeezeboxes
@@ -137,6 +141,7 @@ sub _albumTracks {
 	my $info = Plugins::GoogleMusic::Library::get_album($album->{uri});
 	if ($info) {
 		$tracks = $info->{tracks};
+		$opts->{showArtist} = $info->{artist}->{various};
 	} else {
 		$tracks = [];
 	}

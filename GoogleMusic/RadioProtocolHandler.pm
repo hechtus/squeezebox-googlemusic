@@ -15,6 +15,11 @@ sub overridePlayback {
 		$client->execute(["googlemusicradio", "station", $1]);
 
 		return 1;
+	} elsif ($url =~ /^googlemusicradio:artist:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "artist", $1]);
+
+		return 1;
 	}
 
 	return;

@@ -140,6 +140,15 @@ sub _artistMenu {
 				items => [ { name => $info->{artistBio}, type => 'text', wrap => 1 } ],
 			}
 		}
+		
+		(my $radioURI = $artist->{uri}) =~ s/googlemusic/googlemusicradio/;
+
+		push @menu, {
+			name => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
+			type => 'audio',
+			url => $radioURI,
+			cover => $artist->{image},
+		};
 
 		$callback->({
 			items => \@items,

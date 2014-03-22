@@ -143,7 +143,7 @@ sub to_slim_album_artist {
 	# artists. The Google Music webinterface also shows a 'Various
 	# artists' in my library instead of all seperate artists.. which
 	# should justify this functionality
-	my $various = index(lc($song->{artist}), lc($song->{albumArtist} || '')) == -1;
+	my $various = (index(lc($song->{artist}), lc($song->{albumArtist} || '')) == -1) ? 1 : 0;
 	if (exists $song->{artistArtRef} and not $various) {
 		$image = $song->{artistArtRef}[0]{url};
 		$image = Plugins::GoogleMusic::Image->uri($image);
@@ -152,6 +152,7 @@ sub to_slim_album_artist {
 	my $artist = {
 		uri => $uri,
 		name => $name,
+		various => $various,
 		image => $image,
 	};
 
@@ -290,11 +291,10 @@ sub get_artist_image {
 	};
 	if ($@) {
 		$log->error("Not able to get the artist image for artist ID $id: $@");
-		return;
 	}
 
 	my $image = '/html/images/artists.png';
-	if (exists $googleArtist->{artistArtRef}) {
+	if ($googleArtist && exists $googleArtist->{artistArtRef}) {
 		$image = $googleArtist->{artistArtRef};
 		$image = Plugins::GoogleMusic::Image->uri($image);
 	}
@@ -347,12 +347,11 @@ sub get_album_info {
 sub album_to_slim_album {
 	my $googleAlbum = shift;
 
-	# TODO: Sometimes the array has multiple entries.  It seems that
-	#       for various artists albums the first ID is an empty
-	#       string.
+	# TODO: Sometimes the array has multiple entries
 	my $artist = {
 		uri => 'googlemusic:artist:' . (($googleAlbum->{artistId}[0]) ?  $googleAlbum->{artistId}[0] : 'unknown'),
-		name => $googleAlbum->{artist},
+		name => $googleAlbum->{albumArtist} || $googleAlbum->{artist},
+		various => 0,
 	};
 
 	my $name = $googleAlbum->{name};
@@ -376,8 +375,12 @@ sub album_to_slim_album {
 	};
 
 	if (exists $googleAlbum->{tracks}) {
-		for my $track (@{$googleAlbum->{tracks}}) {
-			push @{$album->{tracks}}, to_slim_track($track);
+		foreach (@{$googleAlbum->{tracks}}) {
+			my $track = to_slim_track($_);
+			if ($track->{album}->{artist}->{various}) {
+				$artist->{various} = 1;
+			}
+			push @{$album->{tracks}}, $track;
 		}
 	}
 

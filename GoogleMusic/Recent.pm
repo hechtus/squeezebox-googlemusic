@@ -29,21 +29,21 @@ sub init {
 	map {
 		$recentSearches{$_} = $recent->{$_};
 	} sort {
-		$recent->{$a}->{ts} <=> $recent->{$a}->{ts}
+		$recent->{$a}->{ts} <=> $recent->{$b}->{ts}
 	} keys %$recent;
 
 	$recent = $cache->get('recentAlbums');
 	map {
 		$recentAlbums{$_} = $recent->{$_};
 	} sort {
-		$recent->{$a}->{ts} <=> $recent->{$a}->{ts}
+		$recent->{$a}->{ts} <=> $recent->{$b}->{ts}
 	} keys %$recent;
 
 	$recent = $cache->get('recentArtists');
 	map {
 		$recentArtists{$_} = $recent->{$_};
 	} sort {
-		$recent->{$a}->{ts} <=> $recent->{$a}->{ts}
+		$recent->{$a}->{ts} <=> $recent->{$b}->{ts}
 	} keys %$recent;
 
 	return;
@@ -66,11 +66,9 @@ sub recentSearchesAdd {
 sub recentSearchesFeed {
 	my ($client, $callback, $args, $opts) = @_;
 
-	my $recent = [
+	my @searches =
 		sort { lc($a) cmp lc($b) }
-		grep { $recentSearches{$_} }
-		keys %recentSearches
-	];
+		keys %recentSearches;
 
 	my $search_func = $opts->{'all_access'} ?
 		\&Plugins::GoogleMusic::Plugin::search_all_access :
@@ -78,7 +76,7 @@ sub recentSearchesFeed {
 
 	my $items = [];
 
-	foreach (@$recent) {
+	foreach (@searches) {
 		push @$items, {
 			type => 'link',
 			name => $_,
@@ -131,10 +129,10 @@ sub recentAlbumsFeed {
 		return $callback->($recentAlbumsCache{$clientId});
 	}
 
-	my @albums =
-		sort { $b->{ts} <=> $a->{ts} or $a->{uri} cmp $b->{uri} }
+	# Access the LRU cache in reverse order to maintain the order
+	my @albums = reverse
 		grep { $opts->{all_access} ? $_->{uri} =~ '^googlemusic:album:B' : $_->{uri} !~ '^googlemusic:album:B' }
-		values %recentAlbums;
+		map { $recentAlbums{$_} } reverse keys %recentAlbums;
 
 	my $menu = Plugins::GoogleMusic::AlbumMenu::menu($client, $args, \@albums, $opts);
 
@@ -179,10 +177,10 @@ sub recentArtistsFeed {
 		return $callback->($recentArtistsCache{$clientId});
 	}
 
-	my @artists = 
-		sort { $b->{ts} <=> $a->{ts} or $a->{uri} cmp $b->{uri} } 
+	# Access the LRU cache in reverse order to maintain the order
+	my @artists = reverse
 		grep { $opts->{all_access} ? $_->{uri} =~ '^googlemusic:artist:A' : $_->{uri} !~ '^googlemusic:artist:A' }
-		values %recentArtists;
+		map { $recentArtists{$_} } reverse keys %recentArtists;
 
 	my $menu = Plugins::GoogleMusic::ArtistMenu::menu($client, $args, \@artists, $opts);
 

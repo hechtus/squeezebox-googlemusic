@@ -41,19 +41,25 @@ sub menu {
 	# Get all user created stations
 	eval {
 		$stations = $googleapi->get_all_stations();
-		1;
-	} or do {
-		$log->error("Not able to get user created radio stations");
-		$stations = [];
 	};
+	if ($@) {
+		$log->error("Not able to get user created radio stations: $@");
+		$stations = [];
+	}
 
 	# Build the Menu
-	for my $station (@{$stations}) {
+	for my $station (sort { $a->{name} cmp $b->{name} } @{$stations}) {
+		my $image = '/html/images/radio.png';
+		if (exists $station->{imageUrl}) {
+			$image = $station->{imageUrl};
+			$image = Plugins::GoogleMusic::Image->uri($image);
+		}
 		push @menu, {
 			name => $station->{name},
 			type => 'audio',
 			url => "googlemusicradio:station:$station->{id}",
-			image => Plugins::GoogleMusic::Image->uri($station->{imageUrl}),
+			image => $image,
+			textkey => substr($station->{name}, 0, 1),
 		};
 	}
 
@@ -92,6 +98,22 @@ sub cliRequest {
 
 		$log->info("Playing Google Music radio station: $station");
 		_playRadio($client, { station => $station });
+	} elsif ($type eq 'artist') {
+		my $station;
+		my $artistID = $request->getParam('_p2');
+		my $artist = Plugins::GoogleMusic::AllAccess::get_artist_info("googlemusic:artist:$artistID");
+
+		$log->info("Creating Google Music radio station for artist ID $artistID");
+
+		eval {
+			$station = $googleapi->create_station($artist->{name}, $Inline::Python::Boolean::False, $artistID, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False);
+		};
+		if ($@) {
+			$log->error("Not able to create artist radio station for artist ID $artistID: $@");
+		} else {
+			$log->info("Playing Google Music radio station: $station");
+			_playRadio($client, { station => $station });
+		}
 	}
 
 	$request->setStatusDone();
@@ -211,11 +233,11 @@ sub fetchStationTracks {
 	# Get new tracks for the station
 	eval {
 		$googleTracks = $googleapi->get_station_tracks($station, $PLAYLIST_MAXLENGTH);
-		1;
-	} or do {
-		$log->error("Not able to get tracks for station $station");
-		$googleTracks = [];
 	};
+	if ($@) {
+		$log->error("Not able to get tracks for station $station: $@");
+		$googleTracks = [];
+	}
 
 	# Convert to slim format and add to the list of tracks
 	for my $googleTrack (@{$googleTracks}) {
