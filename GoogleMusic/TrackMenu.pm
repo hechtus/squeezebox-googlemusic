@@ -96,43 +96,43 @@ sub _showTrack {
 }
 
 sub _sortTrack {
-	return ($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+	return ($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) ||
 		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
 }
 
 sub _sortAlbum {
-	return lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
-		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+	return lc($a->{album}->{name}) cmp lc($b->{album}->{name}) ||
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) ||
 		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
 }
 
 sub _sortArtistAlbum {
-	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
-		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) ||
+		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) ||
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) ||
 		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
 }
 
 sub _sortArtistYearAlbum {
-	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-		($b->{year} || -1) <=> ($a->{year} || -1) or
-		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
-		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) ||
+		($b->{year} || -1) <=> ($a->{year} || -1) ||
+		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) ||
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) ||
 		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
 }
 
 sub _sortYearAlbum {
-	return ($b->{year} || -1) <=> ($a->{year} || -1) or
-		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
-		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+	return ($b->{year} || -1) <=> ($a->{year} || -1) ||
+		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) ||
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) ||
 		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
 }
 
 sub _sortYearArtistAlbum {
-	return ($b->{year} || -1) <=> ($a->{year} || -1) or
-		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) or
-		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) or
+	return ($b->{year} || -1) <=> ($a->{year} || -1) ||
+		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) ||
+		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) ||
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) ||
 		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
 }
 

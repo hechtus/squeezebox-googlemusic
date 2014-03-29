@@ -121,24 +121,24 @@ sub _sortAlbum {
 }
 
 sub _sortArtistAlbum {
-	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) ||
 		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortArtistYearAlbum {
-	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
-		($b->{year} || -1) <=> ($a->{year} || -1) or
+	return lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) ||
+		($b->{year} || -1) <=> ($a->{year} || -1) ||
 		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortYearAlbum {
-	return ($b->{year} || -1) <=> ($a->{year} || -1) or
+	return ($b->{year} || -1) <=> ($a->{year} || -1) ||
 		lc($a->{name}) cmp lc($b->{name});
 }
 
 sub _sortYearArtistAlbum {
-	return ($b->{year} || -1) <=> ($a->{year} || -1) or
-		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) or
+	return ($b->{year} || -1) <=> ($a->{year} || -1) ||
+		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) ||
 		lc($a->{name}) cmp lc($b->{name});
 }
 
