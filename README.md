@@ -85,7 +85,14 @@ Usage
 
 1. You will find the plug-in in the 'My Apps' section of the
    squeezebox menu.
- 
+
+Donate for this	Plugin
+----------------------
+
+If you are enjoying this plugin feel free to
+[donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z2KE8W5HW9F8W)
+for it.
+
 Project resources
 -----------------
 
