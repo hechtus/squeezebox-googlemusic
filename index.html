@@ -71,7 +71,7 @@ by running:</p>
 <pre><code> sudo pip install gmusicapi
 </code></pre>
 
-<p><strong>Note</strong>: You will need at least version 3.1.0 of gmusicapi.</p>
+<p><strong>Note</strong>: You will need at least version 3.1.1 of gmusicapi.</p>
 </li>
 <li>
 <p>To be able to build the Perl package Inline::Python (see below) you
@@ -106,13 +106,17 @@ to your squeezebox plugin settings page.</p></li>
 
 <ol>
 <li><p>Go to the plug-in settings page and set your Google username and
-password for the Google Music plug-in.</p></li>
+password for the Google Music plug-in. You can also use an
+application-specific password also known as 2-Step Verification
+which is desribed in detail on this <a href="https://support.google.com/accounts/answer/185833">support
+page</a>.</p></li>
 <li>
-<p>The mobile device ID is a 16-digit hexadecimal string (without the
-'0x' prefix) identifying the Android or iOS device you must already
-have registered for Google Play Music. On Android you can obtain
-this ID by dialing <code>*#*#8255#*#*</code> on your phone (see the aid) or
-using this
+<p>The mobile device ID is a 16-digit hexadecimal string (without a
+'0x' prefix) identifying an Android device or a string of the form
+<code>ios:01234567-0123-0123-0123-0123456789AB</code> (including the <code>ios:</code>
+prefix) identifying an iOS device you must already have registered
+for Google Play Music. On Android you can obtain this ID by dialing
+<code>*#*#8255#*#*</code> on your phone (see the aid) or using this
 <a href="https://play.google.com/store/apps/details?id=com.evozi.deviceid">App</a>
 (see the Google Service Framework ID Key). You may also use the
 script <code>mobile_devices.py</code> to list all registered devices. If your
@@ -127,6 +131,13 @@ after setting the username and password.</p>
 <li><p>You will find the plug-in in the 'My Apps' section of the
 squeezebox menu.</p></li>
 </ol><h2>
+<a name="donate-for-this-plugin" class="anchor" href="#donate-for-this-plugin"><span class="octicon octicon-link"></span></a>Donate for this Plugin</h2>
+
+<p>If you are enjoying this plugin feel free to
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=Z2KE8W5HW9F8W">donate</a>
+for it.</p>
+
+<h2>
 <a name="project-resources" class="anchor" href="#project-resources"><span class="octicon octicon-link"></span></a>Project resources</h2>
 
 <ul>
