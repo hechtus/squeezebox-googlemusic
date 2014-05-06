@@ -46,7 +46,9 @@ sub handler {
 		$params->{'warning'} = cstring($client, 'PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN');
 	}
 
-	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'}) {
+	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'} &&
+	    (($params->{'username'} ne $prefs->get('username')) || 
+	     ($params->{'password'} ne $prefs->get('password')))) {
 		$prefs->set('username', $params->{'username'});
 		$prefs->set('password', $params->{'password'});
 
@@ -69,17 +71,26 @@ sub handler {
 			$params->{'warning'} = cstring($client, 'PLUGIN_GOOGLEMUSIC_LOGIN_FAILED');
 		} else {
 			$params->{'warning'} = cstring($client, 'PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS');
-			if ($params->{'device_id'}) {
-				$prefs->set('device_id', $params->{'device_id'});
+			# Load My Music and Playlists
+			Plugins::GoogleMusic::Library::refresh();
+			Plugins::GoogleMusic::Playlists::refresh();
+		}
+	}
+
+	if ($params->{'saveSettings'}) {
+		if ($params->{'device_id'}) {
+			$prefs->set('device_id', $params->{'device_id'});
+		} else {
+			# If no mobile device ID provided try to set it automatically
+			my $device_id;
+			if($googleapi->is_authenticated()) {
+				$device_id = Plugins::GoogleMusic::GoogleAPI::get_device_id($params->{'username'},
+																			$params->{'password'});
+			}
+			if ($device_id) {
+				$prefs->set('device_id', $device_id);
 			} else {
-				# If no mobile device ID provided try to set it automatically
-				my $device_id = Plugins::GoogleMusic::GoogleAPI::get_device_id($params->{'username'},
-																			   $params->{'password'});
-				if ($device_id) {
-					$prefs->set('device_id', $device_id);
-				} else {
-					$params->{'warning'} .= " " . cstring($client, 'PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID');
-				}
+				$params->{'warning'} .= " " . cstring($client, 'PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID');
 			}
 		}
 	}
