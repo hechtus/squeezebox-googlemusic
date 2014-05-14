@@ -108,6 +108,18 @@ sub initPlugin {
 		func  => \&searchInfoMenu,
 	) );
 
+	if ( $prefs->get('smart_mix') && Slim::Utils::PluginManager->isEnabled('Plugins::SmartMix::Plugin') ) {
+		eval {
+			require Plugins::SmartMix::Services;
+		};
+
+		if (!$@) {
+			main::INFOLOG && $log->info("SmartMix plugin is available - let's use it!");
+			require Plugins::GoogleMusic::SmartMix;
+			Plugins::SmartMix::Services->registerHandler('Plugins::GoogleMusic::SmartMix', 'GoogleMusic');
+		}
+	}
+
 	return;
 }
 

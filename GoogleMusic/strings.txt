@@ -40,6 +40,14 @@ PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC
 	DE	Gib Deine Google Service Framework (GSF) ID Deines Android- or die ID Deines iOS-Gerätes ein. Die Android GSF ID ist ein 16-stelliger hexadezimaler Wert (ohne '0x' Prefix), welcher das Androidgerät identifiziert, dass Du bei Google Play Music registriert haben musst. Eine iOS ID sieht so aus: ios:01234567-0123-0123-0123-0123456789AB (mit dem 'ios:' Prefix). Bei Andriod findest Du diese ID, wenn Du *#*#8255#*#* auf Deinem Telefon wählst (Die ID heißt hier aid) oder eine Device-ID-App benutzt (Die ID heißt hier Google Service Framework ID Key). Wenn Dein Android- oder iOS-Gerät bereits bei Google Play Music registriert ist, kannst Du dieses Feld auch leer lassen. Es wird automatisch nach Setzen des Benutzernamens und Passworts ausgefüllt.
 	NL	Voer je Google Service Framework (GSF) ID van je Android apparaat in. Dit ID is een hexadecimaal woord van 16 karakters (zonder de '0x' prefix), en identificeert je Android apparaat dat je al geregistreerd hebt bij Google Play Muziek. je kunt dit ID achterhalen door *#*#8255#*#* te bellen op je telefoon (kijk bij de hulp) of door gebruik te maken van een apparaat ID App (zoek naar Google Service Framework ID Key). Als je Android apparaat al is geregistreerd moet je die veld leeg laten. Het zal dan automatisch worden ingevuld als je je gebruikersnaam en wachtwoord hebt ingevuld.
 
+PLUGIN_GOOGLEMUSIC_SMART_MIX
+	EN	Enable SmartMix Support
+	DE	Unterstütze Smart Mixes
+
+PLUGIN_GOOGLEMUSIC_SMART_MIX_DESC
+	EN	This setting enables support for the SmartMix plugin.
+	DE	Diese Einstellung erlaubt die Unterstützung des SmartMix Plugins.
+
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED
 	EN	Enable All Access
 	DE	Verwende All-Inclusive

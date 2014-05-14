@@ -24,6 +24,7 @@ my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 $prefs->init({
 	disable_ssl => 0,
+	smart_mix => 0,
 	my_music_album_sort_method => 'artistyearalbum',
 	all_access_album_sort_method => 'none',
 	max_search_items => 100,
@@ -96,6 +97,7 @@ sub handler {
 	}
 
 	if ($params->{'saveSettings'}) {
+		$prefs->set('smart_mix',  $params->{'smart_mix'} ? 1 : 0);
 		$prefs->set('all_access_enabled',  $params->{'all_access_enabled'} ? 1 : 0);
 		for my $param(qw(my_music_album_sort_method all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
 			if ($params->{ $param } ne $prefs->get( $param )) {
@@ -113,7 +115,7 @@ sub handler {
 	}		
 
 	# To avoid showing the password remove it from the list
-	for my $param(qw(username password device_id disable_ssl my_music_album_sort_method all_access_enabled all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
+	for my $param(qw(username password device_id smart_mix disable_ssl my_music_album_sort_method all_access_enabled all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
 		$params->{'prefs'}->{$param} = $prefs->get($param);
 	}
 
