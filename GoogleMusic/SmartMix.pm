@@ -1,5 +1,8 @@
 package Plugins::GoogleMusic::SmartMix;
 
+use strict;
+use warnings;
+
 use Slim::Utils::Log;
 use Slim::Utils::Prefs;
 
@@ -22,8 +25,7 @@ sub getId {
 } 
 
 sub getUrl {
-	my $class = shift;
-	my ($id, $client) = @_;
+	my ($class, $id, $client) = @_;
 
 	# we can't handle the id - return a search handler instead
 	return sub {
@@ -34,6 +36,27 @@ sub getUrl {
 sub resolveUrl {
 	my ($class, $cb, $args) = @_;
 
+	my $searchResult = Plugins::GoogleMusic::AllAccess::search($args->{artist} . ' ' . $args->{title});
+
+	if (!$searchResult->{tracks}) {
+		$cb->();
+	}
+
+	my $candidates = [];
+	my $searchArtist = $args->{artist};
+
+	for my $track ( @{$searchResult->{tracks}} ) {
+		next unless $track->{artist} && $track->{uri} && $track->{title};
+		push @$candidates, {
+			title  => $track->{title},
+			artist => $track->{artist}->{name},
+			url    => $track->{uri},
+		};
+	}
+
+	$cb->( Plugins::SmartMix::Services->getUrlFromCandidates($candidates, $args) );
+
+	return;
 }
 
 sub urlToId {}
