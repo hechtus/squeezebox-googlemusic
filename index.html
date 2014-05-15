@@ -1,47 +1,41 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Squeezebox-googlemusic by hechtus</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Squeezebox-googlemusic : Squeezebox (Logitech Media Server) Plug-in for Google Play Music" />
 
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Squeezebox-googlemusic</title>
   </head>
+
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/hechtus/squeezebox-googlemusic">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/hechtus/squeezebox-googlemusic/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/hechtus/squeezebox-googlemusic/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
 
-    <div class="wrapper">
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/hechtus/squeezebox-googlemusic">View on GitHub</a>
 
-      <section>
-        <div id="title">
-          <h1>Squeezebox-googlemusic</h1>
-          <p>Squeezebox (Logitech Media Server) Plug-in for Google Play Music</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/hechtus">hechtus</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
-        </div>
+          <h1 id="project_title">Squeezebox-googlemusic</h1>
+          <h2 id="project_tagline">Squeezebox (Logitech Media Server) Plug-in for Google Play Music</h2>
 
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/hechtus/squeezebox-googlemusic/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/hechtus/squeezebox-googlemusic/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
         <h1>
 <a name="squeezebox-googlemusic" class="anchor" href="#squeezebox-googlemusic"><span class="octicon octicon-link"></span></a>squeezebox-googlemusic</h1>
 
-<p><a href="https://travis-ci.org/hechtus/squeezebox-googlemusic"><img src="https://travis-ci.org/hechtus/squeezebox-googlemusic.png?branch=master" alt="Travis CI build status"></a></p>
+<p><a href="https://travis-ci.org/hechtus/squeezebox-googlemusic"><img src="https://travis-ci.org/hechtus/squeezebox-googlemusic.png?branch=master" alt="Travis CI build status"></a>
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=Z2KE8W5HW9F8W"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Donate"></a></p>
 
 <p>This is a <a href="http://www.mysqueezebox.com/">Squeezebox</a> (Logitech Media
 Server) Plug-in for playing music from your <a href="https://play.google.com/music/">Google Play
@@ -54,9 +48,10 @@ ability of inlining Python in Perl programs.</p>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
 
 <p>This installation procedure will only work on Linux based systems. At
-the moment I do not know if this will ever work on Windows or Mac
-OS. Please let me know if you found a way to get this plugin running
-on non-Linux systems to extend this How-to.</p>
+the moment I do not know if this will ever work on Windows. If you
+want to install this plugin on OSX have a look at the How-To
+below. Please let me know if you found a way to get this plugin
+running on non-Linux systems to extend this How-to.</p>
 
 <ol>
 <li><p>You will need a Google account and some music and/or playlists in
@@ -71,7 +66,11 @@ by running:</p>
 <pre><code> sudo pip install gmusicapi
 </code></pre>
 
-<p><strong>Note</strong>: You will need at least version 3.1.1 of gmusicapi.</p>
+<p><strong>Important Note</strong>: At the moment you will need the developer
+ version of gmusicapi. Install this version by doing:</p>
+
+<pre><code> pip install git+https://github.com/simon-weber/Unofficial-Google-Music-API.git@develop
+</code></pre>
 </li>
 <li>
 <p>To be able to build the Perl package Inline::Python (see below) you
@@ -102,6 +101,57 @@ running:</p>
 <a href="http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml">http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml</a>
 to your squeezebox plugin settings page.</p></li>
 </ol><h2>
+<a name="installation-on-osx" class="anchor" href="#installation-on-osx"><span class="octicon octicon-link"></span></a>Installation on OSX</h2>
+
+<p>The installation on OSX is quite similar to Linux. According to the
+reports for issue #28 you will have to do the following:</p>
+
+<ol>
+<li><p>Download the <code>get-pip.py</code> script from here:
+<a href="https://raw.github.com/pypa/pip/master/contrib/get-pip.py">https://raw.github.com/pypa/pip/master/contrib/get-pip.py</a></p></li>
+<li><p>Open Terminal by typing <code>Terminal</code> in Spotlight. A command line
+interface should open.</p></li>
+<li>
+<p>Change to the <code>Downloads</code> directory</p>
+
+<pre><code>  cd Downloads
+</code></pre>
+</li>
+<li>
+<p>Install the <a href="https://github.com/simon-weber/Unofficial-Google-Music-API">Unofficial Google Play Music
+API</a>
+by running:</p>
+
+<pre><code> sudo pip install gmusicapi
+</code></pre>
+
+<p><strong>Important Note</strong>: At the moment you will need the developer
+ version of gmusicapi. Install this version by doing:</p>
+
+<pre><code> pip install git+https://github.com/simon-weber/Unofficial-Google-Music-API.git@develop
+</code></pre>
+</li>
+<li>
+<p>Install the Perl CPAN package
+<a href="http://search.cpan.org/%7Eingy/Inline/">Inline</a> and
+<a href="http://search.cpan.org/%7Enine/Inline-Python/">Inline::Python</a> by
+running:</p>
+
+<pre><code> sudo cpan App::cpanminus
+ sudo ARCHFLAGS="-arch i386 -arch x86_64" cpanm --notest Inline
+ sudo ARCHFLAGS="-arch i386 -arch x86_64" cpanm --notest Inline::Python
+</code></pre>
+</li>
+<li><p>Go to the Logitech Media Server with your browser. Visit the
+Plugins page and insert the repository URL for this Plugin at the
+bottom of the page:
+<a href="http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml">http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml</a></p></li>
+<li><p>Save and restart the Logitech Media Server. Provide your All Access
+information on the settings page.</p></li>
+<li><p>Enjoy!</p></li>
+</ol><p>Thanks to <a href="https://github.com/jamesray2" class="user-mention">@jamesray2</a> for this How-To.</p>
+
+<h2>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
 
 <ol>
@@ -144,6 +194,7 @@ for it.</p>
 <li><a href="https://github.com/hechtus/squeezebox-googlemusic">Source code</a></li>
 <li><a href="https://github.com/hechtus/squeezebox-googlemusic/issues">Issue tracker</a></li>
 <li><a href="https://github.com/hechtus/squeezebox-googlemusic/archive/master.zip">Current development snapshot</a></li>
+<li><a href="https://github.com/hechtus/squeezebox-googlemusic/releases">Releases</a></li>
 </ul><h2>
 <a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>ToDo</h2>
 
@@ -164,9 +215,17 @@ iPeng?</li>
 <li>Improve Track and Album Info</li>
 </ul>
       </section>
-
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Squeezebox-googlemusic maintained by <a href="https://github.com/hechtus">hechtus</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
     
+
   </body>
 </html>
