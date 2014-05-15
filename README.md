@@ -14,9 +14,10 @@ Installation
 ------------
 
 This installation procedure will only work on Linux based systems. At
-the moment I do not know if this will ever work on Windows or Mac
-OS. Please let me know if you found a way to get this plugin running
-on non-Linux systems to extend this How-to.
+the moment I do not know if this will ever work on Windows. If you
+want to install this plugin on OSX have a look at the How-To
+below. Please let me know if you found a way to get this plugin
+running on non-Linux systems to extend this How-to.
 
 1. You will need a Google account and some music and/or playlists in
    your library. If you want to use Google Music All Access features
@@ -30,7 +31,10 @@ on non-Linux systems to extend this How-to.
 
          sudo pip install gmusicapi
          
-   **Note**: You will need at least version 3.1.1 of gmusicapi.
+   **Important Note**: At the moment you will need the developer
+     version of gmusicapi. Install this version by doing:
+
+         pip install git+https://github.com/simon-weber/Unofficial-Google-Music-API.git@develop
 
 1. To be able to build the Perl package Inline::Python (see below) you
    will need the Python developer package. The name of the package and
@@ -55,6 +59,54 @@ on non-Linux systems to extend this How-to.
 1. To install the plugin, add the repository URL
    http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml
    to your squeezebox plugin settings page.
+
+Installation on OSX
+-------------------
+
+The installation on OSX is quite similar to Linux. According to the
+reports for issue #28 you will have to do the following
+
+1. Download the ```get-pip.py``` script from here:
+   https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+
+1. Open Terminal (Type Terminal in Spotlight, a command line interface
+   should open)
+
+1. Change to the ```Downloads``` directory
+
+   		  cd Downloads
+
+1. Install the [Unofficial Google Play Music
+   API](https://github.com/simon-weber/Unofficial-Google-Music-API>)
+   by running:
+
+         sudo pip install gmusicapi
+         
+   **Important Note**: At the moment you will need the developer
+     version of gmusicapi. Install this version by doing:
+
+         pip install git+https://github.com/simon-weber/Unofficial-Google-Music-API.git@develop
+
+1. Install the Perl CPAN package
+   [Inline](http://search.cpan.org/~ingy/Inline/) and
+   [Inline::Python](http://search.cpan.org/~nine/Inline-Python/) by
+   running:
+
+         sudo cpan App::cpanminus
+         sudo ARCHFLAGS="-arch i386 -arch x86_64" cpanm --notest Inline
+         sudo ARCHFLAGS="-arch i386 -arch x86_64" cpanm --notest Inline::Python
+
+1. Go to the Logitech Media Server with your browser. Visit the
+   Plugins page and insert the repository URL for this Plugin at the
+   bottom of the page:
+   http://hechtus.github.io/squeezebox-googlemusic/repository/repo.xml
+
+1. Save and restart the Logitech Media Server. Provide your All Access
+   information on the settings page.
+
+1. Enjoy!
+
+Thanks to @jamesray2 for this How-To.
 
 Usage
 -----
