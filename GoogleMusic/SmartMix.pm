@@ -30,7 +30,9 @@ sub getUrl {
 	# we can't handle the id - return a search handler instead
 	return sub {
 		$class->resolveUrl(@_);
-	} if $class->getId($client); 
+	} if $class->getId($client);
+
+	return;
 }
 
 sub resolveUrl {
