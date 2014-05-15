@@ -64,13 +64,13 @@ Installation on OSX
 -------------------
 
 The installation on OSX is quite similar to Linux. According to the
-reports for issue #28 you will have to do the following
+reports for issue #28 you will have to do the following:
 
 1. Download the ```get-pip.py``` script from here:
    https://raw.github.com/pypa/pip/master/contrib/get-pip.py
 
-1. Open Terminal (Type Terminal in Spotlight, a command line interface
-   should open)
+1. Open Terminal by typing ```Terminal``` in Spotlight. A command line
+   interface should open.
 
 1. Change to the ```Downloads``` directory
 
@@ -151,6 +151,7 @@ Project resources
 * [Source code](https://github.com/hechtus/squeezebox-googlemusic)
 * [Issue tracker](https://github.com/hechtus/squeezebox-googlemusic/issues)
 * [Current development snapshot](https://github.com/hechtus/squeezebox-googlemusic/archive/master.zip)
+* [Releases](https://github.com/hechtus/squeezebox-googlemusic/releases)
 
 ToDo
 ----
