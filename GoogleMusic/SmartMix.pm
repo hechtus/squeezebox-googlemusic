@@ -38,16 +38,35 @@ sub getUrl {
 sub resolveUrl {
 	my ($class, $cb, $args) = @_;
 
-	my $searchResult = Plugins::GoogleMusic::AllAccess::search($args->{artist} . ' ' . $args->{title});
+	# Try to find the track through All Access. If it's not enabled we
+	# will get an empty list here. Do not get more than five tracks to
+	# keep performance.
+	my $searchResult =
+		Plugins::GoogleMusic::AllAccess::searchTracks(
+			$args->{artist} . ' ' . $args->{title}, 5);
 
-	if (!$searchResult->{tracks}) {
-		$cb->();
+	# If we didn't found any tracks through All Access try 'My Music'
+	# as a fallback option. The user could have uploaded it or bought
+	# it.
+	if (!@$searchResult) {
+		my $librarySearchResult =
+			Plugins::GoogleMusic::Library::searchTracks(
+				{ artist => $args->{artist},
+				  track => $args->{title} });
+		push (@$searchResult, @$librarySearchResult);
 	}
 
-	my $candidates = [];
-	my $searchArtist = $args->{artist};
+	# Still no success?
+	if (!@$searchResult) {
+		$cb->();
+		return;
+	}
 
-	for my $track ( @{$searchResult->{tracks}} ) {
+	# Translate tracks to SmartMix canditates
+	my $candidates = [];
+
+	for my $track ( @$searchResult ) {
+		# Double check fields, even if they should be all available.
 		next unless $track->{artist} && $track->{uri} && $track->{title};
 		push @$candidates, {
 			title  => $track->{title},

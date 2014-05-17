@@ -108,7 +108,10 @@ sub initPlugin {
 		func  => \&searchInfoMenu,
 	) );
 
-	if ( $prefs->get('smart_mix') && Slim::Utils::PluginManager->isEnabled('Plugins::SmartMix::Plugin') ) {
+	# Register this Plugin for smart mixes provided by the SmartMix
+	# plugin. Check if the SmartMix plugin is enabled and properly
+	# installed.
+	if ( Slim::Utils::PluginManager->isEnabled('Plugins::SmartMix::Plugin') ) {
 		eval {
 			require Plugins::SmartMix::Services;
 		};

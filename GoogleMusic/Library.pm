@@ -47,7 +47,7 @@ sub refresh {
 sub search {
 	my $query = shift;
 
-	my $tracks = search_tracks($query);
+	my $tracks = searchTracks($query);
 	my $albums = {};
 	my $artists = {};
 
@@ -60,7 +60,7 @@ sub search {
 	return ($tracks, [values %$albums], [values %$artists]);
 }
 
-sub search_tracks {
+sub searchTracks {
 	my $query = shift;
 
 	if (!$query) {

@@ -232,6 +232,30 @@ sub search {
 	return $result;
 }
 
+# Search All Access tracks only. Do not cache these searches for now.
+sub searchTracks {
+	my ($query, $maxResults) = @_;
+
+	my $googleResult;
+	my $tracks = [];
+
+	return $tracks unless $prefs->get('all_access_enabled');
+
+	eval {
+		$googleResult = $googleapi->search_all_access($query, $maxResults);
+	};
+
+	if ($@) {
+		$log->error("Not able to search All Access for \"$query\": $@");
+	} else {
+		for my $hit (@{$googleResult->{song_hits}}) {
+			push @$tracks, to_slim_track($hit->{track});
+		}
+	}
+
+	return $tracks;
+}
+
 # Get information for an artist
 sub get_artist_info {
 	my $uri = shift;

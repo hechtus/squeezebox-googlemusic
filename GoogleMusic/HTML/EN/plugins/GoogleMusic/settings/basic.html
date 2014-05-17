@@ -17,10 +17,6 @@
 			<input type="text" class="stdedit" name="device_id" id="device_id" value="[% prefs.device_id %]" size="20" />
 		[% END %]
 
-		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_SMART_MIX" desc="PLUGIN_GOOGLEMUSIC_SMART_MIX_DESC" %]
-			<input type="checkbox" name="smart_mix" [% IF prefs.smart_mix %] checked [% END %]>
-		[% END %]
-
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_DISABLE_SSL" desc="PLUGIN_GOOGLEMUSIC_DISABLE_SSL_DESC" %]
 			<input type="checkbox" name="disable_ssl" [% IF prefs.disable_ssl %] checked [% END %]>
 		[% END %]
