@@ -493,6 +493,8 @@ sub changeRating {
 	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
 		$cache{$uri}->{data}->{rating} = $rating;
 	}
+
+	return;
 }
 
 1;
