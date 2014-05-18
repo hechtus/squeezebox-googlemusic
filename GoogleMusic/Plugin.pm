@@ -337,11 +337,11 @@ sub trackInfoMenu {
 		},
 	};
 
-	if ($track) {
+	if ($title) {
 		push @menu, {
 			name        => cstring($client, 'TRACK') . ": " . $title,
 			url         => \&search_all_access,
-			passthrough => [ "$artist $title", { trackSearch => 1 } ],
+			passthrough => [ $artist ? "$artist $title" : $title, { trackSearch => 1 } ],
 			type        => 'playlist',
 			favorites   => 0,
 		},
