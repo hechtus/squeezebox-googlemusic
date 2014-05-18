@@ -53,6 +53,7 @@ sub to_slim_track {
 		filesize => $song->{estimatedSize},
 		trackNumber => $song->{trackNumber} || 1,
 		discNumber => $song->{discNumber} || 1,
+		rating => $song->{rating} || 0,
 	};
 
 	# Add to the cache
@@ -456,6 +457,42 @@ sub artist_to_slim_artist {
 	}
 
 	return $artist;
+}
+
+# Change the rating of a track
+sub changeRating {
+	my ($uri, $rating) = @_;
+
+	return unless $prefs->get('all_access_enabled');
+
+	my ($id) = $uri =~ m{^googlemusic:track:(.*)$}x;
+	my $song;
+
+	# Get the Google track info first
+	eval {
+		$song = $googleapi->get_track_info($id);
+	};
+	if ($@) {
+		$log->error("Not able to get the track info for track ID $id: $@");
+		return;
+	}
+
+	# Now change the rating value
+	$song->{rating} = $rating;
+
+	# And apply it
+	eval {
+		$song = $googleapi->change_song_metadata($song);
+	};
+	if ($@) {
+		$log->error("Not able to change the song metadata for track ID $id: $@");
+		return;
+	}
+
+	# Also need to update our cache
+	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
+		$cache{$uri}->{data}->{rating} = $rating;
+	}
 }
 
 1;

@@ -81,7 +81,7 @@ sub scanStream {
 	$track->filesize($googleTrack->{'filesize'});
 	$track->year($googleTrack->{'year'});
 	$track->cover($googleTrack->{'cover'});
-
+	$track->stash->{'rating'} = $googleTrack->{'rating'};
 	$cb->( $track );
 
 	return;
@@ -144,6 +144,7 @@ sub getMetadataFor {
 		icon     => $track->{'cover'},
 		bitrate  => '320k CBR',
 		type     => 'MP3 (Google Music)',
+		rating   => $track->{'rating'},
 	};
 }
 

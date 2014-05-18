@@ -213,3 +213,19 @@ PLUGIN_GOOGLEMUSIC_START_RADIO
 PLUGIN_GOOGLEMUSIC_ERROR
 	DE	Ein unerwarteter Fehler ist aufgetreten.
 	EN	An unexpected error occurred.
+
+PLUGIN_GOOGLEMUSIC_LIKE
+	DE	Mag ich
+	EN	Like it
+
+PLUGIN_GOOGLEMUSIC_UNLIKE
+	DE	Mag ich nicht mehr
+	EN	Unlike it
+
+PLUGIN_GOOGLEMUSIC_DISLIKE
+	DE	Mag ich nicht
+	EN	Dislike it
+
+PLUGIN_GOOGLEMUSIC_DONT_DISLIKE
+	DE	Mag ich wieder
+	EN	Don't dislike it
