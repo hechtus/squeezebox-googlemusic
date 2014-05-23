@@ -1,7 +1,9 @@
-package Plugins::GoogleMusic::SmartMix;
+package Plugins::GoogleMusic::SmartMixAllAccess;
 
 use strict;
 use warnings;
+
+use vars qw($VERSION);
 
 use Slim::Utils::Log;
 use Slim::Utils::Prefs;
@@ -12,6 +14,12 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
+sub init {
+	($VERSION) = @_;
+
+	return;
+}
+
 sub getId {
 	my ($class, $client) = @_;
 
@@ -19,9 +27,9 @@ sub getId {
 
 	return unless Slim::Utils::PluginManager->isEnabled('Plugins::GoogleMusic::Plugin');
 
-	return if preferences('plugin.smartmix')->get('disable_GoogleMusic');
+	return if preferences('plugin.smartmix')->get('disable_GoogleMusicAllAccess');
 
-	return ( $googleapi->is_authenticated() ) ? 'GoogleMusic' : undef;
+	return ( $googleapi->is_authenticated() ) ? 'GoogleMusicAllAccess' : undef;
 } 
 
 sub getUrl {
@@ -45,18 +53,7 @@ sub resolveUrl {
 		Plugins::GoogleMusic::AllAccess::searchTracks(
 			$args->{artist} . ' ' . $args->{title}, 5);
 
-	# If we didn't found any tracks through All Access try 'My Music'
-	# as a fallback option. The user could have uploaded it or bought
-	# it.
-	if (!@$searchResult) {
-		my $librarySearchResult =
-			Plugins::GoogleMusic::Library::searchTracks(
-				{ artist => $args->{artist},
-				  track => $args->{title} });
-		push (@$searchResult, @$librarySearchResult);
-	}
-
-	# Still no success?
+	# No success?
 	if (!@$searchResult) {
 		$cb->();
 		return;

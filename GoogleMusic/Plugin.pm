@@ -8,11 +8,11 @@ package Plugins::GoogleMusic::Plugin;
 use strict;
 use warnings;
 use base qw(Slim::Plugin::OPMLBased);
-
+use Scalar::Util qw(blessed);
 use Encode qw(decode_utf8);
 
-use Plugins::GoogleMusic::Settings;
-use Scalar::Util qw(blessed);
+use vars qw($VERSION);
+
 use Slim::Control::Request;
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
@@ -20,6 +20,7 @@ use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(string cstring);
 use Slim::Menu::GlobalSearch;
 
+use Plugins::GoogleMusic::Settings;
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
@@ -52,6 +53,9 @@ sub getDisplayName {
 
 sub initPlugin {
 	my $class = shift;
+
+	# Set the version of this plugin
+	$VERSION = $class->_pluginDataFor('version');
 
 	# Chech version of gmusicapi first
 	if (!blessed($googleapi) || (Plugins::GoogleMusic::GoogleAPI::get_version() lt '3.1.0')) {
@@ -118,8 +122,21 @@ sub initPlugin {
 
 		if (!$@) {
 			main::INFOLOG && $log->info("SmartMix plugin is available - let's use it!");
-			require Plugins::GoogleMusic::SmartMix;
-			Plugins::SmartMix::Services->registerHandler('Plugins::GoogleMusic::SmartMix', 'GoogleMusic');
+
+			# Smart mixes are supported for My Music and All Access
+			# separately. The user is able to enable/disable both
+			# features independently.
+			require Plugins::GoogleMusic::SmartMixMyMusic;
+			require Plugins::GoogleMusic::SmartMixAllAccess;
+
+			# Provide a version number to both modules. This is
+			# required for SmartMix services.
+			Plugins::GoogleMusic::SmartMixMyMusic->init($VERSION);
+			Plugins::GoogleMusic::SmartMixAllAccess->init($VERSION);
+
+			# Register both modules separately.
+			Plugins::SmartMix::Services->registerHandler('Plugins::GoogleMusic::SmartMixMyMusic', 'GoogleMusicMyMusic');
+			Plugins::SmartMix::Services->registerHandler('Plugins::GoogleMusic::SmartMixAllAccess', 'GoogleMusicAllAccess');
 		}
 	}
 
