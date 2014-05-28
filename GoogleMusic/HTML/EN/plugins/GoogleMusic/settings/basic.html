@@ -6,15 +6,15 @@
 
 	[% WRAPPER settingSection %]
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_USERNAME" desc="PLUGIN_GOOGLEMUSIC_USERNAME_DESC" %]
-			<input type="text" class="stdedit" name="username" id="username" value="[% prefs.username %]" size="20" />
+			<input type="text" class="stdedit" name="username" id="username" value="[% prefs.username %]" size="40" />
 		[% END %]
 
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_PASSWORD" desc="PLUGIN_GOOGLEMUSIC_PASSWORD_DESC" %]
-			<input type="password" class="stdedit" name="password" id="password" value="[% prefs.password %]" size="20" />
+			<input type="password" class="stdedit" name="password" id="password" value="[% prefs.password %]" size="40" />
 		[% END %]
 
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_DEVICE_ID" desc="PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC" %]
-			<input type="text" class="stdedit" name="device_id" id="device_id" value="[% prefs.device_id %]" size="20" />
+			<input type="text" class="stdedit" name="device_id" id="device_id" value="[% prefs.device_id %]" size="40" />
 		[% END %]
 
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_DISABLE_SSL" desc="PLUGIN_GOOGLEMUSIC_DISABLE_SSL_DESC" %]
@@ -63,15 +63,15 @@
 		[% END %]
 
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS" desc="PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS_DESC" %]
-			<input type="text" class="stdedit" name="max_search_items" id="max_search_items" value="[% prefs.max_search_items %]" size="20" />
+			<input type="text" class="stdedit sliderInput_1_100" name="max_search_items" id="max_search_items" value="[% prefs.max_search_items %]" size="20" />
 		[% END %]
 
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MAX_ARTIST_TRACKS" desc="PLUGIN_GOOGLEMUSIC_MAX_ARTIST_TRACKS_DESC" %]
-			<input type="text" class="stdedit" name="max_artist_tracks" id="max_artist_tracks" value="[% prefs.max_artist_tracks %]" size="20" />
+			<input type="text" class="stdedit sliderInput_0_50" name="max_artist_tracks" id="max_artist_tracks" value="[% prefs.max_artist_tracks %]" size="20" />
 		[% END %]
 
 		[% WRAPPER settingGroup title="PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS" desc="PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS_DESC" %]
-			<input type="text" class="stdedit" name="max_related_artists" id="max_related_artists" value="[% prefs.max_related_artists %]" size="20" />
+			<input type="text" class="stdeditsliderInput_0_50" name="max_related_artists" id="max_related_artists" value="[% prefs.max_related_artists %]" size="20" />
 		[% END %]
 	[% END %]
 
