@@ -10,6 +10,7 @@ use warnings;
 use base qw(Slim::Plugin::OPMLBased);
 
 use Encode qw(decode_utf8);
+use MIME::Base64;
 
 use Plugins::GoogleMusic::Settings;
 use Scalar::Util qw(blessed);
@@ -84,7 +85,7 @@ sub initPlugin {
 	# exception. Catch it to allow the plugin to be started.
 	eval {
 		$googleapi->login($prefs->get('username'),
-						  $prefs->get('password'));
+						  decode_base64($prefs->get('password')));
 	};
 	if ($@) {
 		$log->error("Not able to login to Google Play Music: $@");
