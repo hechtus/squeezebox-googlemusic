@@ -8,13 +8,13 @@
 
 	<plugins>
 
-		<plugin name="GoogleMusic" version="0.3.8" minTarget="7.5" maxTarget="*">
+		<plugin name="GoogleMusic" version="0.3.9" minTarget="7.5" maxTarget="*">
 			<title lang="EN">3rd Party Google Play Music Plugin</title>
 			<desc  lang="EN">Google Music plugin. Listen to your Google Music library.</desc>
 			<creator>Ronald Hecht</creator>
 			<email>ronald.hecht@gmx.de</email>
-			<url>http://hechtus.github.io/squeezebox-googlemusic/repository/GoogleMusic-v0.3.8.zip</url>
-			<sha>37c656cba76ef446644821b962b8e15481e98f3d</sha>
+			<url>http://hechtus.github.io/squeezebox-googlemusic/repository/GoogleMusic-v0.3.9.zip</url>
+			<sha>d65f42e853524d58dfe87b2884c4bb631392ca6f</sha>
 			<link>http://hechtus.github.io/squeezebox-googlemusic/</link>
 		</plugin>
 
