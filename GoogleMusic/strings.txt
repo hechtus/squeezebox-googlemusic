@@ -103,6 +103,10 @@ PLUGIN_GOOGLEMUSIC_MY_MUSIC
 	DE	Meine Musik
 	NL	Mijn Muziek
 
+PLUGIN_GOOGLEMUSIC_LAST_ADDED
+	EN	Last Added to My Music
+	DE	Zuletzt zu meiner Musik hinzugefügt
+
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS
 	EN	All Access
 	DE	All-Inclusive

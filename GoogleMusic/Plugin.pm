@@ -191,6 +191,7 @@ sub my_music {
 	my ($client, $callback, $args) = @_;
 	my @menu = (
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_BROWSE'), type => 'link', url => \&search },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_LAST_ADDED'), type => 'playlist', url => \&lastAdded },
 		{ name => cstring($client, 'PLAYLISTS'), type => 'link', url => \&Plugins::GoogleMusic::Playlists::feed },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search },
 		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesFeed, passthrough => [ { "all_access" => 0 } ] },
@@ -202,6 +203,17 @@ sub my_music {
 	$callback->(\@menu);
 
 	return;
+}
+
+sub lastAdded {
+	my ($client, $callback, $args) = @_;
+
+	# Get all tracks from the library
+	my $tracks = Plugins::GoogleMusic::Library::searchTracks();
+
+	# Show them sorted by the creation timestamp
+	return Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $tracks,
+												 { showArtist => 1, showAlbum => 1, sortByCreation => 1, playall => 1 });
 }
 
 sub reload_library {

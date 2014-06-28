@@ -3,6 +3,8 @@ package Plugins::GoogleMusic::TrackMenu;
 use strict;
 use warnings;
 
+use List::Util qw(min);
+
 use Slim::Utils::Log;
 use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Prefs;
@@ -39,6 +41,10 @@ sub menu {
 		if (exists $sortMap{$sortMethod}) {
 			@$tracks = sort {$sortMap{$sortMethod}->()} @$tracks;
 		}
+	} elsif ($opts->{sortByCreation}) {
+		# Sort and limit the number of tracks
+		@$tracks = sort _sortCreation @$tracks;
+		@$tracks = @$tracks[0..min($#$tracks, 249)];
 	}
 
 	for my $track (@{$tracks}) {
@@ -131,6 +137,17 @@ sub _sortYearAlbum {
 sub _sortYearArtistAlbum {
 	return ($b->{year} || -1) <=> ($a->{year} || -1) ||
 		lc($a->{artist}->{name}) cmp lc($b->{artist}->{name}) ||
+		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) ||
+		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) ||
+		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);
+}
+
+sub _sortCreation {
+	# Sort the tracks by the creation timestamp (in seconds) in the
+	# reverse order. Also sort individual albums by the disc/track
+	# number to get the same result as with the Google web and mobile
+	# interface.
+	return ($b->{creationTimestamp} / 1000000) <=> ($a->{creationTimestamp} / 1000000) ||
 		lc($a->{album}->{name}) cmp lc($b->{album}->{name}) ||
 		($a->{discNumber} || -1) <=> ($b->{discNumber} || -1) ||
 		($a->{trackNumber}|| -1)  <=> ($b->{trackNumber} || -1);

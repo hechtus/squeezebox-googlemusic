@@ -220,6 +220,7 @@ sub to_slim_track {
 		filesize => $song->{estimatedSize},
 		trackNumber => $song->{trackNumber} || 1,
 		discNumber => $song->{discNumber} || 1,
+		creationTimestamp => $song->{creationTimestamp},
 	};
 
 	# Add the track to the album track list
