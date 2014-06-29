@@ -116,6 +116,14 @@ PLUGIN_GOOGLEMUSIC_IFL_RADIO
 	EN	I'm Feeling Lucky Radio
 	DE	Radio auf gut Glück
 
+PLUGIN_GOOGLEMUSIC_RADIO_GENRES
+	EN	Radio Genres
+	DE	Radio Genres
+
+PLUGIN_GOOGLEMUSIC_RADIO_ALL
+	EN	All
+	DE	Alles aus der Kategorie
+
 PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS
 	EN	My Radio Stations
 	DE	Meine Radio Sender

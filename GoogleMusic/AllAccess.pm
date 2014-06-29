@@ -458,4 +458,76 @@ sub artist_to_slim_artist {
 	return $artist;
 }
 
+# TBD: We could also store everything else in this cache
+my $genreCache = Slim::Utils::Cache->new('googlemusic', 3);
+
+sub getGenres {
+	my $uri = shift;
+
+	return unless $prefs->get('all_access_enabled');
+	
+	my ($parent) = $uri =~ m{^googlemusic:genres:(.*)$}x;
+
+	my $genres;
+
+	if ($genres = $genreCache->get($uri)) {
+		return $genres;
+	}
+
+	my $googleGenres;
+	$genres = [];
+
+	eval {
+		$googleGenres = $googleapi->get_genres($parent);
+	};
+	if ($@) {
+		$log->error("Not able to get genres: $@");
+		return $genres;
+	}
+
+	for my $genre (@{$googleGenres->{genres}}) {
+		push @{$genres}, genreToSlimGenre($genre);
+	}
+	
+	$genreCache->set($uri, $genres, $CACHE_TIME);
+
+	return $genres;
+}
+
+sub getGenre {
+	my $uri = shift;
+
+	if (my $genre = $genreCache->get($uri)) {
+		return $genre;
+	}
+
+	# TBD: What if the genre aged out?
+	$log->error("Not able to get genre $uri");
+
+	return;
+}
+
+sub genreToSlimGenre {
+	my $googleGenre = shift;
+
+	my $uri = 'googlemusic:genre:' . $googleGenre->{id};
+
+	my $image = '/html/images/genres.png';
+	if (exists $googleGenre->{images}) {
+		$image = $googleGenre->{images}[0]{url};
+		$image = Plugins::GoogleMusic::Image->uri($image);
+	}
+
+	my $genre = {
+		uri => $uri,
+		id => $googleGenre->{id},
+		name => $googleGenre->{name},
+		image => $image,
+	};
+
+	$genreCache->set($uri, $genre, $CACHE_TIME);
+
+	return $genre;
+}
+
 1;

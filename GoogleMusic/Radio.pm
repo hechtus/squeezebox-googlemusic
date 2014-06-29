@@ -81,50 +81,41 @@ sub menu {
 
 # Google Music All Access Radio Genres menu feed
 sub genresFeed {
-	my ($client, $callback, $args, $id, $name) = @_;
+	my ($client, $callback, $args, $id) = @_;
 
 	my $genres;
 	my @menu;
 
-	# Get all genres
-	eval {
-		$genres = $googleapi->get_genres($id);
-	};
-	if ($@) {
-		$log->error("Not able to get genres: $@");
-		$genres = [];
-	}
-
 	if ($id) {
+		$genres = Plugins::GoogleMusic::AllAccess::getGenres('googlemusic:genres:' . $id);
+
+		my $genre = Plugins::GoogleMusic::AllAccess::getGenre('googlemusic:genre:' . $id);
 		push @menu, {
-			name => "Everything from $name",
+			name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RADIO_ALL') . " " . $genre->{name},
 			type => 'audio',
-			url => "googlemusicradio:genre:$id",
-			image => '/html/images/genres.png',
+			url => 'googlemusicradio:genre:' . $genre->{id},
+			image => $genre->{image},
 		};
+	} else {
+		$genres = Plugins::GoogleMusic::AllAccess::getGenres('googlemusic:genres');
 	}
 
 	# Build the Menu
-	for my $genre (@{$genres->{genres}}) {
-		my $image = '/html/images/genres.png';
-		if (exists $genre->{images}) {
-			$image = $genre->{images}[0]{url};
-			$image = Plugins::GoogleMusic::Image->uri($image);
-		}
+	for my $genre (@{$genres}) {
 		if ($id) {
 			push @menu, {
 				name => $genre->{name},
 				type => 'audio',
-				url => "googlemusicradio:genre:$genre->{id}",
-				image => $image,
+				url => 'googlemusicradio:genre:' . $genre->{id},
+				image => $genre->{image},
 			};
 		} else {
 			push @menu, {
 				name => $genre->{name},
 				type => 'link',
 				url => \&genresFeed,
-				image => $image,
-				passthrough => [ $genre->{id}, $genre->{name} ],
+				image => $genre->{image},
+				passthrough => [ $genre->{id} ],
 			};
 		}
 	}
@@ -183,12 +174,12 @@ sub cliRequest {
 	} elsif ($type eq 'genre') {
 		my $station;
 		my $genreID = $request->getParam('_p2');
-		my $genre;
+		my $genre = Plugins::GoogleMusic::AllAccess::getGenre("googlemusic:genre:$genreID");
 
-		$log->info("Creating Google Music radio station for artist ID $genreID");
+		$log->info("Creating Google Music radio station for genre ID $genreID");
 
 		eval {
-			$station = $googleapi->create_station($genre->{name}, $Inline::Python::Boolean::False, $genreID, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False);
+			$station = $googleapi->create_station($genre->{name}, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False, $genreID);
 		};
 		if ($@) {
 			$log->error("Not able to create genre radio station for genre ID $genreID: $@");
