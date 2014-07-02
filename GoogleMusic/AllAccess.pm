@@ -10,8 +10,11 @@ use Slim::Utils::Cache;
 
 use Plugins::GoogleMusic::GoogleAPI;
 
-# Cache track, album, and artist translation results for one hour
+# Cache most of the results for one hour
 Readonly my $CACHE_TIME => 3600;
+# Cache track information for one day because get_album_info() would
+# be used too often
+Readonly my $CACHE_TIME_LONG => 24 * 3600;
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
@@ -62,7 +65,7 @@ sub to_slim_track {
 	};
 
 	# Add to the cache
-	$cache->set($uri, $track, $CACHE_TIME);
+	$cache->set($uri, $track, $CACHE_TIME_LONG);
 
 	return $track;
 }
@@ -601,7 +604,7 @@ sub changeRating {
 	# Change the rating
 	$track->{rating} = $rating;
 	# And update the cache
-	$cache->set($uri, $track, $CACHE_TIME);
+	$cache->set($uri, $track, $CACHE_TIME_LONG);
 
 	return;
 }
