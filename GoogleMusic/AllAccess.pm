@@ -563,6 +563,9 @@ sub getGenre {
 
 	$log->error("Not able to get genre: $uri");
 
+	return;
+}
+
 # Change the rating of a track
 sub changeRating {
 	my ($uri, $rating) = @_;
