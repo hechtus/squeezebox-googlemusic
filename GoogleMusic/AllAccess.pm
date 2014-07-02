@@ -550,6 +550,7 @@ sub getGenre {
 	for my $parent (@{$genres}) {
 		if ( grep { $_ eq $id } @{$parent->{children}} ) {
 			$genres = getGenres($parent->{uri});
+			last;
 		}
 	}
 	# Try again
