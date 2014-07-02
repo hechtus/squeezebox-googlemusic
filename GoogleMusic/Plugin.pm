@@ -34,7 +34,6 @@ use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumMenu;
 use Plugins::GoogleMusic::ArtistMenu;
 
-
 my $log;
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
@@ -107,6 +106,11 @@ sub initPlugin {
 	Slim::Menu::TrackInfo->registerInfoProvider( googlemusic => (
 		after => 'middle',
 		func  => \&trackInfoMenu,
+	) );
+
+	Slim::Menu::TrackInfo->registerInfoProvider( googlemusicRating => (
+		after => 'middle',
+		func  => \&ratingMenu,
 	) );
 
 	Slim::Menu::GlobalSearch->registerInfoProvider( googlemusic => (
@@ -387,6 +391,70 @@ sub trackInfoMenu {
 	}
 
 	return $item;
+}
+
+# Trackinfo Rating Menu for Like/Dislike
+sub ratingMenu {
+	my ($client, $url, $track, $remoteMeta) = @_;
+	
+	return unless $client;
+
+	# Change rating is only supported for Google Music All Access Tracks
+	return unless $url =~ 'googlemusic:track:T';
+
+	# Get the rating for the track. Should be fast as it comes from our cache.
+	my $rating = Plugins::GoogleMusic::AllAccess::get_track($url)->{rating};
+
+	# Create two menu entries: Like/Unlike and Dislike/Don't dislike
+	my $items = [{
+		name => cstring($client, ($rating >= 4) ? 'PLUGIN_GOOGLEMUSIC_UNLIKE' : 'PLUGIN_GOOGLEMUSIC_LIKE'),
+		type => 'link',
+		url => \&like,
+		passthrough => [ $url, ($rating >= 4) ? 0 : 5 ],
+		nextWindow => 'parent',
+	},{
+		name => cstring($client, ($rating != 0 && $rating < 3) ? "PLUGIN_GOOGLEMUSIC_DONT_DISLIKE" : "PLUGIN_GOOGLEMUSIC_DISLIKE"),
+		type => 'link',
+		url => \&dislike,
+		passthrough => [ $url, ($rating != 0 && $rating < 3) ? 0 : 1 ],
+		nextWindow => 'parent',
+	}];
+
+	return $items;
+}
+
+sub like {
+	my ($client, $callback, $args, $url, $rating) = @_;
+
+	Plugins::GoogleMusic::AllAccess::changeRating($url, $rating);
+
+	$callback->({
+		items => [{
+			name => cstring($client, $rating ? 'PLUGIN_GOOGLEMUSIC_LIKE' : 'PLUGIN_GOOGLEMUSIC_UNLIKE'),
+			type => 'text',
+			showBriefly => 1,
+			nowPlaying  => 1,
+		}]
+	}) if $callback;
+
+	return;
+}
+
+sub dislike {
+	my ($client, $callback, $args, $url, $rating) = @_;
+
+	Plugins::GoogleMusic::AllAccess::changeRating($url, $rating);
+
+	$callback->({
+		items => [{
+			name => cstring($client, $rating ? 'PLUGIN_GOOGLEMUSIC_DISLIKE' : 'PLUGIN_GOOGLEMUSIC_DONT_DISLIKE'),
+			type => 'text',
+			showBriefly => 1,
+			nowPlaying  => 1,
+		}]
+	}) if $callback;
+
+	return;
 }
 
 sub searchInfoMenu {

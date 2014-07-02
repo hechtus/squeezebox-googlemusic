@@ -221,6 +221,7 @@ sub to_slim_track {
 		trackNumber => $song->{trackNumber} || 1,
 		discNumber => $song->{discNumber} || 1,
 		creationTimestamp => $song->{creationTimestamp},
+		rating => $song->{rating} || 0,
 	};
 
 	# Add the track to the album track list

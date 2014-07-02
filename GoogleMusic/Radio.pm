@@ -269,7 +269,10 @@ sub _playRadio {
 				tracknum=> $entry->{'trackNumber'},
 			});
 
-			push @tracksToAdd, $obj;
+			if ($obj) {
+				$obj->stash->{'rating'} = $entry->{'rating'};
+				push @tracksToAdd, $obj;
+			}
 
 			$tracksToAdd--;
 		}

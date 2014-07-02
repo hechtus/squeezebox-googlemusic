@@ -175,6 +175,10 @@ sub get_track {
 	my $song;
 
 	eval {
+		# For some reasons Google only knows this does not return the
+		# rating of the track. Surprisingly, fetching the whole album
+		# returns the rating. Thus, we get the track info and after
+		# that the album info for that track.
 		$song = $googleapi->get_track_info($id);
 	};
 	if ($@) {
@@ -182,7 +186,17 @@ sub get_track {
 		return;
 	}
 
-	return to_slim_track($song);
+	# Get the album and process all tracks to get them into the cache
+	my $album = get_album_info('googlemusic:album:' . $song->{albumId});
+
+	# Get the track from the cache including the rating field :-)
+	if (my $track = $cache->get($uri)) {
+		return $track;
+	}
+
+	$log->error("Not able to get the track info for track ID $id from the album information");
+
+	return;
 }
 
 sub get_track_by_id {
@@ -548,6 +562,43 @@ sub getGenre {
 	}
 
 	$log->error("Not able to get genre: $uri");
+
+# Change the rating of a track
+sub changeRating {
+	my ($uri, $rating) = @_;
+
+	return unless $prefs->get('all_access_enabled');
+
+	my ($id) = $uri =~ m{^googlemusic:track:(.*)$}x;
+	my $song;
+
+	# Get the Google track info first
+	eval {
+		$song = $googleapi->get_track_info($id);
+	};
+	if ($@) {
+		$log->error("Not able to get the track info for track ID $id: $@");
+		return;
+	}
+
+	# Now change the rating value
+	$song->{rating} = $rating;
+
+	# And apply it
+	eval {
+		$song = $googleapi->change_song_metadata($song);
+	};
+	if ($@) {
+		$log->error("Not able to change the song metadata for track ID $id: $@");
+		return;
+	}
+
+	# Also need to update our cache. Get it from the cache first.
+	my $track = get_track($uri);
+	# Change the rating
+	$track->{rating} = $rating;
+	# And update the cache
+	$cache->set($uri, $track, $CACHE_TIME);
 
 	return;
 }
