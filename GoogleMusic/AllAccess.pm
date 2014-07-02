@@ -461,6 +461,7 @@ sub artist_to_slim_artist {
 # TBD: We could also store everything else in this cache
 my $genreCache = Slim::Utils::Cache->new('googlemusic', 3);
 
+# Get Google Music genres, either parents or child genres
 sub getGenres {
 	my $uri = shift;
 
@@ -494,19 +495,8 @@ sub getGenres {
 	return $genres;
 }
 
-sub getGenre {
-	my $uri = shift;
-
-	if (my $genre = $genreCache->get($uri)) {
-		return $genre;
-	}
-
-	# TBD: What if the genre aged out?
-	$log->error("Not able to get genre $uri");
-
-	return;
-}
-
+# Convert an All Access Google Music genre dictionary to a consistent
+# robust genre representation
 sub genreToSlimGenre {
 	my $googleGenre = shift;
 
@@ -525,9 +515,51 @@ sub genreToSlimGenre {
 		image => $image,
 	};
 
+	if (exists $googleGenre->{children}) {
+		$genre->{children} = $googleGenre->{children};
+	}
+	if (exists $googleGenre->{parentId}) {
+		$genre->{parent} = $googleGenre->{parentId};
+	}
+
 	$genreCache->set($uri, $genre, $CACHE_TIME);
 
 	return $genre;
+}
+
+# Get a specific genre (from the cache)
+sub getGenre {
+	my $uri = shift;
+
+	my $genre;
+
+	if ($genre = $genreCache->get($uri)) {
+		return $genre;
+	}
+
+	# Not found in the cache. Refresh parent genres.
+	my $genres = getGenres('googlemusic:genres');
+	# Try again
+	if ($genre = $genreCache->get($uri)) {
+		return $genre;
+	}
+
+	# Still not found. Must be a child genre.
+	my ($id) = $uri =~ m{^googlemusic:genre:(.*)$}x;
+	# Search a matching parent and get its childs
+	for my $parent (@{$genres}) {
+		if ( grep { $_ eq $id } @{$parent->{children}} ) {
+			$genres = getGenres($parent->{uri});
+		}
+	}
+	# Try again
+	if ($genre = $genreCache->get($uri)) {
+		return $genre;
+	}
+
+	$log->error("Not able to get genre: $uri");
+
+	return;
 }
 
 1;

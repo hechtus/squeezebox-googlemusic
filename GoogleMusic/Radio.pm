@@ -5,8 +5,6 @@ package Plugins::GoogleMusic::Radio;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
@@ -86,9 +84,9 @@ sub genresFeed {
 	my $genres;
 	my @menu;
 
+	# If an ID is present we are getting child genres
 	if ($id) {
-		$genres = Plugins::GoogleMusic::AllAccess::getGenres('googlemusic:genres:' . $id);
-
+		# Create a menu entry for the parent genre
 		my $genre = Plugins::GoogleMusic::AllAccess::getGenre('googlemusic:genre:' . $id);
 		push @menu, {
 			name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RADIO_ALL') . " " . $genre->{name},
@@ -96,13 +94,17 @@ sub genresFeed {
 			url => 'googlemusicradio:genre:' . $genre->{id},
 			image => $genre->{image},
 		};
+		# Get the child genres for the parent ID
+		$genres = Plugins::GoogleMusic::AllAccess::getGenres('googlemusic:genres:' . $id);
 	} else {
+		# Get all parent genres
 		$genres = Plugins::GoogleMusic::AllAccess::getGenres('googlemusic:genres');
 	}
 
-	# Build the Menu
+	# Build the rest of the menu
 	for my $genre (@{$genres}) {
 		if ($id) {
+			# If a parent ID was given we will add playable child nodes
 			push @menu, {
 				name => $genre->{name},
 				type => 'audio',
@@ -110,6 +112,7 @@ sub genresFeed {
 				image => $genre->{image},
 			};
 		} else {
+			# When parsing parent genres create a link to individual parent menus
 			push @menu, {
 				name => $genre->{name},
 				type => 'link',
