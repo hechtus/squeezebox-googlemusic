@@ -12,17 +12,16 @@ use Plugins::GoogleMusic::Plugin;
 use Plugins::GoogleMusic::AlbumMenu;
 use Plugins::GoogleMusic::ArtistMenu;
 
+my $cache;
 
 tie my %recentSearches, 'Tie::Cache::LRU', 50;
 tie my %recentAlbums, 'Tie::Cache::LRU', 50;
 tie my %recentArtists, 'Tie::Cache::LRU', 50;
 
-my $cache;
-
 sub init {
-	my $recent;
+	$cache = shift;
 
-	$cache = Slim::Utils::Cache->new('googlemusic', 3);
+	my $recent;
 
 	# initialize recent items: need to add them to the LRU cache ordered by timestamp
 	$recent = $cache->get('recent_searches');

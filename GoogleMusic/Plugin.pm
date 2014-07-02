@@ -38,7 +38,7 @@ use Plugins::GoogleMusic::ArtistMenu;
 my $log;
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
-
+my $cache = Slim::Utils::Cache->new('googlemusic', 3);
 
 BEGIN {
 	$log = Slim::Utils::Log->addLogCategory({
@@ -81,9 +81,10 @@ sub initPlugin {
 	}
 
 	# Initialize submodules
+	Plugins::GoogleMusic::AllAccess::init($cache);
 	Plugins::GoogleMusic::Image::init();
 	Plugins::GoogleMusic::Radio::init();
-	Plugins::GoogleMusic::Recent::init();
+	Plugins::GoogleMusic::Recent::init($cache);
 
 	# Try to login. If SSL verification fails, login() raises an
 	# exception. Catch it to allow the plugin to be started.
