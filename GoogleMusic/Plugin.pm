@@ -399,11 +399,8 @@ sub ratingMenu {
 	
 	return unless $client;
 
-	# Change rating is only supported for Google Music All Access Tracks
-	return unless $url =~ 'googlemusic:track:T';
-
 	# Get the rating for the track. Should be fast as it comes from our cache.
-	my $rating = Plugins::GoogleMusic::AllAccess::get_track($url)->{rating};
+	my $rating = Plugins::GoogleMusic::Library::get_track($url)->{rating};
 
 	# Create two menu entries: Like/Unlike and Dislike/Don't dislike
 	my $items = [{
@@ -412,17 +409,22 @@ sub ratingMenu {
 		url => \&like,
 		passthrough => [ $url, ($rating >= 4) ? 0 : 5 ],
 		nextWindow => 'parent',
+		forceRefresh => 1,
+		favorites => 0,
 	},{
 		name => cstring($client, ($rating != 0 && $rating < 3) ? "PLUGIN_GOOGLEMUSIC_DONT_DISLIKE" : "PLUGIN_GOOGLEMUSIC_DISLIKE"),
 		type => 'link',
 		url => \&dislike,
 		passthrough => [ $url, ($rating != 0 && $rating < 3) ? 0 : 1 ],
 		nextWindow => 'parent',
+		forceRefresh => 1,
+		favorites => 0,
 	}];
 
 	return $items;
 }
 
+# TBD: Allow to change rating in our library too
 sub like {
 	my ($client, $callback, $args, $url, $rating) = @_;
 
@@ -430,10 +432,10 @@ sub like {
 
 	$callback->({
 		items => [{
-			name => cstring($client, $rating ? 'PLUGIN_GOOGLEMUSIC_LIKE' : 'PLUGIN_GOOGLEMUSIC_UNLIKE'),
 			type => 'text',
+			name => cstring($client, $rating ? 'PLUGIN_GOOGLEMUSIC_LIKE' : 'PLUGIN_GOOGLEMUSIC_UNLIKE'),
 			showBriefly => 1,
-			nowPlaying  => 1,
+			popback => 2
 		}]
 	}) if $callback;
 
@@ -447,10 +449,10 @@ sub dislike {
 
 	$callback->({
 		items => [{
-			name => cstring($client, $rating ? 'PLUGIN_GOOGLEMUSIC_DISLIKE' : 'PLUGIN_GOOGLEMUSIC_DONT_DISLIKE'),
 			type => 'text',
+			name => cstring($client, $rating ? 'PLUGIN_GOOGLEMUSIC_DISLIKE' : 'PLUGIN_GOOGLEMUSIC_DONT_DISLIKE'),
 			showBriefly => 1,
-			nowPlaying  => 1,
+			popback => 2
 		}]
 	}) if $callback;
 

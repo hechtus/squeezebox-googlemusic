@@ -79,6 +79,8 @@ sub stationInfo {
 		url  => \&deleteStation,
 		passthrough => [ $station->{id} ],
 		nextWindow => 'parent',
+		forceRefresh => 1,
+		favorites => 0,
 	}, {
 		type  => 'text',
 		label => 'URL',
@@ -100,8 +102,10 @@ sub deleteStation {
 
 	return $callback->({
 		items => [{
+			type => 'text',
 			name => $msg,
 			showBriefly => 1,
+			popback => 2
 		}]
 	});
 }

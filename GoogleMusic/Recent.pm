@@ -3,8 +3,6 @@ package Plugins::GoogleMusic::Recent;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(cstring);
 
@@ -122,22 +120,21 @@ sub recentAlbumsFeed {
 	my ($client, $callback, $args, $opts) = @_;
 
 	my $clientId = $client ? $client->id() : '0';
+	my $albums;
 
 	if (defined $args->{'quantity'} && $args->{'quantity'} == 1 &&
 		exists $recentAlbumsCache{$clientId}) {
-		return $callback->($recentAlbumsCache{$clientId});
+		$albums = $recentAlbumsCache{$clientId};
+	} else {
+		# Access the LRU cache in reverse order to maintain the order
+		@$albums = reverse
+			grep { $opts->{all_access} ? $_->{uri} =~ '^googlemusic:album:B' : $_->{uri} !~ '^googlemusic:album:B' }
+			map { $recentAlbums{$_} } reverse keys %recentAlbums;
+
+		$recentAlbumsCache{$clientId} = $albums;
 	}
 
-	# Access the LRU cache in reverse order to maintain the order
-	my @albums = reverse
-		grep { $opts->{all_access} ? $_->{uri} =~ '^googlemusic:album:B' : $_->{uri} !~ '^googlemusic:album:B' }
-		map { $recentAlbums{$_} } reverse keys %recentAlbums;
-
-	my $menu = Plugins::GoogleMusic::AlbumMenu::menu($client, $args, \@albums, $opts);
-
-	$recentAlbumsCache{$clientId} = $menu;
-
-	return $callback->($menu);
+	return Plugins::GoogleMusic::AlbumMenu::feed($client, $callback, $args, $albums, $opts);
 }
 
 sub recentArtistsAdd {
@@ -170,22 +167,21 @@ sub recentArtistsFeed {
 	my ($client, $callback, $args, $opts) = @_;
 
 	my $clientId = $client ? $client->id() : '0';
+	my $artists;
 
 	if (defined $args->{'quantity'} && $args->{'quantity'} == 1 &&
 		exists $recentArtistsCache{$clientId}) {
-		return $callback->($recentArtistsCache{$clientId});
+		$artists = $recentArtistsCache{$clientId};
+	} else {
+		# Access the LRU cache in reverse order to maintain the order
+		@$artists = reverse
+			grep { $opts->{all_access} ? $_->{uri} =~ '^googlemusic:artist:A' : $_->{uri} !~ '^googlemusic:artist:A' }
+			map { $recentArtists{$_} } reverse keys %recentArtists;
+
+		$recentArtistsCache{$clientId} = $artists;
 	}
 
-	# Access the LRU cache in reverse order to maintain the order
-	my @artists = reverse
-		grep { $opts->{all_access} ? $_->{uri} =~ '^googlemusic:artist:A' : $_->{uri} !~ '^googlemusic:artist:A' }
-		map { $recentArtists{$_} } reverse keys %recentArtists;
-
-	my $menu = Plugins::GoogleMusic::ArtistMenu::menu($client, $args, \@artists, $opts);
-
-	$recentArtistsCache{$clientId} = $menu;
-
-	return $callback->($menu);
+	return Plugins::GoogleMusic::ArtistMenu::feed($client, $callback, $args, $artists, $opts);
 }
 
 

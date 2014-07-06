@@ -106,20 +106,27 @@ sub _trackInfo {
 
 	my $trackInfo = [];
 
-	# TBD: Like/Dislike does not work correctly due to cache inconsistency
+	# Refetch the rating for the track. It is possibly out of
+	# date. Should be fast as it comes from our cache.
+	my $rating = Plugins::GoogleMusic::Library::get_track($track->{uri})->{rating};
+
 	push @$trackInfo, {
-		name => cstring($client, ($track->{rating} >= 4) ? 'PLUGIN_GOOGLEMUSIC_UNLIKE' : 'PLUGIN_GOOGLEMUSIC_LIKE'),
+		name => cstring($client, ($rating >= 4) ? 'PLUGIN_GOOGLEMUSIC_UNLIKE' : 'PLUGIN_GOOGLEMUSIC_LIKE'),
 		type => 'link',
 		url => \&Plugins::GoogleMusic::Plugin::like,
-		passthrough => [ $track->{uri}, ($track->{rating} >= 4) ? 0 : 5 ],
+		passthrough => [ $track->{uri}, ($rating >= 4) ? 0 : 5 ],
 		nextWindow => 'parent',
+		forceRefresh => 1,
+		favorites => 0,
 	};
 	push @$trackInfo, {
-		name => cstring($client, ($track->{rating} != 0 && $track->{rating} < 3) ? "PLUGIN_GOOGLEMUSIC_DONT_DISLIKE" : "PLUGIN_GOOGLEMUSIC_DISLIKE"),
+		name => cstring($client, ($rating != 0 && $rating < 3) ? "PLUGIN_GOOGLEMUSIC_DONT_DISLIKE" : "PLUGIN_GOOGLEMUSIC_DISLIKE"),
 		type => 'link',
 		url => \&Plugins::GoogleMusic::Plugin::dislike,
-		passthrough => [ $track->{uri}, ($track->{rating} != 0 && $track->{rating} < 3) ? 0 : 1 ],
+		passthrough => [ $track->{uri}, ($rating != 0 && $rating < 3) ? 0 : 1 ],
 		nextWindow => 'parent',
+		forceRefresh => 1,
+		favorites => 0,
 	};
 
 	push @$trackInfo, {

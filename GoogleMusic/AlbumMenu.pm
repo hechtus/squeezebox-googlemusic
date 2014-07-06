@@ -3,8 +3,6 @@ package Plugins::GoogleMusic::AlbumMenu;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Slim::Utils::Log;
 use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Prefs;
@@ -102,8 +100,6 @@ sub _showAlbum {
 
 sub _albumInfo {
 	my ($client, $args, $album, $opts) = @_;
-
-	print Dumper $args;
 
 	my $albumInfo = [];
 
