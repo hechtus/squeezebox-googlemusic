@@ -3,6 +3,8 @@ package Plugins::GoogleMusic::AlbumMenu;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Slim::Utils::Log;
 use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Prefs;
@@ -42,7 +44,7 @@ sub menu {
 	}
 
 	for my $album (@{$albums}) {
-		push @items, _showAlbum($client, $album, $opts);
+		push @items, _showAlbum($client, $args, $album, $opts);
 	}
 
 	if (!scalar @items) {
@@ -58,7 +60,7 @@ sub menu {
 }
 
 sub _showAlbum {
-	my ($client, $album, $opts) = @_;
+	my ($client, $args, $album, $opts) = @_;
 
 	my $item = {
 		name  => $album->{name},
@@ -98,6 +100,44 @@ sub _showAlbum {
 	return $item;
 }
 
+sub _albumInfo {
+	my ($client, $args, $album, $opts) = @_;
+
+	print Dumper $args;
+
+	my $albumInfo = [];
+
+	push @$albumInfo, {
+		type  => 'link',
+		label => 'ALBUM',
+		name  => $album->{name},
+		image => $album->{cover},
+		url   => \&Plugins::GoogleMusic::AlbumMenu::_albumTracks,
+		passthrough => [ $album, { all_access => $opts->{all_access}, playall => 1, sortByTrack => 1 } ],
+		isContextMenu => 1,
+	};
+
+	push @$albumInfo, {
+		type  => 'link',
+		label => 'ARTIST',
+		name  => $album->{artist}->{name},
+		image => $album->{artist}->{image},
+		url   => \&Plugins::GoogleMusic::ArtistMenu::_artistMenu,
+		passthrough => [ $album->{artist}, { all_access => $opts->{all_access} } ],
+		isContextMenu => 1,
+	};
+
+	if (my $year = $album->{year}) {
+		push @$albumInfo, {
+			type  => 'text',
+			label => 'YEAR',
+			name  => $year,
+		};
+	}
+
+	return $albumInfo;
+}
+
 sub _albumTracks {
 	my ($client, $callback, $args, $album, $opts) = @_;
 
@@ -111,9 +151,14 @@ sub _albumTracks {
 		$tracks = [];
 	}
 
-	Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $tracks, $opts);
+	# Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $tracks, $opts);
 
-	return;
+	my $trackItems = Plugins::GoogleMusic::TrackMenu::menu($client, $args, $tracks, $opts);
+	
+	push (@{$trackItems->{items}}, @{_albumInfo($client, $args, $info, $opts)});
+
+	
+	return $callback->($trackItems);
 }
 
 sub _sortAlbum {

@@ -99,8 +99,8 @@ sub initPlugin {
 	if (!$googleapi->is_authenticated()) {
 		$log->error(string('PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN'));
 	} else {
-		#Plugins::GoogleMusic::Library::refresh();
-		#Plugins::GoogleMusic::Playlists::refresh();
+		Plugins::GoogleMusic::Library::refresh();
+		Plugins::GoogleMusic::Playlists::refresh();
 	}
 
 	Slim::Menu::TrackInfo->registerInfoProvider( googlemusic => (
@@ -404,7 +404,6 @@ sub ratingMenu {
 
 	# Get the rating for the track. Should be fast as it comes from our cache.
 	my $rating = Plugins::GoogleMusic::AllAccess::get_track($url)->{rating};
-	my $track = Plugins::GoogleMusic::AllAccess::get_track($url);
 
 	# Create two menu entries: Like/Unlike and Dislike/Don't dislike
 	my $items = [{
@@ -420,14 +419,6 @@ sub ratingMenu {
 		passthrough => [ $url, ($rating != 0 && $rating < 3) ? 0 : 1 ],
 		nextWindow => 'parent',
 	}];
-
-	push @$items, {
-		type  => 'link',
-		label => 'ALBUM',
-		name  => $track->{album}->{name},
-		url   => \&Plugins::GoogleMusic::AlbumMenu::_albumTracks,
-		passthrough => [ $track->{album}, { all_access => 1, playall => 1, sortByTrack => 1 } ],
-	};
 
 	return $items;
 }
