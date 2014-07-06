@@ -48,7 +48,7 @@ sub menu {
 	}
 
 	for my $track (@{$tracks}) {
-		push @items, _showTrack($client, $track, $opts);
+		push @items, _showTrack($client, $args, $track, $opts);
 	}
 
 	if (!scalar @items) {
@@ -64,19 +64,19 @@ sub menu {
 }
 
 sub _showTrack {
-	my ($client, $track, $opts) = @_;
+	my ($client, $args, $track, $opts) = @_;
 
 	my $item = {
 		name     => $track->{title},
 		line1    => $track->{title},
-		url      => $track->{uri},
 		image    => $track->{cover},
 		secs     => $track->{secs},
 		duration => $track->{secs},
 		bitrate  => $track->{bitrate},
 		genre    => $track->{genre},
-		type     => 'audio',
 		play     => $track->{uri},
+		items    => _trackInfo($client, $args, $track, $opts),
+		on_select => 'play',
 	};
 
 	# Play all tracks in a list. Useful for albums and playlists.
@@ -99,6 +99,78 @@ sub _showTrack {
 	}
 
 	return $item;
+}
+
+sub _trackInfo {
+	my ($client, $args, $track, $opts) = @_;
+
+	my $trackInfo = [];
+
+	# TBD: Like/Dislike does not work correctly due to cache inconsistency
+	push @$trackInfo, {
+		name => cstring($client, ($track->{rating} >= 4) ? 'PLUGIN_GOOGLEMUSIC_UNLIKE' : 'PLUGIN_GOOGLEMUSIC_LIKE'),
+		type => 'link',
+		url => \&Plugins::GoogleMusic::Plugin::like,
+		passthrough => [ $track->{uri}, ($track->{rating} >= 4) ? 0 : 5 ],
+		nextWindow => 'parent',
+	};
+	push @$trackInfo, {
+		name => cstring($client, ($track->{rating} != 0 && $track->{rating} < 3) ? "PLUGIN_GOOGLEMUSIC_DONT_DISLIKE" : "PLUGIN_GOOGLEMUSIC_DISLIKE"),
+		type => 'link',
+		url => \&Plugins::GoogleMusic::Plugin::dislike,
+		passthrough => [ $track->{uri}, ($track->{rating} != 0 && $track->{rating} < 3) ? 0 : 1 ],
+		nextWindow => 'parent',
+	};
+
+	push @$trackInfo, {
+		type  => 'link',
+		label => 'ALBUM',
+		name  => $track->{album}->{name},
+		url   => \&Plugins::GoogleMusic::AlbumMenu::_albumTracks,
+		passthrough => [ $track->{album}, { all_access => $opts->{all_access}, playall => 1, sortByTrack => 1 } ],
+	};
+
+	push @$trackInfo, {
+		type  => 'link',
+		label => 'ARTIST',
+		name  => $track->{artist}->{name},
+		url   => \&Plugins::GoogleMusic::ArtistMenu::_artistMenu,
+		passthrough => [ $track->{artist}, { all_access => $opts->{all_access} } ],
+	};
+
+	push @$trackInfo, {
+		type  => 'text',
+		label => 'TITLE',
+		name  => $track->{title},
+	};
+
+	push @$trackInfo, {
+		type  => 'text',
+		label => 'TRACK_NUMBER',
+		name  => $track->{trackNumber},
+	};
+
+	if (my $year = ($track->{year} || $track->{album}->{year})) {
+		push @$trackInfo, {
+			type  => 'text',
+			label => 'YEAR',
+			name  => $year,
+		};
+	}
+
+	push @$trackInfo, {
+		type  => 'text',
+		label => 'GENRE',
+		name  => $track->{genre},
+	};
+
+	push @$trackInfo, {
+		type  => 'text',
+		label => 'LENGTH',
+		name  => sprintf('%s:%02s', int($track->{secs} / 60), $track->{secs} % 60),
+	};
+
+	return $trackInfo;
 }
 
 sub _sortTrack {

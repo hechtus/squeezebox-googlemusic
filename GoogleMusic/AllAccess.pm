@@ -644,6 +644,8 @@ sub changeRating {
 		return;
 	}
 
+	# TBD: This only updates the track in the cach NOT albums, search
+	# results etc.
 	# Also need to update our cache. Get it from the cache first.
 	my $track = get_track($uri);
 	# Change the rating
