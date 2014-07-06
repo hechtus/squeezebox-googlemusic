@@ -15,6 +15,8 @@ Readonly my $CACHE_TIME => 3600;
 # Cache track information for one day because get_album_info() would
 # be used too often
 Readonly my $CACHE_TIME_LONG => 24 * 3600;
+# Cache user modifiable data shorlty
+Readonly my $CACHE_TIME_SHORT => 30;
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
@@ -531,6 +533,49 @@ sub genreToSlimGenre {
 	$cache->set($uri, $genre, $CACHE_TIME);
 
 	return $genre;
+}
+
+# Get all user-created radio stations
+sub getStations {
+	
+	return [] unless $prefs->get('all_access_enabled');
+	
+	my $stations;
+	my $uri = 'googlemusic:stations';
+
+	if ($stations = $cache->get($uri)) {
+		return $stations;
+	}
+
+	eval {
+		$stations = $googleapi->get_all_stations();
+	};
+	if ($@) {
+		$log->error("Not able to get user created radio stations: $@");
+		return [];
+	}
+
+	$cache->set($uri, $stations, $CACHE_TIME_SHORT);
+
+	return $stations;
+}
+
+sub deleteStation {
+	my $id = shift;
+	
+	eval {
+		$googleapi->delete_stations($id);
+	};
+	if ($@) {
+		$log->error("Not able to delete radio station $id: $@");
+		return;
+	}
+
+	# Remove from cache to force reload
+	$cache->remove('googlemusic:stations');
+
+	# Return the ID on success
+	return $id;
 }
 
 # Get a specific genre (from the cache)

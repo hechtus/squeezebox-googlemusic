@@ -128,6 +128,14 @@ PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS
 	EN	My Radio Stations
 	DE	Meine Radio Sender
 
+PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETE
+	EN	Delete Radio Station
+	DE	Radiosender löschen
+
+PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETED
+	EN	Radio station deleted
+	DE	Radiosender gelöscht
+
 PLUGIN_GOOGLEMUSIC_BROWSE
 	EN	Browse Library
 	DE	Meine Musik

@@ -31,7 +31,7 @@ sub init {
 	return;
 }
 
-# Google Music All Access Radio menu
+# Google Music All Access My Radio Stations menu
 sub menu {
 	my ($client, $callback, $args) = @_;
 
@@ -39,13 +39,7 @@ sub menu {
 	my @menu;
 
 	# Get all user created stations
-	eval {
-		$stations = $googleapi->get_all_stations();
-	};
-	if ($@) {
-		$log->error("Not able to get user created radio stations: $@");
-		$stations = [];
-	}
+	$stations = Plugins::GoogleMusic::AllAccess::getStations();
 
 	# Build the Menu
 	for my $station (sort { $a->{name} cmp $b->{name} } @{$stations}) {
@@ -54,11 +48,13 @@ sub menu {
 			$image = $station->{imageUrl};
 			$image = Plugins::GoogleMusic::Image->uri($image);
 		}
+
 		push @menu, {
 			name => $station->{name},
-			type => 'audio',
-			url => "googlemusicradio:station:$station->{id}",
+			play => "googlemusicradio:station:$station->{id}",
 			image => $image,
+			items => stationInfo($client, $station),
+			on_select => 'play',
 			textkey => substr($station->{name}, 0, 1),
 		};
 	}
@@ -71,10 +67,43 @@ sub menu {
 		}
 	}
 
-	$callback->(\@menu);
+	return $callback->(\@menu);
+}
 
-	return;
+sub stationInfo {
+	my ($client, $station) = @_;
 
+	return [{
+		type => 'link',
+		name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETE'),
+		url  => \&deleteStation,
+		passthrough => [ $station->{id} ],
+		nextWindow => 'parent',
+	}, {
+		type  => 'text',
+		label => 'URL',
+		name  => "googlemusicradio:station:$station->{id}",
+	}];
+}
+
+sub deleteStation {
+	my ($client, $callback, $args, $id) = @_;
+
+	my $msg;
+
+	if (!Plugins::GoogleMusic::AllAccess::deleteStation($id)) {
+		$log->error("Not able to delete radio station $id: $@");
+		$msg = cstring($client, 'PLUGIN_GOOGLEMUSIC_ERROR');
+	} else {
+		$msg = cstring($client, 'PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETED');
+	}
+
+	return $callback->({
+		items => [{
+			name => $msg,
+			showBriefly => 1,
+		}]
+	});
 }
 
 # Google Music All Access Radio Genres menu feed
