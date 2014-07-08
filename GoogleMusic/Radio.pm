@@ -94,7 +94,7 @@ sub deleteStation {
 	my $msg;
 
 	if (!Plugins::GoogleMusic::AllAccess::deleteStation($id)) {
-		$log->error("Not able to delete radio station $id: $@");
+		$log->error("Not able to delete radio station $id");
 		$msg = cstring($client, 'PLUGIN_GOOGLEMUSIC_ERROR');
 	} else {
 		$msg = cstring($client, 'PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETED');
@@ -170,6 +170,51 @@ sub genresFeed {
 
 }
 
+# Start Google Music Radio feed
+# TBD: This does not work for My Music
+sub startRadioFeed {
+	my ($client, $callback, $args, $url) = @_;
+
+	return unless $client;
+
+	if ($url =~ /^googlemusic:station:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "station", $1]);
+
+		return $callback->();
+	} elsif ($url =~ /^googlemusic:artist:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "artist", $1]);
+
+		return $callback->();
+	} elsif ($url =~ /^googlemusic:album:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "album", $1]);
+
+		return $callback->();
+	} elsif ($url =~ /^googlemusic:track:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "track", $1]);
+
+		return $callback->();
+	} elsif ($url =~ /^googlemusic:genre:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "genre", $1]);
+
+		return $callback->();
+	}
+
+	$log->error("Not able to start radio for URL $url");
+
+	return $callback->({
+		items => [{
+			name => cstring($client, 'PLUGIN_GOOGLEMUSIC_ERROR'),
+			showBriefly => 1,
+		}]
+	});
+	
+}
+
 sub cliRequest {
 	my $request = shift;
  
@@ -203,6 +248,38 @@ sub cliRequest {
 		};
 		if ($@) {
 			$log->error("Not able to create artist radio station for artist ID $artistID: $@");
+		} else {
+			$log->info("Playing Google Music radio station: $station");
+			_playRadio($client, { station => $station });
+		}
+	} elsif ($type eq 'album') {
+		my $station;
+		my $albumID = $request->getParam('_p2');
+		my $album = Plugins::GoogleMusic::AllAccess::get_album_info("googlemusic:album:$albumID");
+
+		$log->info("Creating Google Music radio station for album ID $albumID");
+
+		eval {
+			$station = $googleapi->create_station($album->{name}, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False, $albumID, $Inline::Python::Boolean::False);
+		};
+		if ($@) {
+			$log->error("Not able to create album radio station for album ID $albumID: $@");
+		} else {
+			$log->info("Playing Google Music radio station: $station");
+			_playRadio($client, { station => $station });
+		}
+	} elsif ($type eq 'track') {
+		my $station;
+		my $trackID = $request->getParam('_p2');
+		my $track = Plugins::GoogleMusic::AllAccess::get_track("googlemusic:track:$trackID");
+
+		$log->info("Creating Google Music radio station for track ID $trackID");
+
+		eval {
+			$station = $googleapi->create_station($track->{title}, $trackID, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False);
+		};
+		if ($@) {
+			$log->error("Not able to create track radio station for track ID $trackID: $@");
 		} else {
 			$log->info("Playing Google Music radio station: $station");
 			_playRadio($client, { station => $station });

@@ -9,7 +9,6 @@ use Slim::Utils::Prefs;
 
 use Plugins::GoogleMusic::TrackMenu;
 
-
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 
@@ -105,31 +104,39 @@ sub _albumInfo {
 
 	push @$albumInfo, {
 		type  => 'link',
-		label => 'ALBUM',
-		name  => $album->{name},
-		image => $album->{cover},
-		url   => \&Plugins::GoogleMusic::AlbumMenu::_albumTracks,
-		passthrough => [ $album, { all_access => $opts->{all_access}, playall => 1, sortByTrack => 1 } ],
-		isContextMenu => 1,
+		label => 'ARTIST',
+		name  => $album->{artist}->{name},
+		image => '/html/images/artists.png',
+		url   => \&Plugins::GoogleMusic::ArtistMenu::_artistMenu,
+		passthrough => [ $album->{artist}, { all_access => $opts->{all_access} } ],
 	};
 
 	push @$albumInfo, {
-		type  => 'link',
-		label => 'ARTIST',
-		name  => $album->{artist}->{name},
-		image => $album->{artist}->{image},
-		url   => \&Plugins::GoogleMusic::ArtistMenu::_artistMenu,
-		passthrough => [ $album->{artist}, { all_access => $opts->{all_access} } ],
-		isContextMenu => 1,
-	};
+		name  => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
+		url => \&Plugins::GoogleMusic::Radio::startRadioFeed,
+		passthrough => [ $album->{uri} ],
+		image => '/html/images/playlists.png',
+		nextWindow => 'nowPlaying',
+	} if $prefs->get('all_access_enabled');
 
-	if (my $year = $album->{year}) {
-		push @$albumInfo, {
-			type  => 'text',
-			label => 'YEAR',
-			name  => $year,
-		};
-	}
+	# TBD: If setting type to "text" no image is shown. So, we need to
+	# link to somewhere. We could list years in My Music.
+	push @$albumInfo, {
+		label => 'YEAR',
+		name  => $album->{year},
+		image => '/html/images/years.png',
+		nextWindow => 'refresh',
+	} if $album->{year};
+
+	push @$albumInfo, {
+		name => cstring($client, "PLUGIN_GOOGLEMUSIC_ABOUT_THIS_ALBUM"),
+		items => [{
+			name => $album->{description},
+			type => 'text',
+			wrap => 1,
+		}],
+		image => '/html/images/albums.png',
+	} if $album->{description};
 
 	return $albumInfo;
 }

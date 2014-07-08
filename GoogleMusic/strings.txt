@@ -226,6 +226,10 @@ PLUGIN_GOOGLEMUSIC_BIOGRAPHY
 	DE	Biographie
 	EN	Biography
 
+PLUGIN_GOOGLEMUSIC_ABOUT_THIS_ALBUM
+	DE	About this album
+	EN	Über dieses Album
+
 PLUGIN_GOOGLEMUSIC_START_RADIO
 	DE	Radio starten
 	EN	Start radio

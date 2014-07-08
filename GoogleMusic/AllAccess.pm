@@ -419,6 +419,10 @@ sub album_to_slim_album {
 		}
 	}
 
+	if (exists $googleAlbum->{description}) {
+		$album->{description} = $googleAlbum->{description};
+	}
+
 	return $album;
 }
 
