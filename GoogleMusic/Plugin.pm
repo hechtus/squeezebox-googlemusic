@@ -109,7 +109,7 @@ sub initPlugin {
 	) );
 
 	Slim::Menu::TrackInfo->registerInfoProvider( googlemusicRating => (
-		after => 'middle',
+		before => 'addtrack',
 		func  => \&ratingMenu,
 	) );
 
