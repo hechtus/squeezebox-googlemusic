@@ -428,7 +428,7 @@ sub ratingMenu {
 sub like {
 	my ($client, $callback, $args, $url, $rating) = @_;
 
-	Plugins::GoogleMusic::AllAccess::changeRating($url, $rating);
+	Plugins::GoogleMusic::Library::changeRating($url, $rating);
 
 	$callback->({
 		items => [{
@@ -445,7 +445,7 @@ sub like {
 sub dislike {
 	my ($client, $callback, $args, $url, $rating) = @_;
 
-	Plugins::GoogleMusic::AllAccess::changeRating($url, $rating);
+	Plugins::GoogleMusic::Library::changeRating($url, $rating);
 
 	$callback->({
 		items => [{

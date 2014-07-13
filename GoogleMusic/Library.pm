@@ -16,6 +16,9 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
+# All songs retrieved from Google indexed by ID
+my $songs = {};
+
 # Database for tracks, albums, and artists indexed by URIs
 my $tracks = {};
 my $albums = {};
@@ -23,21 +26,30 @@ my $artists = {};
 
 # Reload and reparse your music collection
 sub refresh {
-	my $songs;
+	my $googleSongs;
 
 	if (!$googleapi->is_authenticated()) {
 		return;
 	}
-	
+
+	# Reload all songs from Google
+	eval {
+		$googleSongs = $googleapi->get_all_songs();
+	};
+	if ($@) {
+		$log->error("Not able to get library songs from Google: $@");
+		return;
+	}
+
 	# Clear the database
+	$songs = {};
 	$tracks = {};
 	$albums = {};
 	$artists = {};
 
-	# Reload from Google
-	$songs = $googleapi->get_all_songs();
-	# Initialize
-	for my $song (@{$songs}) {
+	# Get all songs and add them to the dictionaries
+	for my $song (@{$googleSongs}) {
+		$songs->{$song->{id}} = $song;
 		to_slim_track($song);
 	}
 
@@ -349,6 +361,36 @@ sub _create_id {
 	my $str = shift;
 
 	return md5_hex(encode_utf8($str));
+}
+
+# Change the rating of a track
+sub changeRating {
+	my ($uri, $rating) = @_;
+
+	if ($uri =~ '^googlemusic:track:T') {
+		return Plugins::GoogleMusic::AllAccess::changeRating($uri, $rating);
+	}
+
+	# Get the song from our dictionary
+	my ($id) = $uri =~ m{^googlemusic:track:(.*)$}x;
+	my $song = $songs->{$id};
+
+	# Now change the rating value
+	$song->{rating} = $rating;
+
+	# And apply it
+	eval {
+		$song = $googleapi->change_song_metadata($song);
+	};
+	if ($@) {
+		$log->error("Not able to change the song metadata for track ID $id: $@");
+		return;
+	}
+
+	# Also need to update our database
+	$tracks->{$uri}->{rating} = $rating;
+
+	return;
 }
 
 1;
