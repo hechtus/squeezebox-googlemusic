@@ -114,7 +114,7 @@ sub _albumInfo {
 	push @$albumInfo, {
 		name  => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
 		url => \&Plugins::GoogleMusic::Radio::startRadioFeed,
-		passthrough => [ $album->{uri} ],
+		passthrough => [ $album->{storeId} ? 'googlemusic:album:' .  $album->{storeId} : $album->{uri} ],
 		image => '/html/images/playlists.png',
 		nextWindow => 'nowPlaying',
 	} if $prefs->get('all_access_enabled');

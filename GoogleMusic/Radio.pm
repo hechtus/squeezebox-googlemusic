@@ -175,6 +175,8 @@ sub genresFeed {
 sub startRadioFeed {
 	my ($client, $callback, $args, $url) = @_;
 
+	print "$url\n";
+
 	return unless $client;
 
 	if ($url =~ /^googlemusic:station:(.*)$/) {

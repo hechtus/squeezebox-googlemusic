@@ -104,9 +104,10 @@ sub _artistMenu {
 
 		push @menu, {
 			name => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
-			type => 'audio',
-			url => $radioURI,
+			url => \&Plugins::GoogleMusic::Radio::startRadioFeed,
+			passthrough => [ $artist->{uri} ],
 			cover => $artist->{image},
+			nextWindow => 'nowPlaying',
 		};
 
 		$callback->(\@menu);

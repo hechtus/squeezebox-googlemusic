@@ -220,6 +220,8 @@ sub to_slim_track {
 
 	# Build track info
 	my $track = {
+		id => $song->{id},
+		storeId => $song->{storeId},
 		uri => $uri,
 		title => $song->{title},
 		album => $album,
@@ -270,6 +272,8 @@ sub to_slim_album {
 
 	my $album = {
 		uri => $uri,
+		id => $id,
+		storeId => $song->{albumId},
 		name => $name,
 		artist => $artist,
 		year => $year,
@@ -305,6 +309,8 @@ sub to_slim_artist {
 
 	my $artist = {
 		uri => $uri,
+		id => $id,
+		storeId => scalar $song->{artistId} ? $song->{artistId}[0] : 'unknown',
 		name => $name,
 		image => $image,
 	};
@@ -347,6 +353,8 @@ sub to_slim_album_artist {
 	
 	my $artist = {
 		uri => $uri,
+		id => $id,
+		storeId => scalar $song->{artistId} ? $song->{artistId}[0] : 'unknown',
 		name => $name,
 		various => $various,
 		image => $image,

@@ -52,6 +52,7 @@ sub to_slim_track {
 	# Build track info
 	my $track = {
 		uri => $uri,
+		id => $song->{storeId},
 		title => $song->{title},
 		album => $album,
 		artist => to_slim_artist($song),
@@ -91,6 +92,7 @@ sub to_slim_album {
 
 	my $album = {
 		uri => $uri,
+		id => $song->{albumId},
 		name => $name,
 		artist => $artist,
 		year => $year,
@@ -106,15 +108,9 @@ sub to_slim_album {
 sub to_slim_artist {
 	my $song = shift;
 
-	my $uri;
+	my $id = scalar $song->{artistId} ? $song->{artistId}[0] : 'unknown';
+	my $uri = 'googlemusic:artist:' . $id;
 	my $name = $song->{artist};
-
-	# TODO: Sometimes the array has multiple entries
-	if (scalar $song->{artistId}) {
-		$uri = 'googlemusic:artist:' . $song->{artistId}[0];
-	} else {
-		$uri = 'googlemusic:artist:unknown';
-	}
 
 	my $image = '/html/images/artists.png';
 	if (exists $song->{artistArtRef}) {
@@ -124,6 +120,7 @@ sub to_slim_artist {
 
 	my $artist = {
 		uri => $uri,
+		id => $id,
 		name => $name,
 		image => $image,
 	};
@@ -159,6 +156,7 @@ sub to_slim_album_artist {
 	
 	my $artist = {
 		uri => $uri,
+		id => 'unknown',
 		name => $name,
 		various => $various,
 		image => $image,
@@ -382,9 +380,12 @@ sub get_album_info {
 sub album_to_slim_album {
 	my $googleAlbum = shift;
 
+	my $artistId = scalar $googleAlbum->{artistId} ? $googleAlbum->{artistId}[0] : 'unknown';
+
 	# TODO: Sometimes the array has multiple entries
 	my $artist = {
-		uri => 'googlemusic:artist:' . $googleAlbum->{artistId}[0],
+		uri => 'googlemusic:artist:' . $artistId,
+		id => $artistId,
 		name => $googleAlbum->{albumArtist} || $googleAlbum->{artist},
 		various => 0,
 	};
@@ -402,6 +403,7 @@ sub album_to_slim_album {
 
 	my $album = {
 		uri => $uri,
+		id => $googleAlbum->{albumId},
 		name => $name,
 		artist => $artist,
 		year => $year,
@@ -443,6 +445,7 @@ sub artist_to_slim_artist {
 
 	my $artist = {
 		uri => $uri,
+		id => $googleArtist->{artistId},
 		name => $name,
 		image => $image,
 		tracks => [],
