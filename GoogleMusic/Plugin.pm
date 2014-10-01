@@ -103,19 +103,19 @@ sub initPlugin {
 		Plugins::GoogleMusic::Playlists::refresh();
 	}
 
-	Slim::Menu::TrackInfo->registerInfoProvider( googlemusic => (
-		after => 'middle',
-		func  => \&trackInfoMenu,
-	) );
-
 	Slim::Menu::TrackInfo->registerInfoProvider( googlemusicRating => (
-		before => 'addtrack',
+		isa => 'top',
 		func  => \&ratingMenu,
 	) );
 
 	Slim::Menu::TrackInfo->registerInfoProvider( googlemusicStartRadio => (
-		after => 'googlemusicRating',
+		after => 'middle',
 		func  => \&startRadioMenu,
+	) );
+
+	Slim::Menu::TrackInfo->registerInfoProvider( googlemusic => (
+		after => 'middle',
+		func  => \&trackInfoMenu,
 	) );
 
 	Slim::Menu::GlobalSearch->registerInfoProvider( googlemusic => (
@@ -404,6 +404,8 @@ sub ratingMenu {
 	
 	return unless $client;
 
+	return unless $url =~ '^googlemusic:track:';
+
 	# Get the rating for the track. Should be fast as it comes from our cache.
 	my $rating = Plugins::GoogleMusic::Library::get_track($url)->{rating};
 
@@ -468,6 +470,8 @@ sub startRadioMenu {
 	my ($client, $url, $track, $remoteMeta) = @_;
 	
 	return unless $client;
+
+	return unless $url =~ '^googlemusic:track:';
 
 	return unless $prefs->get('all_access_enabled');
 

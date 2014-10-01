@@ -102,30 +102,30 @@ sub _albumInfo {
 
 	my $albumInfo = [];
 
-	push @$albumInfo, {
-		type  => 'link',
-		label => 'ARTIST',
-		name  => $album->{artist}->{name},
-		image => '/html/images/artists.png',
-		url   => \&Plugins::GoogleMusic::ArtistMenu::_artistMenu,
-		passthrough => [ $album->{artist}, { all_access => $opts->{all_access} } ],
-	};
+	if ($album->{artist}->{id}) {
+		push @$albumInfo, {
+			label => 'ARTIST',
+			name  => $album->{artist}->{name},
+			image => '/html/images/artists.png',
+			url   => \&Plugins::GoogleMusic::ArtistMenu::_artistMenu,
+			passthrough => [ $album->{artist}, { all_access => $opts->{all_access} } ],
+		};
+	} else {
+		push @$albumInfo, {
+			type  => 'text',
+			label => 'ARTIST',
+			name  => $album->{artist}->{name},
+			image => '/html/images/artists.png',
+		};
+	}
 
+	# In the OrangeSqueeze app images are not shown when setting to
+	# text which is definitely a bug of the App.
 	push @$albumInfo, {
-		name  => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
-		url => \&Plugins::GoogleMusic::Radio::startRadioFeed,
-		passthrough => [ $album->{storeId} ? 'googlemusic:album:' .  $album->{storeId} : $album->{uri} ],
-		image => '/html/images/playlists.png',
-		nextWindow => 'nowPlaying',
-	} if $prefs->get('all_access_enabled') && ($album->{storeId} || $album->{uri} =~ '^googlemusic:album:B');
-
-	# TBD: If setting type to "text" no image is shown. So, we need to
-	# link to somewhere. We could list years in My Music.
-	push @$albumInfo, {
+		type  => 'text',
 		label => 'YEAR',
 		name  => $album->{year},
 		image => '/html/images/years.png',
-		nextWindow => 'refresh',
 	} if $album->{year};
 
 	push @$albumInfo, {
@@ -137,6 +137,14 @@ sub _albumInfo {
 		}],
 		image => '/html/images/albums.png',
 	} if $album->{description};
+
+	push @$albumInfo, {
+		name  => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
+		url => \&Plugins::GoogleMusic::Radio::startRadioFeed,
+		passthrough => [ $album->{storeId} ? 'googlemusic:album:' .  $album->{storeId} : $album->{uri} ],
+		image => '/html/images/playlists.png',
+		nextWindow => 'nowPlaying',
+	} if $prefs->get('all_access_enabled') && ($album->{storeId} || $album->{uri} =~ '^googlemusic:album:B');
 
 	return $albumInfo;
 }
@@ -154,12 +162,9 @@ sub _albumTracks {
 		$tracks = [];
 	}
 
-	# Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $tracks, $opts);
-
 	my $trackItems = Plugins::GoogleMusic::TrackMenu::menu($client, $args, $tracks, $opts);
 	
 	push (@{$trackItems->{items}}, @{_albumInfo($client, $args, $info, $opts)});
-
 	
 	return $callback->($trackItems);
 }

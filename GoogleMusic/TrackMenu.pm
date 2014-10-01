@@ -146,17 +146,17 @@ sub _trackInfo {
 	};
 
 	push @$trackInfo, {
+		type  => 'text',
+		label => 'TITLE',
+		name  => $track->{title},
+	};
+
+	push @$trackInfo, {
 		name  => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
 		url => \&Plugins::GoogleMusic::Radio::startRadioFeed,
 		passthrough => [ $track->{storeId} ? 'googlemusic:track:' .  $track->{storeId} : $track->{uri} ],
 		nextWindow => 'nowPlaying',
 	} if $prefs->get('all_access_enabled');
-
-	push @$trackInfo, {
-		type  => 'text',
-		label => 'TITLE',
-		name  => $track->{title},
-	};
 
 	push @$trackInfo, {
 		type  => 'text',
