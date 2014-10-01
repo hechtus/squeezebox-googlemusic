@@ -171,11 +171,10 @@ sub genresFeed {
 }
 
 # Start Google Music Radio feed
-# TBD: This does not work for My Music
+#
+# Does not support album and track IDs from My Library
 sub startRadioFeed {
 	my ($client, $callback, $args, $url) = @_;
-
-	print "$url\n";
 
 	return unless $client;
 
@@ -273,7 +272,7 @@ sub cliRequest {
 	} elsif ($type eq 'track') {
 		my $station;
 		my $trackID = $request->getParam('_p2');
-		my $track = Plugins::GoogleMusic::AllAccess::get_track("googlemusic:track:$trackID");
+		my $track = Plugins::GoogleMusic::Library::get_track("googlemusic:track:$trackID");
 
 		$log->info("Creating Google Music radio station for track ID $trackID");
 

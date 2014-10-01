@@ -100,8 +100,6 @@ sub _artistMenu {
 			}
 		}
 		
-		(my $radioURI = $artist->{uri}) =~ s/googlemusic/googlemusicradio/;
-
 		push @menu, {
 			name => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
 			url => \&Plugins::GoogleMusic::Radio::startRadioFeed,

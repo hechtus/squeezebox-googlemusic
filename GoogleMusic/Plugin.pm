@@ -113,6 +113,11 @@ sub initPlugin {
 		func  => \&ratingMenu,
 	) );
 
+	Slim::Menu::TrackInfo->registerInfoProvider( googlemusicStartRadio => (
+		after => 'googlemusicRating',
+		func  => \&startRadioMenu,
+	) );
+
 	Slim::Menu::GlobalSearch->registerInfoProvider( googlemusic => (
 		after => 'middle',
 		func  => \&searchInfoMenu,
@@ -424,7 +429,6 @@ sub ratingMenu {
 	return $items;
 }
 
-# TBD: Allow to change rating in our library too
 sub like {
 	my ($client, $callback, $args, $url, $rating) = @_;
 
@@ -457,6 +461,27 @@ sub dislike {
 	}) if $callback;
 
 	return;
+}
+
+# Trackinfo start radio menu
+sub startRadioMenu {
+	my ($client, $url, $track, $remoteMeta) = @_;
+	
+	return unless $client;
+
+	return unless $prefs->get('all_access_enabled');
+
+	# Get the optional storeId for the track. Should be fast as it comes from our cache.
+	my $storeId = Plugins::GoogleMusic::Library::get_track($url)->{storeId};
+
+	my $items = [{
+		name  => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
+		url => \&Plugins::GoogleMusic::Radio::startRadioFeed,
+		passthrough => [ $storeId ? 'googlemusic:track:' .  $storeId : $url ],
+		nextWindow => 'nowPlaying',
+	}];
+
+	return $items;
 }
 
 sub searchInfoMenu {

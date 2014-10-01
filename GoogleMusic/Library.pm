@@ -310,7 +310,7 @@ sub to_slim_artist {
 	my $artist = {
 		uri => $uri,
 		id => $id,
-		storeId => scalar $song->{artistId} ? $song->{artistId}[0] : 'unknown',
+		storeId => scalar $song->{artistId} ? $song->{artistId}[0] : undef,
 		name => $name,
 		image => $image,
 	};
@@ -354,7 +354,7 @@ sub to_slim_album_artist {
 	my $artist = {
 		uri => $uri,
 		id => $id,
-		storeId => scalar $song->{artistId} ? $song->{artistId}[0] : 'unknown',
+		storeId => scalar $song->{artistId} ? $song->{artistId}[0] : undef,
 		name => $name,
 		various => $various,
 		image => $image,

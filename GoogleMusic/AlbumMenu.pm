@@ -117,7 +117,7 @@ sub _albumInfo {
 		passthrough => [ $album->{storeId} ? 'googlemusic:album:' .  $album->{storeId} : $album->{uri} ],
 		image => '/html/images/playlists.png',
 		nextWindow => 'nowPlaying',
-	} if $prefs->get('all_access_enabled');
+	} if $prefs->get('all_access_enabled') && ($album->{storeId} || $album->{uri} =~ '^googlemusic:album:B');
 
 	# TBD: If setting type to "text" no image is shown. So, we need to
 	# link to somewhere. We could list years in My Music.
