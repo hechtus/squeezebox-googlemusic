@@ -22,7 +22,7 @@ sub init {
 	my $recent;
 
 	# initialize recent items: need to add them to the LRU cache ordered by timestamp
-	$recent = $cache->get('recent_searches');
+	$recent = $cache->get('recentSearches');
 	map {
 		$recentSearches{$_} = $recent->{$_};
 	} sort {
@@ -55,7 +55,7 @@ sub recentSearchesAdd {
 		ts => time(),
 	};
 
-	$cache->set('recent_searches', \%recentSearches, 'never');
+	$cache->set('recentSearches', \%recentSearches, 'never');
 
 	return;
 }

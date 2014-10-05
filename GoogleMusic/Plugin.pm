@@ -37,7 +37,7 @@ use Plugins::GoogleMusic::ArtistMenu;
 my $log;
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
-my $cache = Slim::Utils::Cache->new('googlemusic', 3);
+my $cache = Slim::Utils::Cache->new('googlemusic', 4);
 
 BEGIN {
 	$log = Slim::Utils::Log->addLogCategory({
@@ -58,7 +58,7 @@ sub initPlugin {
 	$VERSION = $class->_pluginDataFor('version');
 
 	# Chech version of gmusicapi first
-	if (!blessed($googleapi) || (Plugins::GoogleMusic::GoogleAPI::get_version() lt '3.1.0')) {
+	if (!blessed($googleapi) || (Plugins::GoogleMusic::GoogleAPI::get_version() lt '4.0.0')) {
 		$class->SUPER::initPlugin(
 			tag    => 'googlemusic',
 			feed   => \&badVersion,
