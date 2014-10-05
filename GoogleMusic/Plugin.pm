@@ -475,8 +475,11 @@ sub startRadioMenu {
 
 	return unless $prefs->get('all_access_enabled');
 
-	# Get the optional storeId for the track. Should be fast as it comes from our cache.
-	my $storeId = Plugins::GoogleMusic::Library::get_track($url)->{storeId};
+	# Get the optional storeId for the track from the library
+	my $storeId;
+	if ($url !~ '^googlemusic:track:T') {
+		$storeId = Plugins::GoogleMusic::Library::get_track($url)->{storeId};
+	}
 
 	my $items = [{
 		name  => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
