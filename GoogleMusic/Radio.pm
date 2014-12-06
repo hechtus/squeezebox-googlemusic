@@ -18,7 +18,7 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
-my $PLAYLIST_MAXLENGTH = 25;
+my $PLAYLIST_MAXLENGTH = 10;
 
 my @stopcommands = qw(clear loadtracks playtracks load play loadalbum playalbum);
 
@@ -317,6 +317,7 @@ sub _playRadio {
 		$master->pluginData('running', 1);
 		$master->pluginData('args', $args);
 		$master->pluginData('tracks', []);
+		$master->pluginData('recentlyPlayed', []);
 	} else {
 		$args = $master->pluginData('args');
 	}
@@ -417,12 +418,18 @@ sub _playRadio {
 sub fetchStationTracks {
 	my ($master, $tracks, $args) = @_;
 
+	my $recentlyPlayed = $master->pluginData('recentlyPlayed') || [];
 	my $station = $args->{'station'};
 	my $googleTracks;
 
 	# Get new tracks for the station
 	eval {
-		$googleTracks = $googleapi->get_station_tracks($station, $PLAYLIST_MAXLENGTH);
+		if (Plugins::GoogleMusic::GoogleAPI::get_version() lt '4.1.0') {
+			$googleTracks = $googleapi->get_station_tracks($station, $PLAYLIST_MAXLENGTH);
+		} else {
+			$googleTracks = $googleapi->get_station_tracks($station, $PLAYLIST_MAXLENGTH, $recentlyPlayed);
+		}
+		$recentlyPlayed = [];
 	};
 	if ($@) {
 		$log->error("Not able to get tracks for station $station: $@");
@@ -439,7 +446,10 @@ sub fetchStationTracks {
 			$track = Plugins::GoogleMusic::AllAccess::to_slim_track($googleTrack);
 		}
 		push @{$tracks}, $track;
+		push @{$recentlyPlayed}, $track->{id};
 	}
+
+	$master->pluginData('recentlyPlayed', $recentlyPlayed);
 
 	my $newtracks = scalar @{$googleTracks || []};
 
@@ -472,6 +482,7 @@ sub commandCallback {
 			
 			$master->pluginData('running', 0);
 			$master->pluginData('tracks', []);
+			$master->pluginData('recentlyPlayed', []);
 			$master->pluginData('args', {});
 			
 			if ($master->can('inhibitShuffle') && $master->inhibitShuffle && $master->inhibitShuffle eq 'googlemusicradio') {
