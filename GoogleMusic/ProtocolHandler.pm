@@ -115,6 +115,13 @@ sub getNextTrack {
 		return;
 	}
 
+	eval {
+		$googleapi->increment_song_playcount($id);
+	};
+	if ($@) {
+		$log->error("Incrementing the play count for url $url failed: $@");
+	}
+
 	$song->streamUrl($trackURL);
 
 	$successCb->();
