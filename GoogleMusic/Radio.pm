@@ -5,6 +5,8 @@ package Plugins::GoogleMusic::Radio;
 use strict;
 use warnings;
 
+use List::Util qw(max);
+
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
@@ -429,7 +431,6 @@ sub fetchStationTracks {
 		} else {
 			$googleTracks = $googleapi->get_station_tracks($station, $PLAYLIST_MAXLENGTH, $recentlyPlayed);
 		}
-		$recentlyPlayed = [];
 	};
 	if ($@) {
 		$log->error("Not able to get tracks for station $station: $@");
@@ -448,6 +449,9 @@ sub fetchStationTracks {
 		push @{$tracks}, $track;
 		push @{$recentlyPlayed}, $track->{id};
 	}
+
+	# Limit the number of recently played tracks to 50 as Google does
+	splice @$recentlyPlayed, 0, max(scalar @$recentlyPlayed - 50, 0);
 
 	$master->pluginData('recentlyPlayed', $recentlyPlayed);
 
