@@ -8,8 +8,6 @@ use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Prefs;
 
 use Plugins::GoogleMusic::TrackMenu;
-use Plugins::GoogleMusic::AlbumInfo;
-
 
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
@@ -53,35 +51,8 @@ sub menu {
 		}
 	}
 
-	my %actions = (
-		commonVariables => [uri => 'uri'],
-		info => {
-			command     => ['googlemusicalbuminfo', 'items'],
-		},
-		items => {
-			command     => ['googlemusicbrowse', 'items'],
-		},
-		play => {
-			command     => ['googlemusicplaylistcontrol'],
-			fixedParams => {cmd => 'load'},
-		},
-		add => {
-			command     => ['googlemusicplaylistcontrol'],
-			fixedParams => {cmd => 'add'},
-		},
-		insert => {
-			command     => ['googlemusicplaylistcontrol'],
-			fixedParams => {cmd => 'insert'},
-		},
-	);
-	$actions{playall} = $actions{play};
-	$actions{addall} = $actions{add};
-
-	# TODO: For googlemusicbrowse for artists we need to add the
-	#       artist image here.
 	return {
 		items => \@items,
-		actions => \%actions,
 	};
 }
 
@@ -97,15 +68,19 @@ sub _showAlbum {
 		image => $album->{cover},
 		type  => 'playlist',
 		url   => \&_albumTracks,
-		uri   => $album->{uri},
 		hasMetadata   => 'album',
-		passthrough => [ $album , { all_access => $opts->{all_access}, playall => 1, playall_uri => $album->{uri}, sortByTrack => 1 } ],
+		passthrough => [ $album , { all_access => $opts->{all_access}, playall => 1, sortByTrack => 1 } ],
+		albumData => [
+			{ type => 'link', label => 'ARTIST', name => $album->{artist}->{name} },
+			{ type => 'link', label => 'ALBUM', name => $album->{name} },
+		],
 	};
 
 	# Show the album year only if available
 	if ($album->{year}) {
 		$item->{name} .= " (" . $album->{year} . ")";
 		$item->{line1} .= " (" . $album->{year} . ")";
+		push @{$item->{albumData}}, { type => 'link', label => 'YEAR', name => $album->{year} };
 	}
 
 	# If the albums are sorted by name add a text key to easily jump
@@ -119,18 +94,59 @@ sub _showAlbum {
 		}
 	}
 
-	if ($args->{wantMetadata}) {
-		my $feed = Plugins::GoogleMusic::AlbumInfo->menu($client, $album->{uri}, $album);
-		$item->{albumData} = $feed->{items} if $feed;
-		$item->{albumInfo} = {
-			info => {
-				command => ['googlemusicalbuminfo', 'items'], 
-				fixedParams => { uri => $album->{uri} }
-			},
+	return $item;
+}
+
+sub _albumInfo {
+	my ($client, $args, $album, $opts) = @_;
+
+	my $albumInfo = [];
+
+	if ($album->{artist}->{id}) {
+		push @$albumInfo, {
+			label => 'ARTIST',
+			name  => $album->{artist}->{name},
+			image => '/html/images/artists.png',
+			url   => \&Plugins::GoogleMusic::ArtistMenu::_artistMenu,
+			passthrough => [ $album->{artist}, { all_access => $opts->{all_access} } ],
+		};
+	} else {
+		push @$albumInfo, {
+			type  => 'text',
+			label => 'ARTIST',
+			name  => $album->{artist}->{name},
+			image => '/html/images/artists.png',
 		};
 	}
 
-	return $item;
+	# In the OrangeSqueeze app images are not shown when setting to
+	# text which is definitely a bug of the App.
+	push @$albumInfo, {
+		type  => 'text',
+		label => 'YEAR',
+		name  => $album->{year},
+		image => '/html/images/years.png',
+	} if $album->{year};
+
+	push @$albumInfo, {
+		name => cstring($client, "PLUGIN_GOOGLEMUSIC_ABOUT_THIS_ALBUM"),
+		items => [{
+			name => $album->{description},
+			type => 'text',
+			wrap => 1,
+		}],
+		image => '/html/images/albums.png',
+	} if $album->{description};
+
+	push @$albumInfo, {
+		name  => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
+		url => \&Plugins::GoogleMusic::Radio::startRadioFeed,
+		passthrough => [ $album->{storeId} ? 'googlemusic:album:' .  $album->{storeId} : $album->{uri} ],
+		image => '/html/images/playlists.png',
+		nextWindow => 'nowPlaying',
+	} if $prefs->get('all_access_enabled') && ($album->{storeId} || $album->{uri} =~ '^googlemusic:album:B');
+
+	return $albumInfo;
 }
 
 sub _albumTracks {
@@ -146,9 +162,11 @@ sub _albumTracks {
 		$tracks = [];
 	}
 
-	Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $tracks, $opts);
-
-	return;
+	my $trackItems = Plugins::GoogleMusic::TrackMenu::menu($client, $args, $tracks, $opts);
+	
+	push (@{$trackItems->{items}}, @{_albumInfo($client, $args, $info, $opts)});
+	
+	return $callback->($trackItems);
 }
 
 sub _sortAlbum {

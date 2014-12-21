@@ -8,13 +8,12 @@ package Plugins::GoogleMusic::Plugin;
 use strict;
 use warnings;
 use base qw(Slim::Plugin::OPMLBased);
-
-use Encode qw(decode_utf8);
-
-use Data::Dumper;
-
-use Plugins::GoogleMusic::Settings;
 use Scalar::Util qw(blessed);
+use Encode qw(decode_utf8);
+use MIME::Base64;
+
+use vars qw($VERSION);
+
 use Slim::Control::Request;
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
@@ -22,6 +21,7 @@ use Slim::Utils::Cache;
 use Slim::Utils::Strings qw(string cstring);
 use Slim::Menu::GlobalSearch;
 
+use Plugins::GoogleMusic::Settings;
 use Plugins::GoogleMusic::GoogleAPI;
 use Plugins::GoogleMusic::ProtocolHandler;
 use Plugins::GoogleMusic::Image;
@@ -33,14 +33,11 @@ use Plugins::GoogleMusic::Recent;
 use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumMenu;
 use Plugins::GoogleMusic::ArtistMenu;
-use Plugins::GoogleMusic::TrackInfo;
-use Plugins::GoogleMusic::AlbumInfo;
-
 
 my $log;
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
-
+my $cache = Slim::Utils::Cache->new('googlemusic', 4);
 
 BEGIN {
 	$log = Slim::Utils::Log->addLogCategory({
@@ -57,8 +54,11 @@ sub getDisplayName {
 sub initPlugin {
 	my $class = shift;
 
+	# Set the version of this plugin
+	$VERSION = $class->_pluginDataFor('version');
+
 	# Chech version of gmusicapi first
-	if (!blessed($googleapi) || (Plugins::GoogleMusic::GoogleAPI::get_version() lt '3.1.0')) {
+	if (!blessed($googleapi) || (Plugins::GoogleMusic::GoogleAPI::get_version() lt '4.0.0')) {
 		$class->SUPER::initPlugin(
 			tag    => 'googlemusic',
 			feed   => \&badVersion,
@@ -80,15 +80,16 @@ sub initPlugin {
 	}
 
 	# Initialize submodules
+	Plugins::GoogleMusic::AllAccess::init($cache);
 	Plugins::GoogleMusic::Image::init();
 	Plugins::GoogleMusic::Radio::init();
-	Plugins::GoogleMusic::Recent::init();
+	Plugins::GoogleMusic::Recent::init($cache);
 
 	# Try to login. If SSL verification fails, login() raises an
 	# exception. Catch it to allow the plugin to be started.
 	eval {
 		$googleapi->login($prefs->get('username'),
-						  $prefs->get('password'));
+						  decode_base64($prefs->get('password')));
 	};
 	if ($@) {
 		$log->error("Not able to login to Google Play Music: $@");
@@ -102,6 +103,16 @@ sub initPlugin {
 		Plugins::GoogleMusic::Playlists::refresh();
 	}
 
+	Slim::Menu::TrackInfo->registerInfoProvider( googlemusicRating => (
+		isa => 'top',
+		func  => \&ratingMenu,
+	) );
+
+	Slim::Menu::TrackInfo->registerInfoProvider( googlemusicStartRadio => (
+		after => 'middle',
+		func  => \&startRadioMenu,
+	) );
+
 	Slim::Menu::TrackInfo->registerInfoProvider( googlemusic => (
 		after => 'middle',
 		func  => \&trackInfoMenu,
@@ -112,11 +123,33 @@ sub initPlugin {
 		func  => \&searchInfoMenu,
 	) );
 
-	Slim::Control::Request::addDispatch(['googlemusicbrowse', 'items', '_index', '_quantity' ], [0, 1, 1, \&itemQuery]);
-	Slim::Control::Request::addDispatch(['googlemusicplaylistcontrol'], [1, 0, 1, \&playlistcontrolCommand]);
+	# Register this Plugin for smart mixes provided by the SmartMix
+	# plugin. Check if the SmartMix plugin is enabled and properly
+	# installed.
+	if ( Slim::Utils::PluginManager->isEnabled('Plugins::SmartMix::Plugin') ) {
+		eval {
+			require Plugins::SmartMix::Services;
+		};
 
-	Plugins::GoogleMusic::TrackInfo->init();
-	Plugins::GoogleMusic::AlbumInfo->init();
+		if (!$@) {
+			main::INFOLOG && $log->info("SmartMix plugin is available - let's use it!");
+
+			# Smart mixes are supported for My Music and All Access
+			# separately. The user is able to enable/disable both
+			# features independently.
+			require Plugins::GoogleMusic::SmartMixMyMusic;
+			require Plugins::GoogleMusic::SmartMixAllAccess;
+
+			# Provide a version number to both modules. This is
+			# required for SmartMix services.
+			Plugins::GoogleMusic::SmartMixMyMusic->init($VERSION);
+			Plugins::GoogleMusic::SmartMixAllAccess->init($VERSION);
+
+			# Register both modules separately.
+			Plugins::SmartMix::Services->registerHandler('Plugins::GoogleMusic::SmartMixMyMusic', 'GoogleMusicMyMusic');
+			Plugins::SmartMix::Services->registerHandler('Plugins::GoogleMusic::SmartMixAllAccess', 'GoogleMusicAllAccess');
+		}
+	}
 
 	return;
 }
@@ -168,6 +201,7 @@ sub my_music {
 	my ($client, $callback, $args) = @_;
 	my @menu = (
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_BROWSE'), type => 'link', url => \&search },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_LAST_ADDED'), type => 'playlist', url => \&lastAdded },
 		{ name => cstring($client, 'PLAYLISTS'), type => 'link', url => \&Plugins::GoogleMusic::Playlists::feed },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search },
 		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesFeed, passthrough => [ { "all_access" => 0 } ] },
@@ -179,6 +213,17 @@ sub my_music {
 	$callback->(\@menu);
 
 	return;
+}
+
+sub lastAdded {
+	my ($client, $callback, $args) = @_;
+
+	# Get all tracks from the library
+	my $tracks = Plugins::GoogleMusic::Library::searchTracks();
+
+	# Show them sorted by the creation timestamp
+	return Plugins::GoogleMusic::TrackMenu::feed($client, $callback, $args, $tracks,
+												 { showArtist => 1, showAlbum => 1, sortByCreation => 1, playall => 1 });
 }
 
 sub reload_library {
@@ -203,6 +248,7 @@ sub all_access {
 	my @menu = (
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_IFL_RADIO'), type => 'audio', url => "googlemusicradio:station:IFL" },
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS'), type => 'link', url => \&Plugins::GoogleMusic::Radio::menu },
+		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RADIO_GENRES'), type => 'link', url => \&Plugins::GoogleMusic::Radio::genresFeed },
 		{ name => cstring($client, 'SEARCH'), type => 'search', url => \&search_all_access },
 		{ name => cstring($client, 'RECENT_SEARCHES'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentSearchesFeed, passthrough => [ { "all_access" => 1 } ] },
 		{ name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS'), type => 'link', url => \&Plugins::GoogleMusic::Recent::recentAlbumsFeed, passthrough => [ { "all_access" => 1 } ] },
@@ -237,7 +283,6 @@ sub search {
 		  url => \&Plugins::GoogleMusic::AlbumMenu::feed,
 		  passthrough => [ $albums, { sortAlbums => 1 } ] },
 		{ name => cstring($client, "SONGS") . " (" . scalar @$tracks . ")",
-		  # TODO: actions for this playlist
 		  type => 'playlist',
 		  url => \&Plugins::GoogleMusic::TrackMenu::feed,
 		  passthrough => [ $tracks, { showArtist => 1, showAlbum => 1, sortTracks => 1 } ], },
@@ -290,7 +335,6 @@ sub search_all_access {
 		  url => \&Plugins::GoogleMusic::AlbumMenu::feed,
 		  passthrough => [ $result->{albums}, { all_access => 1 } ], },
 		{ name => cstring($client, "SONGS") . " (" . scalar @{$result->{tracks}} . ")",
-		  # TODO: actions for this playlist
 		  type => 'playlist',
 		  url => \&Plugins::GoogleMusic::TrackMenu::feed,
 		  passthrough => [ $result->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
@@ -334,12 +378,12 @@ sub trackInfoMenu {
 		},
 	};
 
-	if ($track) {
+	if ($title) {
 		push @menu, {
 			name        => cstring($client, 'TRACK') . ": " . $title,
 			url         => \&search_all_access,
-			passthrough => [ "$artist $title", { trackSearch => 1 } ],
-			type        => 'link',
+			passthrough => [ $artist ? "$artist $title" : $title, { trackSearch => 1 } ],
+			type        => 'playlist',
 			favorites   => 0,
 		},
 	};
@@ -352,6 +396,99 @@ sub trackInfoMenu {
 	}
 
 	return $item;
+}
+
+# Trackinfo Rating Menu for Like/Dislike
+sub ratingMenu {
+	my ($client, $url, $track, $remoteMeta) = @_;
+	
+	return unless $client;
+
+	return unless $url =~ '^googlemusic:track:';
+
+	# Get the rating for the track. Should be fast as it comes from our cache.
+	my $rating = Plugins::GoogleMusic::Library::get_track($url)->{rating};
+
+	# Create two menu entries: Like/Unlike and Dislike/Don't dislike
+	my $items = [{
+		name => cstring($client, ($rating >= 4) ? 'PLUGIN_GOOGLEMUSIC_UNLIKE' : 'PLUGIN_GOOGLEMUSIC_LIKE'),
+		type => 'link',
+		url => \&like,
+		passthrough => [ $url, ($rating >= 4) ? 0 : 5 ],
+		nextWindow => 'parent',
+		forceRefresh => 1,
+		favorites => 0,
+	},{
+		name => cstring($client, ($rating != 0 && $rating < 3) ? "PLUGIN_GOOGLEMUSIC_DONT_DISLIKE" : "PLUGIN_GOOGLEMUSIC_DISLIKE"),
+		type => 'link',
+		url => \&dislike,
+		passthrough => [ $url, ($rating != 0 && $rating < 3) ? 0 : 1 ],
+		nextWindow => 'parent',
+		forceRefresh => 1,
+		favorites => 0,
+	}];
+
+	return $items;
+}
+
+sub like {
+	my ($client, $callback, $args, $url, $rating) = @_;
+
+	Plugins::GoogleMusic::Library::changeRating($url, $rating);
+
+	$callback->({
+		items => [{
+			type => 'text',
+			name => cstring($client, $rating ? 'PLUGIN_GOOGLEMUSIC_LIKE' : 'PLUGIN_GOOGLEMUSIC_UNLIKE'),
+			showBriefly => 1,
+			popback => 2
+		}]
+	}) if $callback;
+
+	return;
+}
+
+sub dislike {
+	my ($client, $callback, $args, $url, $rating) = @_;
+
+	Plugins::GoogleMusic::Library::changeRating($url, $rating);
+
+	$callback->({
+		items => [{
+			type => 'text',
+			name => cstring($client, $rating ? 'PLUGIN_GOOGLEMUSIC_DISLIKE' : 'PLUGIN_GOOGLEMUSIC_DONT_DISLIKE'),
+			showBriefly => 1,
+			popback => 2
+		}]
+	}) if $callback;
+
+	return;
+}
+
+# Trackinfo start radio menu
+sub startRadioMenu {
+	my ($client, $url, $track, $remoteMeta) = @_;
+	
+	return unless $client;
+
+	return unless $url =~ '^googlemusic:track:';
+
+	return unless $prefs->get('all_access_enabled');
+
+	# Get the optional storeId for the track from the library
+	my $storeId;
+	if ($url !~ '^googlemusic:track:T') {
+		$storeId = Plugins::GoogleMusic::Library::get_track($url)->{storeId};
+	}
+
+	my $items = [{
+		name  => cstring($client, "PLUGIN_GOOGLEMUSIC_START_RADIO"),
+		url => \&Plugins::GoogleMusic::Radio::startRadioFeed,
+		passthrough => [ $storeId ? 'googlemusic:track:' .  $storeId : $url ],
+		nextWindow => 'nowPlaying',
+	}];
+
+	return $items;
 }
 
 sub searchInfoMenu {
@@ -380,163 +517,6 @@ sub searchInfoMenu {
 		name => cstring($client, 'PLUGIN_GOOGLEMUSIC'),
 		items => \@items,
 	};
-}
-
-sub itemQuery {
-	my $request = shift;
-
-	# check this is the correct command.
-	if ($request->isNotQuery([['googlemusicbrowse'], ['items']])) {
-		$request->setStatusBadDispatch();
-		return;
-	}
-
-	# get the parameters
-	my $client = $request->client();
-	my $uri = $request->getParam('uri');
-	my $mode = $request->getParam('mode');
-	my $command = $request->getRequest(0);
-
-	my $feed = sub {
-		my ($client, $callback, $args) = @_;
-		if ($uri =~ /^googlemusic:album/) {
-			my $album = Plugins::GoogleMusic::Library::get_album($uri);
-			Plugins::GoogleMusic::AlbumMenu::_albumTracks($client, $callback, $args, $album, { playall => 1, playall_uri => $uri, sortByTrack => 1 });
-		} elsif ($uri =~ /^googlemusic:artist/) {
-			my $artist = Plugins::GoogleMusic::Library::get_artist($uri);
-			Plugins::GoogleMusic::ArtistMenu::_artistMenu($client, $callback, $args, $artist, { mode => $mode });
-		}
-	};
-
-	Slim::Control::XMLBrowser::cliQuery($command, $feed, $request);
-
-	return;
-}
-
-sub playlistcontrolCommand {
-	my $request = shift;
-
-	# check this is the correct command.
-	if ($request->isNotCommand([['googlemusicplaylistcontrol']])) {
-		$request->setStatusBadDispatch();
-		return;
-	}
-
-	# get the parameters
-	my $client = $request->client();
-	my $cmd = $request->getParam('cmd');
-	my $uri = $request->getParam('uri');
-	my $jumpIndex = $request->getParam('play_index');
-
-	if ($request->paramUndefinedOrNotOneOf($cmd, ['load', 'insert', 'add'])) {
-		$request->setStatusBadParams();
-		return;
-	}
-
-	my $load   = ($cmd eq 'load');
-	my $insert = ($cmd eq 'insert');
-	my $add    = ($cmd eq 'add');
-
-	# if loading, first stop & clear everything
-	if ($load) {
-		Slim::Player::Playlist::stopAndClear($client);
-	}
-
-	# find the songs
-	my @tracks = ();
-
-	# info line and artwork to display if successful
-	my $info;
-	my $artwork;
-
-	if ($uri =~ /^googlemusic:track/) {
-		my $track = Plugins::GoogleMusic::Library::get_track($uri);
-		if ($track) {
-			$info = $track->{title} . " " . cstring($client, 'BY') . " " . $track->{artist}->{name};
-			$artwork = $track->{cover};
-			push @tracks, $track;
-		}
-	} elsif ($uri =~ /^googlemusic:album/) {
-		my $album = Plugins::GoogleMusic::Library::get_album($uri);
-		if ($album) {
-			$info = $album->{name} . " " . cstring($client, 'BY') . " " . $album->{artist}->{name};
-			$artwork = $album->{cover};
-			push @tracks, @{$album->{tracks}};
-		}
-		# TODO: update recent albums AND recent artists
-	} elsif ($uri =~ /^googlemusic:artist/) {
-		# TODO: This has to be fixed for My Library
-		my $artist = Plugins::GoogleMusic::AllAccess::get_artist_info($uri);
-		if ($artist) {
-			$info = cstring($client, "PLUGIN_GOOGLEMUSIC_TOP_TRACKS") . " " . cstring($client, 'BY') . " " . $artist->{name};
-			$artwork = $artist->{image};
-			push @tracks, @{$artist->{tracks}};
-		}
-		# TODO: update recent artists
-	} else {
-		$request->setStatusBadParams();
-		return;
-	}
-
-	my @objs;
-
-	for my $track (@tracks) {
-		my $obj = Slim::Schema::RemoteTrack->updateOrCreate($track->{'uri'}, {
-			title   => $track->{'title'},
-			artist  => $track->{'artist'}->{'name'},
-			album   => $track->{'album'}->{'name'},
-			year    => $track->{'year'},
-			secs    => $track->{'secs'},
-			cover   => $track->{'cover'},
-			tracknum=> $track->{'trackNumber'},
-		});
-
-		push @objs, $obj;
-	}
-
-	# don't call Xtracks if we got no songs
-	if (@objs) {
-
-		if ($load || $add || $insert) {
-			my $token;
-			my $showBriefly = 1;
-			if ($add) {
-				$token = 'JIVE_POPUP_ADDING';
-			} elsif ($insert) {
-				$token = 'JIVE_POPUP_TO_PLAY_NEXT';
-			} else {
-				$token = 'JIVE_POPUP_NOW_PLAYING';
-				$showBriefly = undef;
-			}
-			# not to be shown for now playing, as we're pushing to now playing screen now and no need for showBriefly
-			if ($showBriefly) {
-				my $string = $client->string($token);
-				$client->showBriefly({ 
-					'jive' => { 
-						'type'    => 'mixed',
-						'style'   => 'add',
-						'text'    => [ $string, $info ],
-						'icon-id' => defined $artwork ? $artwork : '/html/images/cover.png',
-					}
-				});
-			}
-
-		}
-
-		$cmd .= "tracks";
-
-		$log->info("$cmd " . scalar @objs . " tracks" . ($jumpIndex ? " starting at $jumpIndex" : ""));
-
-		Slim::Control::Request::executeRequest(
-			$client, ['playlist', $cmd, 'listRef', \@objs, undef, $jumpIndex]
-		);
-	}
-
-	$request->addResult('count', scalar(@objs));
-
-	$request->setStatusDone();
-
-	return;
 }
 
 sub errorMenu {

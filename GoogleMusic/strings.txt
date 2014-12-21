@@ -103,6 +103,10 @@ PLUGIN_GOOGLEMUSIC_MY_MUSIC
 	DE	Meine Musik
 	NL	Mijn Muziek
 
+PLUGIN_GOOGLEMUSIC_LAST_ADDED
+	EN	Last Added to My Music
+	DE	Zuletzt zu meiner Musik hinzugefügt
+
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS
 	EN	All Access
 	DE	All-Inclusive
@@ -112,9 +116,25 @@ PLUGIN_GOOGLEMUSIC_IFL_RADIO
 	EN	I'm Feeling Lucky Radio
 	DE	Radio auf gut Glück
 
+PLUGIN_GOOGLEMUSIC_RADIO_GENRES
+	EN	Radio Genres
+	DE	Radio Genres
+
+PLUGIN_GOOGLEMUSIC_RADIO_ALL
+	EN	All
+	DE	Alles aus der Kategorie
+
 PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS
 	EN	My Radio Stations
 	DE	Meine Radio Sender
+
+PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETE
+	EN	Delete Radio Station
+	DE	Radiosender löschen
+
+PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETED
+	EN	Radio station deleted
+	DE	Radiosender gelöscht
 
 PLUGIN_GOOGLEMUSIC_BROWSE
 	EN	Browse Library
@@ -206,6 +226,10 @@ PLUGIN_GOOGLEMUSIC_BIOGRAPHY
 	DE	Biographie
 	EN	Biography
 
+PLUGIN_GOOGLEMUSIC_ABOUT_THIS_ALBUM
+	DE	Über dieses Album
+	EN	About this album
+
 PLUGIN_GOOGLEMUSIC_START_RADIO
 	DE	Radio starten
 	EN	Start radio
@@ -213,3 +237,19 @@ PLUGIN_GOOGLEMUSIC_START_RADIO
 PLUGIN_GOOGLEMUSIC_ERROR
 	DE	Ein unerwarteter Fehler ist aufgetreten.
 	EN	An unexpected error occurred.
+
+PLUGIN_GOOGLEMUSIC_LIKE
+	DE	Mag ich
+	EN	Like it
+
+PLUGIN_GOOGLEMUSIC_UNLIKE
+	DE	Mag ich nicht mehr
+	EN	Unlike it
+
+PLUGIN_GOOGLEMUSIC_DISLIKE
+	DE	Mag ich nicht
+	EN	Dislike it
+
+PLUGIN_GOOGLEMUSIC_DONT_DISLIKE
+	DE	Mag ich wieder
+	EN	Don't dislike it

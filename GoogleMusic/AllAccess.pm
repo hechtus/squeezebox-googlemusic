@@ -2,8 +2,7 @@ package Plugins::GoogleMusic::AllAccess;
 
 use strict;
 use warnings;
-
-use Tie::Cache::LRU;
+use Readonly;
 
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
@@ -11,14 +10,24 @@ use Slim::Utils::Cache;
 
 use Plugins::GoogleMusic::GoogleAPI;
 
+# Cache most of the results for one hour
+Readonly my $CACHE_TIME => 3600;
+# Cache track information for one day because get_album_info() would
+# be used too often
+Readonly my $CACHE_TIME_LONG => 24 * 3600;
+# Cache user modifiable data shorlty
+Readonly my $CACHE_TIME_SHORT => 30;
+
 my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
+my $cache;
 
-# Cache track, album, and artist translation results for one hour
-use Readonly;
-Readonly my $CACHE_TIME => 3600;
-tie my %cache, 'Tie::Cache::LRU', 100;
+sub init {
+	$cache = shift;
+
+	return;
+}
 
 # Convert an All Access Google Music Song dictionary to a consistent
 # robust track representation
@@ -26,8 +35,9 @@ sub to_slim_track {
 	my $song = shift;
 
 	my $uri = 'googlemusic:track:' . $song->{storeId};
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
-		return $cache{$uri}->{data};
+
+	if (my $track = $cache->get($uri)) {
+		return $track;
 	}
 
 	my $cover = '/html/images/cover.png';
@@ -42,6 +52,7 @@ sub to_slim_track {
 	# Build track info
 	my $track = {
 		uri => $uri,
+		id => $song->{storeId},
 		title => $song->{title},
 		album => $album,
 		artist => to_slim_artist($song),
@@ -53,13 +64,11 @@ sub to_slim_track {
 		filesize => $song->{estimatedSize},
 		trackNumber => $song->{trackNumber} || 1,
 		discNumber => $song->{discNumber} || 1,
+		rating => $song->{rating} || 0,
 	};
 
 	# Add to the cache
-	$cache{$uri} = {
-		data => $track,
-		time => time(),
-	};
+	$cache->set($uri, $track, $CACHE_TIME_LONG);
 
 	return $track;
 }
@@ -83,6 +92,7 @@ sub to_slim_album {
 
 	my $album = {
 		uri => $uri,
+		id => $song->{albumId},
 		name => $name,
 		artist => $artist,
 		year => $year,
@@ -98,15 +108,9 @@ sub to_slim_album {
 sub to_slim_artist {
 	my $song = shift;
 
-	my $uri;
+	my $id = scalar $song->{artistId} ? $song->{artistId}[0] : 'unknown';
+	my $uri = 'googlemusic:artist:' . $id;
 	my $name = $song->{artist};
-
-	# TODO: Sometimes the array has multiple entries
-	if (scalar $song->{artistId}) {
-		$uri = 'googlemusic:artist:' . $song->{artistId}[0];
-	} else {
-		$uri = 'googlemusic:artist:unknown';
-	}
 
 	my $image = '/html/images/artists.png';
 	if (exists $song->{artistArtRef}) {
@@ -116,6 +120,7 @@ sub to_slim_artist {
 
 	my $artist = {
 		uri => $uri,
+		id => $id,
 		name => $name,
 		image => $image,
 	};
@@ -151,6 +156,7 @@ sub to_slim_album_artist {
 	
 	my $artist = {
 		uri => $uri,
+		id => 'unknown',
 		name => $name,
 		various => $various,
 		image => $image,
@@ -164,14 +170,18 @@ sub get_track {
 
 	return unless $prefs->get('all_access_enabled');
 
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
-		return $cache{$uri}->{data};
+	if (my $track = $cache->get($uri)) {
+		return $track;
 	}
 
 	my ($id) = $uri =~ m{^googlemusic:track:(.*)$}x;
 	my $song;
 
 	eval {
+		# For some reasons Google only knows this does not return the
+		# rating of the track. Surprisingly, fetching the whole album
+		# returns the rating. Thus, we get the track info and after
+		# that the album info for that track.
 		$song = $googleapi->get_track_info($id);
 	};
 	if ($@) {
@@ -179,7 +189,17 @@ sub get_track {
 		return;
 	}
 
-	return to_slim_track($song);
+	# Get the album and process all tracks to get them into the cache
+	my $album = get_album_info('googlemusic:album:' . $song->{albumId});
+
+	# Get the track from the cache including the rating field :-)
+	if (my $track = $cache->get($uri)) {
+		return $track;
+	}
+
+	$log->error("Not able to get the track info for track ID $id from the album information");
+
+	return;
 }
 
 sub get_track_by_id {
@@ -195,8 +215,9 @@ sub search {
 	return unless $prefs->get('all_access_enabled');
 
 	my $uri = 'googlemusic:search:' . $query;
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
-		return $cache{$uri}->{data};
+
+	if (my $result = $cache->get($uri)) {
+		return $result;
 	}
 
 	my $googleResult;
@@ -224,12 +245,33 @@ sub search {
 	}
 
 	# Add to the cache
-	$cache{$uri} = {
-		data => $result,
-		time => time(),
-	};
+	$cache->set($uri, $result, $CACHE_TIME);
 
 	return $result;
+}
+
+# Search All Access tracks only. Do not cache these searches for now.
+sub searchTracks {
+	my ($query, $maxResults) = @_;
+
+	my $googleResult;
+	my $tracks = [];
+
+	return $tracks unless $prefs->get('all_access_enabled');
+
+	eval {
+		$googleResult = $googleapi->search_all_access($query, $maxResults);
+	};
+
+	if ($@) {
+		$log->error("Not able to search All Access for \"$query\": $@");
+	} else {
+		for my $hit (@{$googleResult->{song_hits}}) {
+			push @$tracks, to_slim_track($hit->{track});
+		}
+	}
+
+	return $tracks;
 }
 
 # Get information for an artist
@@ -238,8 +280,8 @@ sub get_artist_info {
 
 	return unless $prefs->get('all_access_enabled');
 
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
-		return $cache{$uri}->{data};
+	if (my $artist = $cache->get($uri)) {
+		return $artist;
 	}
 
 	my ($id) = $uri =~ m{^googlemusic:artist:(.*)$}x;
@@ -258,10 +300,7 @@ sub get_artist_info {
 	$artist = artist_to_slim_artist($googleArtist);
 
 	# Add to the cache
-	$cache{$uri} = {
-		data => $artist,
-		time => time(),
-	};
+	$cache->set($uri, $artist, $CACHE_TIME);
 
 	return $artist;
 }
@@ -272,16 +311,16 @@ sub get_artist_image {
 	return unless $prefs->get('all_access_enabled');
 
 	# First try to get the image from the artist cache
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
-		return $cache{$uri}->{data}->{image};
+	if (my $artist = $cache->get($uri)) {
+		return $artist->{image};
 	}
 
 	my ($id) = $uri =~ m{^googlemusic:artist:(.*)$}x;
 
 	my $imageuri = 'googlemusic:artistimage:' . $id;
 
-	if ($cache{$imageuri} && (time() - $cache{$imageuri}->{time}) < $CACHE_TIME) {
-		return $cache{$imageuri}->{data};
+	if (my $artistImage = $cache->get($imageuri)) {
+		return $artistImage;
 	}
 
 	my $googleArtist;
@@ -300,10 +339,7 @@ sub get_artist_image {
 	}
 
 	# Add to the cache
-	$cache{$imageuri} = {
-		data => $image,
-		time => time(),
-	};
+	$cache->set($imageuri, $image, $CACHE_TIME);
 
 	return $image;
 }
@@ -314,8 +350,8 @@ sub get_album_info {
 
 	return unless $prefs->get('all_access_enabled');
 
-	if ($cache{$uri} && (time() - $cache{$uri}->{time}) < $CACHE_TIME) {
-		return $cache{$uri}->{data};
+	if (my $album = $cache->get($uri)) {
+		return $album;
 	}
 
 	my ($id) = $uri =~ m{^googlemusic:album:(.*)$}x;
@@ -334,10 +370,7 @@ sub get_album_info {
 	$album = album_to_slim_album($googleAlbum);
 
 	# Add to the cache
-	$cache{$uri} = {
-		data => $album,
-		time => time(),
-	};
+	$cache->set($uri, $album, $CACHE_TIME);
 
 	return $album;
 }
@@ -347,9 +380,12 @@ sub get_album_info {
 sub album_to_slim_album {
 	my $googleAlbum = shift;
 
+	my $artistId = scalar $googleAlbum->{artistId} ? $googleAlbum->{artistId}[0] : 'unknown';
+
 	# TODO: Sometimes the array has multiple entries
 	my $artist = {
-		uri => 'googlemusic:artist:' . (($googleAlbum->{artistId}[0]) ?  $googleAlbum->{artistId}[0] : 'unknown'),
+		uri => 'googlemusic:artist:' . $artistId,
+		id => $artistId,
 		name => $googleAlbum->{albumArtist} || $googleAlbum->{artist},
 		various => 0,
 	};
@@ -367,6 +403,7 @@ sub album_to_slim_album {
 
 	my $album = {
 		uri => $uri,
+		id => $googleAlbum->{albumId},
 		name => $name,
 		artist => $artist,
 		year => $year,
@@ -382,6 +419,10 @@ sub album_to_slim_album {
 			}
 			push @{$album->{tracks}}, $track;
 		}
+	}
+
+	if (exists $googleAlbum->{description}) {
+		$album->{description} = $googleAlbum->{description};
 	}
 
 	return $album;
@@ -404,6 +445,7 @@ sub artist_to_slim_artist {
 
 	my $artist = {
 		uri => $uri,
+		id => $googleArtist->{artistId},
 		name => $name,
 		image => $image,
 		tracks => [],
@@ -432,6 +474,197 @@ sub artist_to_slim_artist {
 	}
 
 	return $artist;
+}
+
+# Get Google Music genres, either parents or child genres
+sub getGenres {
+	my $uri = shift;
+
+	return unless $prefs->get('all_access_enabled');
+	
+	my ($parent) = $uri =~ m{^googlemusic:genres:(.*)$}x;
+
+	my $genres;
+
+	if ($genres = $cache->get($uri)) {
+		return $genres;
+	}
+
+	my $googleGenres;
+	$genres = [];
+
+	eval {
+		if (Plugins::GoogleMusic::GoogleAPI::get_version() lt '4.1.0') {
+			$googleGenres = $googleapi->get_genres($parent)->{genres};
+		} else {
+			$googleGenres = $googleapi->get_genres($parent);
+		}
+	};
+	if ($@) {
+		$log->error("Not able to get genres: $@");
+		return $genres;
+	}
+
+	for my $genre (@{$googleGenres}) {
+		push @{$genres}, genreToSlimGenre($genre);
+	}
+	
+	$cache->set($uri, $genres, $CACHE_TIME);
+
+	return $genres;
+}
+
+# Convert an All Access Google Music genre dictionary to a consistent
+# robust genre representation
+sub genreToSlimGenre {
+	my $googleGenre = shift;
+
+	my $uri = 'googlemusic:genre:' . $googleGenre->{id};
+
+	my $image = '/html/images/genres.png';
+	if (exists $googleGenre->{images}) {
+		$image = $googleGenre->{images}[0]{url};
+		$image = Plugins::GoogleMusic::Image->uri($image);
+	}
+
+	my $genre = {
+		uri => $uri,
+		id => $googleGenre->{id},
+		name => $googleGenre->{name},
+		image => $image,
+	};
+
+	if (exists $googleGenre->{children}) {
+		$genre->{children} = $googleGenre->{children};
+	}
+	if (exists $googleGenre->{parentId}) {
+		$genre->{parent} = $googleGenre->{parentId};
+	}
+
+	$cache->set($uri, $genre, $CACHE_TIME);
+
+	return $genre;
+}
+
+# Get all user-created radio stations
+sub getStations {
+	
+	return [] unless $prefs->get('all_access_enabled');
+	
+	my $stations;
+	my $uri = 'googlemusic:stations';
+
+	if ($stations = $cache->get($uri)) {
+		return $stations;
+	}
+
+	eval {
+		$stations = $googleapi->get_all_stations();
+	};
+	if ($@) {
+		$log->error("Not able to get user created radio stations: $@");
+		return [];
+	}
+
+	$cache->set($uri, $stations, $CACHE_TIME_SHORT);
+
+	return $stations;
+}
+
+sub deleteStation {
+	my $id = shift;
+	
+	eval {
+		$googleapi->delete_stations($id);
+	};
+	if ($@) {
+		$log->error("Not able to delete radio station $id: $@");
+		return;
+	}
+
+	# Remove from cache to force reload
+	$cache->remove('googlemusic:stations');
+
+	# Return the ID on success
+	return $id;
+}
+
+# Get a specific genre (from the cache)
+sub getGenre {
+	my $uri = shift;
+
+	my $genre;
+
+	if ($genre = $cache->get($uri)) {
+		return $genre;
+	}
+
+	# Not found in the cache. Refresh parent genres.
+	my $genres = getGenres('googlemusic:genres');
+	# Try again
+	if ($genre = $cache->get($uri)) {
+		return $genre;
+	}
+
+	# Still not found. Must be a child genre.
+	my ($id) = $uri =~ m{^googlemusic:genre:(.*)$}x;
+	# Search a matching parent and get its childs
+	for my $parent (@{$genres}) {
+		if ( grep { $_ eq $id } @{$parent->{children}} ) {
+			$genres = getGenres($parent->{uri});
+			last;
+		}
+	}
+	# Try again
+	if ($genre = $cache->get($uri)) {
+		return $genre;
+	}
+
+	$log->error("Not able to get genre: $uri");
+
+	return;
+}
+
+# Change the rating of a track
+sub changeRating {
+	my ($uri, $rating) = @_;
+
+	return unless $prefs->get('all_access_enabled');
+
+	my ($id) = $uri =~ m{^googlemusic:track:(.*)$}x;
+	my $song;
+
+	# Get the Google track info first
+	eval {
+		$song = $googleapi->get_track_info($id);
+	};
+	if ($@) {
+		$log->error("Not able to get the track info for track ID $id: $@");
+		return;
+	}
+
+	# Now change the rating value
+	$song->{rating} = $rating;
+
+	# And apply it
+	eval {
+		$song = $googleapi->change_song_metadata($song);
+	};
+	if ($@) {
+		$log->error("Not able to change the song metadata for track ID $id: $@");
+		return;
+	}
+
+	# TBD: This only updates the track in the cach NOT albums, search
+	# results etc.
+	# Also need to update our cache. Get it from the cache first.
+	my $track = get_track($uri);
+	# Change the rating
+	$track->{rating} = $rating;
+	# And update the cache
+	$cache->set($uri, $track, $CACHE_TIME_LONG);
+
+	return;
 }
 
 1;

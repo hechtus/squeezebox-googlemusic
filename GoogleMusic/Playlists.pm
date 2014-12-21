@@ -80,7 +80,7 @@ sub refresh {
 	# Now get all shared playlists
 	$googlePlaylists = $googleapi->get_all_playlists();
 	for my $googlePlaylist (@$googlePlaylists) {
-		if ($googlePlaylist->{type} eq 'SHARED') {
+		if (exists $googlePlaylist->{type} && $googlePlaylist->{type} eq 'SHARED') {
 			my $playlist = {};
 			$playlist->{name} = $googlePlaylist->{name};
 			$playlist->{uri} = 'googlemusic:playlist:' . $googlePlaylist->{id};

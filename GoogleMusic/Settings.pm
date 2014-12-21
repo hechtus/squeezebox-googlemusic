@@ -9,6 +9,8 @@ use strict;
 use warnings;
 use base qw(Slim::Web::Settings);
 
+use MIME::Base64;
+
 use Slim::Utils::Log;
 use Slim::Utils::Misc;
 use Slim::Utils::Strings qw(cstring);
@@ -23,12 +25,19 @@ my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
 $prefs->init({
+	username => '',
+	password => '',
 	disable_ssl => 0,
 	my_music_album_sort_method => 'artistyearalbum',
 	all_access_album_sort_method => 'none',
 	max_search_items => 100,
 	max_artist_tracks => 25,
 	max_related_artists => 10,
+});
+
+$prefs->migrate(1, sub { 
+	$prefs->set('password', encode_base64($prefs->get('password'), ''));
+	return 1;
 });
 
 sub name {
@@ -48,9 +57,9 @@ sub handler {
 
 	if ($params->{'saveSettings'} && $params->{'username'} && $params->{'password'} &&
 	    (($params->{'username'} ne $prefs->get('username')) || 
-	     ($params->{'password'} ne $prefs->get('password')))) {
+	     (encode_base64($params->{'password'}, '') ne $prefs->get('password')))) {
 		$prefs->set('username', $params->{'username'});
-		$prefs->set('password', $params->{'password'});
+		$prefs->set('password', encode_base64($params->{'password'}, ''));
 
 		# Logout from Google
 		$googleapi->logout();
@@ -61,7 +70,7 @@ sub handler {
 		# user is able to disable SSL verification.
 		eval {
 			$googleapi->login($prefs->get('username'),
-							  $prefs->get('password'));
+							  decode_base64($prefs->get('password')));
 		};
 		if ($@) {
 			$log->error("Not able to login to Google Play Music: $@");
@@ -112,10 +121,12 @@ sub handler {
 		}
 	}		
 
-	# To avoid showing the password remove it from the list
-	for my $param(qw(username password device_id disable_ssl my_music_album_sort_method all_access_enabled all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
+	for my $param(qw(username device_id disable_ssl my_music_album_sort_method all_access_enabled all_access_album_sort_method max_search_items max_artist_tracks max_related_artists)) {
 		$params->{'prefs'}->{$param} = $prefs->get($param);
 	}
+
+	# The password is obfuscated by the settings page
+	$params->{'prefs'}->{'password'} = decode_base64($prefs->get('password'));
 
 	$params->{'album_sort_methods'} = {
 		'none'            => cstring($client, 'NONE'),

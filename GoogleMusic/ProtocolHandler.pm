@@ -81,7 +81,7 @@ sub scanStream {
 	$track->filesize($googleTrack->{'filesize'});
 	$track->year($googleTrack->{'year'});
 	$track->cover($googleTrack->{'cover'});
-
+	$track->stash->{'rating'} = $googleTrack->{'rating'};
 	$cb->( $track );
 
 	return;
@@ -115,6 +115,13 @@ sub getNextTrack {
 		return;
 	}
 
+	eval {
+		$googleapi->increment_song_playcount($id);
+	};
+	if ($@) {
+		$log->error("Incrementing the play count for url $url failed: $@");
+	}
+
 	$song->streamUrl($trackURL);
 
 	$successCb->();
@@ -144,6 +151,7 @@ sub getMetadataFor {
 		icon     => $track->{'cover'},
 		bitrate  => '320k CBR',
 		type     => 'MP3 (Google Music)',
+		rating   => $track->{'rating'},
 	};
 }
 

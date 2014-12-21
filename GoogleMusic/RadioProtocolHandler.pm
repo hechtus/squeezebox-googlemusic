@@ -20,6 +20,21 @@ sub overridePlayback {
 		$client->execute(["googlemusicradio", "artist", $1]);
 
 		return 1;
+	} elsif ($url =~ /^googlemusicradio:album:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "album", $1]);
+
+		return 1;
+	} elsif ($url =~ /^googlemusicradio:track:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "track", $1]);
+
+		return 1;
+	} elsif ($url =~ /^googlemusicradio:genre:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "genre", $1]);
+
+		return 1;
 	}
 
 	return;

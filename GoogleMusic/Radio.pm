@@ -5,6 +5,8 @@ package Plugins::GoogleMusic::Radio;
 use strict;
 use warnings;
 
+use List::Util qw(max);
+
 use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Utils::Cache;
@@ -18,7 +20,7 @@ my $log = logger('plugin.googlemusic');
 my $prefs = preferences('plugin.googlemusic');
 my $googleapi = Plugins::GoogleMusic::GoogleAPI::get();
 
-my $PLAYLIST_MAXLENGTH = 25;
+my $PLAYLIST_MAXLENGTH = 10;
 
 my @stopcommands = qw(clear loadtracks playtracks load play loadalbum playalbum);
 
@@ -26,12 +28,12 @@ my @stopcommands = qw(clear loadtracks playtracks load play loadalbum playalbum)
 # Initialization of the module
 sub init {
 	Slim::Control::Request::addDispatch(['googlemusicradio', '_type'], [1, 0, 0, \&cliRequest]);
-	Slim::Control::Request::subscribe(\&commandCallback, [['playlist'], ['newsong', 'delete', @stopcommands]]);
+	Slim::Control::Request::subscribe(\&commandCallback, [['playlist'], ['newsong', 'delete', 'index', 'jump', @stopcommands]]);
 
 	return;
 }
 
-# Google Music All Access Radio menu
+# Google Music All Access My Radio Stations menu
 sub menu {
 	my ($client, $callback, $args) = @_;
 
@@ -39,13 +41,7 @@ sub menu {
 	my @menu;
 
 	# Get all user created stations
-	eval {
-		$stations = $googleapi->get_all_stations();
-	};
-	if ($@) {
-		$log->error("Not able to get user created radio stations: $@");
-		$stations = [];
-	}
+	$stations = Plugins::GoogleMusic::AllAccess::getStations();
 
 	# Build the Menu
 	for my $station (sort { $a->{name} cmp $b->{name} } @{$stations}) {
@@ -54,11 +50,13 @@ sub menu {
 			$image = $station->{imageUrl};
 			$image = Plugins::GoogleMusic::Image->uri($image);
 		}
+
 		push @menu, {
 			name => $station->{name},
-			type => 'audio',
-			url => "googlemusicradio:station:$station->{id}",
+			play => "googlemusicradio:station:$station->{id}",
 			image => $image,
+			items => stationInfo($client, $station),
+			on_select => 'play',
 			textkey => substr($station->{name}, 0, 1),
 		};
 	}
@@ -71,10 +69,153 @@ sub menu {
 		}
 	}
 
+	return $callback->(\@menu);
+}
+
+sub stationInfo {
+	my ($client, $station) = @_;
+
+	return [{
+		type => 'link',
+		name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETE'),
+		url  => \&deleteStation,
+		passthrough => [ $station->{id} ],
+		nextWindow => 'parent',
+		forceRefresh => 1,
+		favorites => 0,
+	}, {
+		type  => 'text',
+		label => 'URL',
+		name  => "googlemusicradio:station:$station->{id}",
+	}];
+}
+
+sub deleteStation {
+	my ($client, $callback, $args, $id) = @_;
+
+	my $msg;
+
+	if (!Plugins::GoogleMusic::AllAccess::deleteStation($id)) {
+		$log->error("Not able to delete radio station $id");
+		$msg = cstring($client, 'PLUGIN_GOOGLEMUSIC_ERROR');
+	} else {
+		$msg = cstring($client, 'PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETED');
+	}
+
+	return $callback->({
+		items => [{
+			type => 'text',
+			name => $msg,
+			showBriefly => 1,
+			popback => 2
+		}]
+	});
+}
+
+# Google Music All Access Radio Genres menu feed
+sub genresFeed {
+	my ($client, $callback, $args, $id) = @_;
+
+	my $genres;
+	my @menu;
+
+	# If an ID is present we are getting child genres
+	if ($id) {
+		# Create a menu entry for the parent genre
+		my $genre = Plugins::GoogleMusic::AllAccess::getGenre('googlemusic:genre:' . $id);
+		push @menu, {
+			name => cstring($client, 'PLUGIN_GOOGLEMUSIC_RADIO_ALL') . " " . $genre->{name},
+			type => 'audio',
+			url => 'googlemusicradio:genre:' . $genre->{id},
+			image => $genre->{image},
+		};
+		# Get the child genres for the parent ID
+		$genres = Plugins::GoogleMusic::AllAccess::getGenres('googlemusic:genres:' . $id);
+	} else {
+		# Get all parent genres
+		$genres = Plugins::GoogleMusic::AllAccess::getGenres('googlemusic:genres');
+	}
+
+	# Build the rest of the menu
+	for my $genre (@{$genres}) {
+		if ($id) {
+			# If a parent ID was given we will add playable child nodes
+			push @menu, {
+				name => $genre->{name},
+				type => 'audio',
+				url => 'googlemusicradio:genre:' . $genre->{id},
+				image => $genre->{image},
+			};
+		} else {
+			# When parsing parent genres create a link to individual parent menus
+			push @menu, {
+				name => $genre->{name},
+				type => 'link',
+				url => \&genresFeed,
+				image => $genre->{image},
+				passthrough => [ $genre->{id} ],
+			};
+		}
+	}
+
+	# List of genres may be possibly empty due to an error
+	if (!scalar @menu) {
+		push @menu, {
+			name => cstring($client, 'EMPTY'),
+			type => 'text',
+		}
+	}
+
 	$callback->(\@menu);
 
 	return;
 
+}
+
+# Start Google Music Radio feed
+#
+# Does not support album and track IDs from My Library
+sub startRadioFeed {
+	my ($client, $callback, $args, $url) = @_;
+
+	return unless $client;
+
+	if ($url =~ /^googlemusic:station:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "station", $1]);
+
+		return $callback->();
+	} elsif ($url =~ /^googlemusic:artist:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "artist", $1]);
+
+		return $callback->();
+	} elsif ($url =~ /^googlemusic:album:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "album", $1]);
+
+		return $callback->();
+	} elsif ($url =~ /^googlemusic:track:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "track", $1]);
+
+		return $callback->();
+	} elsif ($url =~ /^googlemusic:genre:(.*)$/) {
+
+		$client->execute(["googlemusicradio", "genre", $1]);
+
+		return $callback->();
+	}
+
+	$log->error("Not able to start radio for URL $url");
+
+	return $callback->({
+		items => [{
+			name => cstring($client, 'PLUGIN_GOOGLEMUSIC_ERROR'),
+			showBriefly => 1,
+		}]
+	});
+	
 }
 
 sub cliRequest {
@@ -114,6 +255,54 @@ sub cliRequest {
 			$log->info("Playing Google Music radio station: $station");
 			_playRadio($client, { station => $station });
 		}
+	} elsif ($type eq 'album') {
+		my $station;
+		my $albumID = $request->getParam('_p2');
+		my $album = Plugins::GoogleMusic::AllAccess::get_album_info("googlemusic:album:$albumID");
+
+		$log->info("Creating Google Music radio station for album ID $albumID");
+
+		eval {
+			$station = $googleapi->create_station($album->{name}, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False, $albumID, $Inline::Python::Boolean::False);
+		};
+		if ($@) {
+			$log->error("Not able to create album radio station for album ID $albumID: $@");
+		} else {
+			$log->info("Playing Google Music radio station: $station");
+			_playRadio($client, { station => $station });
+		}
+	} elsif ($type eq 'track') {
+		my $station;
+		my $trackID = $request->getParam('_p2');
+		my $track = Plugins::GoogleMusic::Library::get_track("googlemusic:track:$trackID");
+
+		$log->info("Creating Google Music radio station for track ID $trackID");
+
+		eval {
+			$station = $googleapi->create_station($track->{title}, $trackID, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False);
+		};
+		if ($@) {
+			$log->error("Not able to create track radio station for track ID $trackID: $@");
+		} else {
+			$log->info("Playing Google Music radio station: $station");
+			_playRadio($client, { station => $station });
+		}
+	} elsif ($type eq 'genre') {
+		my $station;
+		my $genreID = $request->getParam('_p2');
+		my $genre = Plugins::GoogleMusic::AllAccess::getGenre("googlemusic:genre:$genreID");
+
+		$log->info("Creating Google Music radio station for genre ID $genreID");
+
+		eval {
+			$station = $googleapi->create_station($genre->{name}, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False, $Inline::Python::Boolean::False, $genreID);
+		};
+		if ($@) {
+			$log->error("Not able to create genre radio station for genre ID $genreID: $@");
+		} else {
+			$log->info("Playing Google Music radio station: $station");
+			_playRadio($client, { station => $station });
+		}
 	}
 
 	$request->setStatusDone();
@@ -130,6 +319,7 @@ sub _playRadio {
 		$master->pluginData('running', 1);
 		$master->pluginData('args', $args);
 		$master->pluginData('tracks', []);
+		$master->pluginData('recentlyPlayed', []);
 	} else {
 		$args = $master->pluginData('args');
 	}
@@ -193,7 +383,10 @@ sub _playRadio {
 				tracknum=> $entry->{'trackNumber'},
 			});
 
-			push @tracksToAdd, $obj;
+			if ($obj) {
+				$obj->stash->{'rating'} = $entry->{'rating'};
+				push @tracksToAdd, $obj;
+			}
 
 			$tracksToAdd--;
 		}
@@ -227,12 +420,17 @@ sub _playRadio {
 sub fetchStationTracks {
 	my ($master, $tracks, $args) = @_;
 
+	my $recentlyPlayed = $master->pluginData('recentlyPlayed') || [];
 	my $station = $args->{'station'};
 	my $googleTracks;
 
 	# Get new tracks for the station
 	eval {
-		$googleTracks = $googleapi->get_station_tracks($station, $PLAYLIST_MAXLENGTH);
+		if (Plugins::GoogleMusic::GoogleAPI::get_version() lt '4.1.0') {
+			$googleTracks = $googleapi->get_station_tracks($station, $PLAYLIST_MAXLENGTH);
+		} else {
+			$googleTracks = $googleapi->get_station_tracks($station, $PLAYLIST_MAXLENGTH, $recentlyPlayed);
+		}
 	};
 	if ($@) {
 		$log->error("Not able to get tracks for station $station: $@");
@@ -249,7 +447,13 @@ sub fetchStationTracks {
 			$track = Plugins::GoogleMusic::AllAccess::to_slim_track($googleTrack);
 		}
 		push @{$tracks}, $track;
+		push @{$recentlyPlayed}, $track->{id};
 	}
+
+	# Limit the number of recently played tracks to 50 as Google does
+	splice @$recentlyPlayed, 0, max(scalar @$recentlyPlayed - 50, 0);
+
+	$master->pluginData('recentlyPlayed', $recentlyPlayed);
 
 	my $newtracks = scalar @{$googleTracks || []};
 
@@ -282,13 +486,14 @@ sub commandCallback {
 			
 			$master->pluginData('running', 0);
 			$master->pluginData('tracks', []);
+			$master->pluginData('recentlyPlayed', []);
 			$master->pluginData('args', {});
 			
 			if ($master->can('inhibitShuffle') && $master->inhibitShuffle && $master->inhibitShuffle eq 'googlemusicradio') {
 				$master->inhibitShuffle(undef);
 			}
 			
-		} elsif ($request->isCommand([['playlist'], ['newsong']] ||
+		} elsif ($request->isCommand([['playlist'], ['newsong', 'index', 'jump']] ||
 				 ($request->isCommand([['playlist'], ['delete']]) && $request->getParam('_index') > $songIndex)
 				)) {
 				
