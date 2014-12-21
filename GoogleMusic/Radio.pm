@@ -28,7 +28,7 @@ my @stopcommands = qw(clear loadtracks playtracks load play loadalbum playalbum)
 # Initialization of the module
 sub init {
 	Slim::Control::Request::addDispatch(['googlemusicradio', '_type'], [1, 0, 0, \&cliRequest]);
-	Slim::Control::Request::subscribe(\&commandCallback, [['playlist'], ['newsong', 'delete', @stopcommands]]);
+	Slim::Control::Request::subscribe(\&commandCallback, [['playlist'], ['newsong', 'delete', 'index', 'jump', @stopcommands]]);
 
 	return;
 }
@@ -493,7 +493,7 @@ sub commandCallback {
 				$master->inhibitShuffle(undef);
 			}
 			
-		} elsif ($request->isCommand([['playlist'], ['newsong']] ||
+		} elsif ($request->isCommand([['playlist'], ['newsong', 'index', 'jump']] ||
 				 ($request->isCommand([['playlist'], ['delete']]) && $request->getParam('_index') > $songIndex)
 				)) {
 				
