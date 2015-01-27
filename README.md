@@ -74,7 +74,7 @@ reports for issue #28 you will have to do the following:
    Note: for this to work you need to have XCode (the Mac developer
    tools) installed, you will also need the Xcode command line tools,
    but XCode will prompt you to install them if you don't.
-   Then follow step 
+   Then go to step 5 below. 
 
 1. Alternatively, if you don't have and don't want to install XCode
    you can also download the ```get-pip.py``` script from here:
