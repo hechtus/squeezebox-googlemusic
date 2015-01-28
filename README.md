@@ -96,7 +96,7 @@ reports for issue #28 you will have to do the following:
    **Important Note**: At the moment you will need the developer
      version of gmusicapi. Install this version by doing:
 
-         pip install git+https://github.com/simon-weber/Unofficial-Google-Music-API.git@develop
+         sudo pip install git+https://github.com/simon-weber/Unofficial-Google-Music-API.git@develop
 
 1. Install the Perl CPAN package
    [Inline](http://search.cpan.org/~ingy/Inline/) and
