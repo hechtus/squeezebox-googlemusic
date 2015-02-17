@@ -67,11 +67,21 @@ Installation on OSX
 The installation on OSX is quite similar to Linux. According to the
 reports for issue #28 you will have to do the following:
 
-1. Download the ```get-pip.py``` script from here:
-   https://raw.github.com/pypa/pip/master/contrib/get-pip.py
-
 1. Open Terminal by typing ```Terminal``` in Spotlight. A command line
    interface should open.
+1. Install pip. To do that, type
+   sudo easy_install pip
+   Note: for this to work you need to have XCode (the Mac developer
+   tools) installed, you will also need the Xcode command line tools,
+   but XCode will prompt you to install them if you don't.
+   Then go to step 5 below. 
+
+1. Alternatively, if you don't have and don't want to install XCode
+   you can also download the ```get-pip.py``` script from here:
+   https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+   But please be aware that you are doing this at your own risk. You
+   are installing a binary through a script downloaded from the internet
+   without any verification...
 
 1. Change to the ```Downloads``` directory
 
@@ -86,7 +96,7 @@ reports for issue #28 you will have to do the following:
    **Important Note**: At the moment you will need the developer
      version of gmusicapi. Install this version by doing:
 
-         pip install git+https://github.com/simon-weber/Unofficial-Google-Music-API.git@develop
+         sudo pip install git+https://github.com/simon-weber/Unofficial-Google-Music-API.git@develop
 
 1. Install the Perl CPAN package
    [Inline](http://search.cpan.org/~ingy/Inline/) and
