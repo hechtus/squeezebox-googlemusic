@@ -225,7 +225,8 @@ sub search {
 		tracks => [],
 		albums => [],
 		artists => [],
-	};		  
+		playlists => [],
+	};
 
 	eval {
 		$googleResult = $googleapi->search_all_access($query, $prefs->get('max_search_items'));
@@ -242,6 +243,11 @@ sub search {
 	}
 	for my $hit (@{$googleResult->{artist_hits}}) {
 		push @{$result->{artists}}, artist_to_slim_artist($hit->{artist});
+	}
+	for my $hit (@{$googleResult->{playlist_hits}}) {
+		if (exists $hit->{playlist}->{type} && $hit->{playlist}->{type} eq 'SHARED') {
+			push @{$result->{playlists}}, playlist_to_slim_playlist($hit->{playlist});
+		}
 	}
 
 	# Add to the cache
@@ -474,6 +480,32 @@ sub artist_to_slim_artist {
 	}
 
 	return $artist;
+}
+
+# Convert an All Access Google Music playlist dictionary to a consistent
+# robust playlist representation
+sub playlist_to_slim_playlist {
+	my $googlePlaylist = shift;
+
+	my $name = $googlePlaylist->{name};
+	my $id = $googlePlaylist->{shareToken};
+	my $uri = 'googlemusic:sharedplaylist:' . $id;
+
+	my $cover = '/html/images/playlist.png';
+	if (exists $googlePlaylist->{albumArtRef}) {
+		$cover = $googlePlaylist->{albumArtRef}[0]{url};
+		$cover = Plugins::GoogleMusic::Image->uri($cover);
+	}
+
+	my $playlist = {
+		uri => $uri,
+		id => $id,
+		name => $name,
+		cover => $cover,
+		owner => $googlePlaylist->{ownerName},
+	};
+
+	return $playlist
 }
 
 # Get Google Music genres, either parents or child genres

@@ -33,6 +33,7 @@ use Plugins::GoogleMusic::Recent;
 use Plugins::GoogleMusic::TrackMenu;
 use Plugins::GoogleMusic::AlbumMenu;
 use Plugins::GoogleMusic::ArtistMenu;
+use Plugins::GoogleMusic::SharedPlaylistMenu;
 
 my $log;
 my $prefs = preferences('plugin.googlemusic');
@@ -301,6 +302,9 @@ sub search_all_access {
 	# The search string may be empty. We could forbid this.
 	$args->{search} ||= '';
 
+	# Remove leading and trailing spaces
+	$args->{search} =~ s/^\s+|\s+$//g;
+
 	my $result = Plugins::GoogleMusic::AllAccess::search($args->{search});
 
 	if (!$result) {
@@ -339,6 +343,15 @@ sub search_all_access {
 		  url => \&Plugins::GoogleMusic::TrackMenu::feed,
 		  passthrough => [ $result->{tracks}, { all_access => 1, showArtist => 1, showAlbum => 1 } ], },
 	);
+
+	if (exists $result->{playlists} && scalar @{$result->{playlists}}) {
+		push @menu, {
+			name => cstring($client, "PLAYLISTS") . " (" . scalar @{$result->{playlists}} . ")",
+			type => 'link',
+			url => \&Plugins::GoogleMusic::SharedPlaylistMenu::feed,
+			passthrough => [ $result->{playlists}, { all_access => 1 } ],
+		};
+	}
 
 	$callback->(\@menu);
 

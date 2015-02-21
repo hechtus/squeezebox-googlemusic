@@ -26,7 +26,11 @@ sub feed {
 	my @items;
 
 	foreach (sort {lc($a->{name}) cmp lc($b->{name})} values %$playlists) {
-		push @items, _showPlaylist($client, $_);
+		if ($_->{uri} =~ '^googlemusic:sharedplaylist:') {
+			push @items, Plugins::GoogleMusic::SharedPlaylistMenu::_showPlaylist($client, $args, $_);
+		} else {
+			push @items, _showPlaylist($client, $_);
+		}
 	}
 
 	if (!scalar @items) {
@@ -49,6 +53,8 @@ sub _showPlaylist {
 
 	my $item = {
 		name => $playlist->{'name'},
+		cover => $playlist->{cover},
+		image => $playlist->{cover},
 		type => 'playlist',
 		url => \&Plugins::GoogleMusic::TrackMenu::feed,
 		passthrough => [$playlist->{tracks}, { showArtist => 1, showAlbum => 1, playall => 1 }],
@@ -73,6 +79,7 @@ sub refresh {
 		my $playlist = {};
 		$playlist->{name} = $googlePlaylist->{name};
 		$playlist->{uri} = 'googlemusic:playlist:' . $googlePlaylist->{id};
+		$playlist->{cover} = '/html/images/playlist.png';
 		$playlist->{tracks} = to_slim_playlist_tracks($googlePlaylist->{tracks});
 		$playlists->{$playlist->{uri}} = $playlist;
 	}
@@ -81,15 +88,11 @@ sub refresh {
 	$googlePlaylists = $googleapi->get_all_playlists();
 	for my $googlePlaylist (@$googlePlaylists) {
 		if (exists $googlePlaylist->{type} && $googlePlaylist->{type} eq 'SHARED') {
-			my $playlist = {};
-			$playlist->{name} = $googlePlaylist->{name};
-			$playlist->{uri} = 'googlemusic:playlist:' . $googlePlaylist->{id};
-			my $googleTracks = $googleapi->get_shared_playlist_contents($googlePlaylist->{shareToken});
-			$playlist->{tracks} = to_slim_playlist_tracks($googleTracks);
+			my $playlist = Plugins::GoogleMusic::AllAccess::playlist_to_slim_playlist($googlePlaylist);
 			$playlists->{$playlist->{uri}} = $playlist;
 		}
 	}
-	
+
 	return;
 }
 
