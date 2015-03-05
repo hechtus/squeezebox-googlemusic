@@ -4,166 +4,202 @@ PLUGIN_GOOGLEMUSIC
 	EN	Google Music
 	DE	Google Music
 	NL	Google Music
+	DA	Google Music
 
 PLUGIN_GOOGLEMUSIC_DESC
 	EN	Google Music plugin. Listen to your Google Music library and Google Music All Access.
 	DE	Google Music Plugin. Höre Musik aus Deiner Musiksammlung bei Google Music und Google Music All-Inclusive.
 	NL	Google Music plugin. Luister naar je Google Music bibliotheek en Google Muziek All Access.
+	DA	Google Music plugin. Hør musik fra dit Google Music bibliotek og fra Google All Access.
 
 PLUGIN_GOOGLEMUSIC_USERNAME
 	EN	Username or email address
 	DE	Benutzername oder E-Mail-Adresse
 	NL	Gebruikersnaam of emailadres
+	DA	Login eller emailadresse
 
 PLUGIN_GOOGLEMUSIC_USERNAME_DESC
 	EN	Enter your Google Play Music username or email address.
 	DE	Gib Deinen Google Play Music Benutzernamen oder Deine E-Mail-Adresse ein.
 	NL	Voer je Google Play Music gebruikersnaam of emailadres in.
+	DA	Indtast dit login til Google Play Music eller din emailadresse.
 
 PLUGIN_GOOGLEMUSIC_PASSWORD
 	EN	Password
 	DE	Passwort
 	NL	Wachtwoord
+	DA	Password
 
 PLUGIN_GOOGLEMUSIC_PASSWORD_DESC
 	EN	Enter your Google Play Music password.
 	DE	Gib Dein Google Play Music Passwort ein.
 	NL	Voor je Google Play Music wachtwoord in.
+	DA	Indtast dit password til Google Play Music.
 
 PLUGIN_GOOGLEMUSIC_DEVICE_ID
 	EN	Mobile Device ID
 	DE	Mobile Device ID
 	NL	Mobiel Apparaat ID
+	DA	Mobilenhedens ID
 
 PLUGIN_GOOGLEMUSIC_DEVICE_ID_DESC
 	EN	Enter the Google Service Framework (GSF) ID of your Android device or the ID of your iOS device. The Android GSF ID is a 16-digit hexadecimal string (without a '0x' prefix) identifying the Android device you must already have registered for Google Play Music. For iOS the ID looks like ios:01234567-0123-0123-0123-0123456789AB (including the 'ios:' prefix). On Android you can obtain this ID by dialing *#*#8255#*#* on your phone (look for the aid) or using a device ID App (look for the Google Service Framework ID Key). If your Android or iOS device is already registered, you should leave this field empty. It will be filled in automatically after setting the username and password.
 	DE	Gib Deine Google Service Framework (GSF) ID Deines Android- or die ID Deines iOS-Gerätes ein. Die Android GSF ID ist ein 16-stelliger hexadezimaler Wert (ohne '0x' Prefix), welcher das Androidgerät identifiziert, dass Du bei Google Play Music registriert haben musst. Eine iOS ID sieht so aus: ios:01234567-0123-0123-0123-0123456789AB (mit dem 'ios:' Prefix). Bei Andriod findest Du diese ID, wenn Du *#*#8255#*#* auf Deinem Telefon wählst (Die ID heißt hier aid) oder eine Device-ID-App benutzt (Die ID heißt hier Google Service Framework ID Key). Wenn Dein Android- oder iOS-Gerät bereits bei Google Play Music registriert ist, kannst Du dieses Feld auch leer lassen. Es wird automatisch nach Setzen des Benutzernamens und Passworts ausgefüllt.
 	NL	Voer je Google Service Framework (GSF) ID van je Android apparaat in. Dit ID is een hexadecimaal woord van 16 karakters (zonder de '0x' prefix), en identificeert je Android apparaat dat je al geregistreerd hebt bij Google Play Muziek. je kunt dit ID achterhalen door *#*#8255#*#* te bellen op je telefoon (kijk bij de hulp) of door gebruik te maken van een apparaat ID App (zoek naar Google Service Framework ID Key). Als je Android apparaat al is geregistreerd moet je die veld leeg laten. Het zal dan automatisch worden ingevuld als je je gebruikersnaam en wachtwoord hebt ingevuld.
+	DA	Indtast Google Service Framework (GSF) ID for din Android enhed eller ID for dit iOS enhed. Android GSF ID er et 16 cifret hexadecimalt tal (uden ‘0x’ præfiks) som identificerer din Android enhed, som du skal have registreret for Google Play Music på forhånd. For iOS er ID’et på formen ios:01234567-0123-0123-0123-0123456789AB (inklusiv ‘iOS:’ præfiks). På Android kan du se dit ID ved at ringe til *#*#8255#*#* fra din telefon (se efter ‘aid’) eller brug en ‘device id’ app og se efter Google Service Framework ID. Hvis din Android eller iOS enhed allerede er registreret, kan du lade dette felt være blankt. Det vil blive fyldt automatisk efter du har indtastet login og password.  
 
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED
 	EN	Enable All Access
 	DE	Verwende All-Inclusive
 	NL	All Access aanzetten
+	DA	Anvend All Access
 
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS_ENABLED_DESC
 	EN	This setting changes the menu structures in the plugin. Please note that for All Access you will need a paid subscription.
 	DE	Diese Einstellung verändert die Menustruktur des Plugins. Du benötigst hierfür einen kostenpflichtigen All-Inclusive Zugang.
 	NL	Deze instelling wijzigt de menu structuur in de plugin. Let op dat je voor All Access een betaald abonnement moet hebben.
+	DA	Denne indstilling ændrer menuen i plugin’et. Dette kræver et betalingsabonnement.
 
 PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS
 	EN	Maximum number of All Access search results
 	DE	Maximale All-Inclusive Suchergebnisse
+	DA	Maksimalt antal All Access søgeresultater
 
 PLUGIN_GOOGLEMUSIC_MAX_SEARCH_ITEMS_DESC
 	EN	Limits the number of All Access search results for album, artists, and tracks. If you are having performance or bandwidth problems or difficulties to visualize the search results you should decrease this value.
 	DE	Beschränkt die Anzahl der All-Inclusive Suchergebnisse für Albums, Interpreten und Titel. Wenn Du Probleme mit der Plugin-Performance, der Bandbreite oder Schwierigkeiten hast, die Suchergebnisse anzuzeigen, kannst Du diesen Wert verringern.
+	DA	Begrænser antallet af søgeresultater for albums, kunstnere og sange i All Access. Hvis du oplever problemer med performance eller besvær med at vise søgeresultaterne, kan du sætte denne værdi lavere. 
 
 PLUGIN_GOOGLEMUSIC_MAX_ARTIST_TRACKS
 	EN	Maximum number of All Access tracks per artist
 	DE	Maximale All-Inclusive Titel pro Interpret
+	DA	Maksimalt antal sange per kunstner i All Access
 
 PLUGIN_GOOGLEMUSIC_MAX_ARTIST_TRACKS_DESC
 	EN	Limits the number of All Access tracks per Artist. If you are having performance or bandwidth problems or difficulties to visualize all tracks you should decrease this value.
 	DE	Beschränkt die Anzahl der All-Inclusive Titel pro Interpret. Wenn Du Probleme mit der Plugin-Performance, der Bandbreite oder Schwierigkeiten hast, die Titel anzuzeigen, kannst Du diesen Wert verringern.
+	DA	Begrænser antallet af sange per kunstner i All Access. Hvis du oplever problemer med performance eller besvær med at vise søgeresultaterne, kan du sætte denne værdi lavere. 
 
 PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS
 	EN	Maximum number of All Access related artists
 	DE	Maximale All-Inclusive ähnliche Interpreten
+	DA	Maksimalt antal lignende kunstnere i All Access
 
 PLUGIN_GOOGLEMUSIC_MAX_RELATED_ARTISTS_DESC
 	EN	Limits the number of All Access releated artists. If you are having performance or bandwidth problems or difficulties to visualize all related artists you should decrease this value.
 	DE	Beschränkt die Anzahl der All-Inclusive ähnlichen Interpreten. Wenn Du Probleme mit der Plugin-Performance, der Bandbreite oder Schwierigkeiten hast, die ähnlichen Interpreten anzuzeigen, kannst Du diesen Wert verringern.
+	DA	Begrænser antallet af lignende kunstnere i All Access. Hvis du oplever problemer med performance eller besvær med at vise søgeresultaterne, kan du sætte denne værdi lavere. 
 
 PLUGIN_GOOGLEMUSIC_LOGIN_FAILED
 	EN	Login to Google Play Music failed. Bad username or password.
 	DE	Das Einloggen bei Google Play Music schlug fehl. Der Benutzername oder das Passwort sind falsch.
 	NL	Inloggen bij Google Play Muziek mislukt. Verkeerde gebruikersnaam of wachtwoord.
+	DA	Login til Google Play Music mislykkedes. Forkert login eller password.
 
 PLUGIN_GOOGLEMUSIC_LOGIN_SUCCESS
 	EN	Successfully logged in to Google Play Music.
 	DE	Erfolgreich bei Google Play Music eingeloggt.
 	NL	Succesvol ingelogd bij Google Play Muziek.
+	DA	Login til Google Play Music lykkedes.
 
 PLUGIN_GOOGLEMUSIC_NOT_LOGGED_IN
 	EN	Not logged in to Google Play Music. Set your username and password.
 	DE	Nicht eingeloggt bei Google Play Music. Setze Deinen Benutzernamen und Dein Passwort.
 	NL	Niet ingelogd bij Google Play Muziek. Stel je gebruikersnaam en wachtwoord in.
+	DA	Du er ikke logget ind i Google play Music. Indtast login og password.
 
 PLUGIN_GOOGLEMUSIC_NO_DEVICE_ID
 	EN	No mobile device (phone or tablet) registered for Google Play Music. Not able to obtain the mobile device ID automatically.
 	DE	Kein Androidgerät bei Google Play Music registriert. Es ist nicht möglich die Mobile Device ID automatisch zu ermitteln.
 	NL	Geen mobiel apparaat (telefoon of tablet) geregistreerd voor Google Play Muziek. Het is niet mogelijk om automatisch het mobiele apparaat ID te verkrijgen.
+	DA	Ingen mobilenhed registreret til Google Play Music. Kunne ikke finde et mobilenheds-ID.
 
 PLUGIN_GOOGLEMUSIC_BAD_VERSION
 	EN	A more recent version of the Python package "gmusicapi" is required. Please install at least version 3.1.0 and restart Logitech Media Server.
 	DE	Eine neuere Version des Python Pakets "gmusicapi" ist nötig. Bitte installiere mindestens Version 3.1.0 und starte den Logitech Media Server neu.
+	DA	Der kræves en nyere version af Python pakken “gmusicapi”. Installer mindst version 3.1.0 og genstart Logitech Media Server. 
 
 PLUGIN_GOOGLEMUSIC_MY_MUSIC
 	EN	My Music
 	DE	Meine Musik
 	NL	Mijn Muziek
+	DA	Min Musik
 
 PLUGIN_GOOGLEMUSIC_LAST_ADDED
 	EN	Last Added to My Music
 	DE	Zuletzt zu meiner Musik hinzugefügt
+	DA	Senest tilføjet til Min Musik
 
 PLUGIN_GOOGLEMUSIC_ALL_ACCESS
 	EN	All Access
 	DE	All-Inclusive
 	NL	All Access
+	DA	All Access
 
 PLUGIN_GOOGLEMUSIC_IFL_RADIO
 	EN	I'm Feeling Lucky Radio
 	DE	Radio auf gut Glück
+	DA	Radio Prøv Lykken
 
 PLUGIN_GOOGLEMUSIC_RADIO_GENRES
 	EN	Radio Genres
 	DE	Radio Genres
+	DA	Radio Genrer
 
 PLUGIN_GOOGLEMUSIC_RADIO_ALL
 	EN	All
 	DE	Alles aus der Kategorie
+	DA	Alt
 
 PLUGIN_GOOGLEMUSIC_MY_RADIO_STATIONS
 	EN	My Radio Stations
 	DE	Meine Radio Sender
+	DA	Mine radiostationer
 
 PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETE
 	EN	Delete Radio Station
 	DE	Radiosender löschen
+	DA	Slet radiostationen
 
 PLUGIN_GOOGLEMUSIC_RADIO_STATION_DELETED
 	EN	Radio station deleted
 	DE	Radiosender gelöscht
+	DA	Slettede radiostationen
 
 PLUGIN_GOOGLEMUSIC_BROWSE
 	EN	Browse Library
 	DE	Meine Musik
 	NL	Blader door de bibliotheek
+	DA	Min Musik
 
 PLUGIN_GOOGLEMUSIC_RELOAD_LIBRARY
 	EN	Reload library
 	DE	Musiksammlung neu laden
 	NL	Bibliotheek herladen
+	DA	Genopfrisk kataloget
 
 PLUGIN_GOOGLEMUSIC_LIBRARY_RELOADED
 	EN	Library is reloaded
 	DE	Deine Musiksammlung wurde aktualisiert
 	NL	De bibliotheek is herladen
+	DA	Kataloget er genopfrisket
 
 PLUGIN_GOOGLEMUSIC_TOP_TRACKS
 	EN	Top tracks
 	DE	Top-Titel
 	NL	Top tracks
+	DA	Top sange
 
 PLUGIN_GOOGLEMUSIC_RELATED_ARTISTS
 	EN	Related artists
 	DE	Ähnliche Interpreten
 	NL	Vergelijkbare artiesten
+	DA	Lignende kunstnere
 
 PLUGIN_GOOGLEMUSIC_NO_TRACK
 	DE	Google Music Titel kann nicht abgerufen werden.
 	EN	Unable to retrieve Google Music track.
+	DA	Kan ikke hente sangen fra Google Music
 
 PLUGIN_GOOGLEMUSIC_NO_NEXT_TRACK
 	CS	Není možné načíst další stopu, zkuste znovu stiskem PLAY.
@@ -197,59 +233,74 @@ PLUGIN_GOOGLEMUSIC_ON_GOOGLEMUSIC
 ARTIST_ALBUMS_SORT_METHOD
 	DE	Sortierverfahren für Alben eines Interpreten
 	EN	Artist Albums Sort Method
+	DA	Sortering for kunstnerens albums
 
 ARTIST_ALBUMS_SORT_METHOD_DESC
 	DE	Verfahren nach dem die Alben eines Interpreten sortiert werden sollen. Dies gilt nicht für Suchergebnisse sondern nur für die Albem eines Interpreten.
 	EN	Method of how albums of one artist are sorted. This does not apply to search results but only to albums of a certain artist.
+	DA	Sorteringsmetode til en kunstners albums. Gælder ikke søgeresultater, men kun albums for en enkelt kunstner.
 
 ALBUMS_SORT_METHOD_DESC
 	DE	Verfahren nach dem Alben sortiert werden sollen. Das gewählte Verfahren bestimmt auch die Reihenfolge von Tracks.
 	EN	Method of how albums are sorted. This method also is also used for track sorting.
+	DA	Sorteringsmetode for albums. Gælder også for sortering af sange.
 
 PLUGIN_GOOGLEMUSIC_DISABLE_SSL
 	DE	Keine SSL Verification
 	EN	Disable SSL verification
+	DA	Anvend ikke SSL
 
 PLUGIN_GOOGLEMUSIC_DISABLE_SSL_DESC
 	DE	Fehler bei der Verifikation von SSL Zertifikation werden ignoriert. Änderung tritt nach Neustart in Kraft. Schalte diese Option ein, wenn Du Probleme bei der Verifikation von Google SSL Zertifikaten auf Deinem Rechner hast. Es ist aber besser, den Fehler anderweitig zu beheben.
 	EN	Ignore problems when verifying SSL certificates. Change requires restart to take effect. Turn this option on if you are having problems when verifying SSL certificates on your machine. Be wary of using this option. It’s almost always better to fix the machine’s SSL configuration than to ignore errors.
+	DA	Ignorer problemer ved verifkation af SSL certifikater. Ændring kræver genstart. Slå dette til hvis du oplever problemer med at verificere SSL certifikater. Vær forsigtig med denne - det er næsten altid bedre at fixe maskinens SSL opsætning istedet for at ignorere fejl.
 
 PLUGIN_GOOGLEMUSIC_RECENT_ALBUMS
 	DE	Kürzlich gespielte Alben
 	EN	Albums Recently Played
+	DA	Albums afspillet for nyligt
 
 PLUGIN_GOOGLEMUSIC_RECENT_ARTISTS
 	DE	Kürzlich gespielte Interpreten
 	EN	Artists Recently Played
+	DA	Kunstnere afspillet for nyligt
 
 PLUGIN_GOOGLEMUSIC_BIOGRAPHY
 	DE	Biographie
 	EN	Biography
+	DA	Biografi
 
 PLUGIN_GOOGLEMUSIC_ABOUT_THIS_ALBUM
 	DE	Über dieses Album
 	EN	About this album
+	DA	Om dette album
 
 PLUGIN_GOOGLEMUSIC_START_RADIO
 	DE	Radio starten
 	EN	Start radio
+	DA	Start radio
 
 PLUGIN_GOOGLEMUSIC_ERROR
 	DE	Ein unerwarteter Fehler ist aufgetreten.
 	EN	An unexpected error occurred.
+	DA	Der opstod en fejl
 
 PLUGIN_GOOGLEMUSIC_LIKE
 	DE	Mag ich
 	EN	Like it
+	DA	Synes godt om
 
 PLUGIN_GOOGLEMUSIC_UNLIKE
 	DE	Mag ich nicht mehr
 	EN	Unlike it
+	DA	Synes ikke længere om
 
 PLUGIN_GOOGLEMUSIC_DISLIKE
 	DE	Mag ich nicht
 	EN	Dislike it
+	DA	Synes ikke om
 
 PLUGIN_GOOGLEMUSIC_DONT_DISLIKE
 	DE	Mag ich wieder
 	EN	Don't dislike it
+	DA	Fjern ‘synes ikke om’
