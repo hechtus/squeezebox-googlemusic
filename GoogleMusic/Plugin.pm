@@ -89,8 +89,10 @@ sub initPlugin {
 	# exception. Catch it to allow the plugin to be started.
 	eval {
 		$googleapi->login($prefs->get('username'),
-						  decode_base64($prefs->get('password')));
+				decode_base64($prefs->get('password')),
+						$prefs->get('device_id'));
 	};
+
 	if ($@) {
 		$log->error("Not able to login to Google Play Music: $@");
 	}
