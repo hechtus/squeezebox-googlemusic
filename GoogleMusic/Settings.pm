@@ -70,7 +70,8 @@ sub handler {
 		# user is able to disable SSL verification.
 		eval {
 			$googleapi->login($prefs->get('username'),
-							  decode_base64($prefs->get('password')));
+							  decode_base64($prefs->get('password')),
+							  	$prefs->get('device_id'));
 		};
 		if ($@) {
 			$log->error("Not able to login to Google Play Music: $@");
