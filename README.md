@@ -27,7 +27,7 @@ running on non-Linux systems to extend this How-to.
 1. Install Python and [Python pip](http://www.pip-installer.org).
 
 1. Install the [Unofficial Google Play Music
-   API](https://github.com/simon-weber/Unofficial-Google-Music-API>)
+   API](https://github.com/simon-weber/Unofficial-Google-Music-API)
    by running:
 
          sudo pip install gmusicapi
